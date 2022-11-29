@@ -91,7 +91,10 @@ export class Messenger<IncomingDataType, OutgoingDataType> {
   }
 
   connect = async (numberOfAttempt: number = 20) => {
-    if (this.connectionCancelled) return
+    if (this.connectionCancelled) {
+      throw new Error('connection was cancelled')
+    }
+
     try {
       const targetId = await this._sendRequest({ type: CONNECTION_REQUEST_TYPE, from: this.id }, 500)
       this.targetId = targetId as string

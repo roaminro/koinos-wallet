@@ -4,19 +4,25 @@ import { Messenger } from '../../util/Messenger'
 import { useWallets } from '../../context/WalletsProvider'
 import { truncateAccount } from '../../util/Utils'
 
+export interface IAccount {
+  name: string
+  address: string
+  signers: {
+    name: string,
+    address: string,
+  }[]
+}
+
 export default function Accounts() {
-  interface Message {
-    msg: string
-  }
   const { wallets, isLoadingWallets } = useWallets()
 
   const [sender, setSender] = useState('')
   const [selectedAccounts, setSelectedAccounts] = useState<boolean[][]>([])
-  const [messenger, setMessenger] = useState<Messenger<string, Message>>()
+  const [messenger, setMessenger] = useState<Messenger<string, IAccount[]>>()
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    const msgr = new Messenger<string, Message>(window.opener, window.location.origin)
+    const msgr = new Messenger<string, IAccount[]>(window.opener, window.location.origin)
     setMessenger(msgr)
 
     const setupMessenger = async () => {
@@ -68,9 +74,22 @@ export default function Accounts() {
 
   const hasLoadedAccounts = selectedAccounts.length > 0
 
-  const onClick = () => {
-    console.log(messenger)
-    // messenger!.sendMessage(text)
+  const onClickConfirm = () => {
+    const accounts: IAccount[] = []
+
+    wallets.forEach((wallet, walletIndex) => {
+      wallet.accounts.forEach((account, accountIndex) => {
+        if (selectedAccounts[walletIndex][accountIndex]) {
+          accounts.push({
+            name: '',
+            address: account.public.address,
+            signers: []
+          })
+        }
+      })
+    })
+
+    messenger!.sendMessage(accounts)
   }
 
   const close = () => {
@@ -132,7 +151,7 @@ export default function Accounts() {
           <CardFooter>
             <ButtonGroup>
               <Button disabled={isLoadingWallets || isLoading} onClick={close} colorScheme='red'>Cancel</Button>
-              <Button disabled={isLoadingWallets || isLoading} onClick={onClick} colorScheme='blue'>Confirm</Button>
+              <Button disabled={isLoadingWallets || isLoading} onClick={onClickConfirm} colorScheme='blue'>Confirm</Button>
             </ButtonGroup>
           </CardFooter>
         </Card>
