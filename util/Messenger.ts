@@ -36,6 +36,7 @@ export class Messenger<IncomingDataType, OutgoingDataType> {
   private onMessageFn?: OnMessageFnType<IncomingDataType>
   private onRequestFn?: OnRequestFnType<IncomingDataType, OutgoingDataType>
   private onMessageListenerAdded: boolean
+  private connectionCancelled: boolean
 
   constructor(target: Window, targetOrigin = '*') {
     this.id = crypto.randomUUID()
@@ -43,6 +44,7 @@ export class Messenger<IncomingDataType, OutgoingDataType> {
     this.target = target
     this.targetOrigin = targetOrigin
     this.onMessageListenerAdded = false
+    this.connectionCancelled = false
     this.addMessageListener()
   }
 
@@ -89,6 +91,7 @@ export class Messenger<IncomingDataType, OutgoingDataType> {
   }
 
   connect = async (numberOfAttempt: number = 20) => {
+    if (this.connectionCancelled) return
     try {
       const targetId = await this._sendRequest({ type: CONNECTION_REQUEST_TYPE, from: this.id }, 500)
       this.targetId = targetId as string
@@ -110,6 +113,7 @@ export class Messenger<IncomingDataType, OutgoingDataType> {
   }
 
   removeListener = () => {
+    this.connectionCancelled = true
     if (this.onMessageListenerAdded) {
       window.removeEventListener('message', this.onMessageListener)
     }

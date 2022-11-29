@@ -1,47 +1,26 @@
 import { Button, FormControl, FormErrorMessage, FormHelperText, FormLabel, Input, InputGroup, InputRightAddon, NumberDecrementStepper, NumberIncrementStepper, NumberInput, NumberInputField, NumberInputStepper, Skeleton, Stack } from '@chakra-ui/react'
 import { ChangeEvent, useEffect, useState } from 'react'
+import { useRouter } from 'next/router'
+
 import { usePasswordManager } from '../hooks/PasswordManager'
 import { getSetting, setSetting } from '../util/Settings'
 
 const DEFAULT_AUTOLOCK_TIME_KEY = 'DEFAULT_AUTOLOCK_TIME'
 const AUTOLOCK_DEADLINE_KEY = 'AUTOLOCK_DEADLINE'
 
-interface UnlockProps {
-  onUnlock: () => void;
-}
+export default function Unlock() {
+  const router = useRouter()
 
-export default function Unlock({ onUnlock }: UnlockProps) {
   const { isLoadingPasswordManager, checkPassword } = usePasswordManager()
 
   const [password, setPassword] = useState('')
-  const [unlockTime, setUnlockTime] = useState(0)
+  const [unlockTime, setUnlockTime] = useState(1)
   const [isUnlocking, setIsUnlocking] = useState(false)
   const [unlockError, setUnlockError] = useState('')
   const [isLoading, setIsLoading] = useState(true)
 
-  const checkAutoLock = () => {
-    const autolockDeadlineStr = getSetting<number>(AUTOLOCK_DEADLINE_KEY)
-
-    if (autolockDeadlineStr) {
-      const now = new Date()
-      const autolockDeadline = new Date(autolockDeadlineStr)
-
-      if (now >= autolockDeadline) {
-        setSetting(AUTOLOCK_DEADLINE_KEY, 0)
-      } else {
-        return true
-      }
-    }
-
-    return false
-  }
-
 
   useEffect(() => {
-    if (checkAutoLock()) {
-      onUnlock()
-    }
-
     const defaultUnlockTime = getSetting<number>(DEFAULT_AUTOLOCK_TIME_KEY)
 
     if (defaultUnlockTime) {
@@ -49,15 +28,8 @@ export default function Unlock({ onUnlock }: UnlockProps) {
     }
 
     setIsLoading(false)
-  }, [onUnlock])
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      checkAutoLock()
-    }, 60000)
-
-    return () => clearInterval(interval)
   }, [])
+
 
   const onUnlockClick = async () => {
     setIsUnlocking(true)
@@ -66,12 +38,11 @@ export default function Unlock({ onUnlock }: UnlockProps) {
 
       setSetting(DEFAULT_AUTOLOCK_TIME_KEY, unlockTime)
 
-      if (unlockTime > 0) {
-        const unlockTimeDeadline = new Date().getTime() + (unlockTime * 60 * 1000)
-        setSetting(AUTOLOCK_DEADLINE_KEY, unlockTimeDeadline)
-      }
+      const unlockTimeDeadline = new Date().getTime() + (unlockTime * 60 * 1000)
+      setSetting(AUTOLOCK_DEADLINE_KEY, unlockTimeDeadline)
 
-      onUnlock()
+      const returnUrl = router.query.returnUrl || '/dashboard'
+      router.push(returnUrl as string)
     } catch (error) {
       console.error(error)
       setUnlockError((error as Error).message)
@@ -106,7 +77,7 @@ export default function Unlock({ onUnlock }: UnlockProps) {
         <FormControl>
           <FormLabel>Keep unlocked</FormLabel>
           <InputGroup>
-            <NumberInput step={1} min={0} value={unlockTime} onChange={handleUnlockTimeChange}>
+            <NumberInput step={1} min={1} value={unlockTime} onChange={handleUnlockTimeChange}>
               <NumberInputField />
               <NumberInputStepper>
                 <NumberIncrementStepper />

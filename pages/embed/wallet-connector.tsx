@@ -56,15 +56,13 @@ export default function WalletConnector() {
           sendData({ msg: 'test from iframe' })
           // sendError('test from iframe')
         } else if (data.msg === 'popup') {
-          try {
-            // await unlock(sender)
+          return new Promise((resolve) => {
+            const params = 'popup=yes,scrollbars=no,resizable=yes,status=no,location=no,toolbar=no,menubar=no,width=400,height=500'
+            const newWindow = window.open('/embed/accounts', 'Accounts', params)!
+            newWindow.resizeTo(400, 500)
 
-            return new Promise((resolve) => {
-              const params = 'popup=yes,scrollbars=no,resizable=yes,status=no,location=no,toolbar=no,menubar=no,width=400,height=500'
-              const newWindow = window.open('/embed/accounts', 'Accounts', params)!
-              newWindow.resizeTo(400, 500)
-
-              newWindow.onload = async () => {  //wait til load to add onunload event
+            newWindow.onload = async () => {  //wait til load to add onunload event
+              try {
                 const popupMsgr = new Messenger<Message, string>(newWindow, window.location.origin)
                 newWindow.onunload = () => {
                   popupMsgr.removeListener()
@@ -79,16 +77,17 @@ export default function WalletConnector() {
                   resolve()
                 })
 
-                await popupMsgr.connect()
+                await popupMsgr.connect(100)
                 console.log('connected to popup')
                 await popupMsgr.sendMessage(sender)
+              } catch (error) {
+                sendError('request was cancelled')
+                resolve()
               }
+            }
 
-              newWindow.focus()
-            })
-          } catch (error) {
-            sendError('request was cancelled')
-          }
+            newWindow.focus()
+          })
         }
       })
 
