@@ -150,7 +150,7 @@ export default function Accounts() {
           <Divider />
           <CardFooter>
             <ButtonGroup>
-              <Button disabled={isLoadingWallets || isLoading} onClick={close} colorScheme='red'>Cancel</Button>
+              <Button onClick={close} colorScheme='red'>Cancel</Button>
               <Button disabled={isLoadingWallets || isLoading} onClick={onClickConfirm} colorScheme='blue'>Confirm</Button>
             </ButtonGroup>
           </CardFooter>
