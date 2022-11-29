@@ -16,14 +16,6 @@ export default function WalletConnector() {
   const [messenger, setMessenger] = useState<Messenger<IncomingMessage, OutgoingMessage>>()
 
   useEffect(() => {
-    const t = sessionStorage.getItem('test')
-
-    if (!t) {
-      sessionStorage.setItem('test', crypto.randomUUID())
-    } else {
-      console.log('sessionStorage "test"', t)
-    }
-
     const msgr = new Messenger<IncomingMessage, OutgoingMessage>(parent.window)
     setMessenger(msgr)
 
@@ -54,7 +46,6 @@ export default function WalletConnector() {
                 })
 
                 await popupMsgr.connect(100)
-                console.log('connected to popup')
                 await popupMsgr.sendMessage(sender)
               } catch (error) {
                 sendError('request was cancelled')
@@ -68,9 +59,7 @@ export default function WalletConnector() {
       })
 
       await msgr.connect()
-      console.log('connected to parent')
-
-      await msgr.sendRequest({ msg: 'hello' }, 2000)
+      console.log('connected to parent window')
     }
 
     setupMessenger()
@@ -82,8 +71,6 @@ export default function WalletConnector() {
   }, [])
 
   return (
-    <>
-      WalletConnector
-    </>
+    <></>
   )
 }

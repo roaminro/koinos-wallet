@@ -59,6 +59,7 @@ export class Messenger<IncomingDataType, OutgoingDataType> {
       if (data.type === CONNECTION_REQUEST_TYPE) {
         ports[0].postMessage({ type: CONNECTION_REQUEST_ACK_TYPE, data: this.id })
         this.targetId = data.from
+        this.targetOrigin = event.origin
       } else if (this.onRequestFn) {
         await this.onRequestFn({
           sender: event.origin,
