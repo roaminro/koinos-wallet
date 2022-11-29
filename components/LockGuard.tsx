@@ -72,15 +72,12 @@ export default function RouteGuard({
   }, [authCheck, router.asPath, router.events])
 
   useEffect(() => {
-    console.log('start checkAutoLock')
-
-    // check aut lock timeout
+    // check autolock timeout every minute
     let checkAutoLockTimeout: number
     checkAutoLockTimeout = window.setTimeout(function cb() {
-      console.log('checkAutoLock')
       authCheck(router.asPath)
-      checkAutoLockTimeout = window.setTimeout(cb, 5000)
-    }, 5000)
+      checkAutoLockTimeout = window.setTimeout(cb, 60000)
+    }, 60000)
 
     const interactionEvents = ['click', 'keydown', 'scroll']
 
