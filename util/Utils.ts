@@ -18,3 +18,5 @@ export const equalArray = (a: string[], b: string[]) => {
   }
   return true
 }
+
+export const truncateAccount = (account: string) => `${account.substring(0, 4)}...${account.substring(account.length - 4)}`

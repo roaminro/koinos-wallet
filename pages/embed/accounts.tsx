@@ -1,28 +1,27 @@
-import { Box, Button, Input, Spinner } from '@chakra-ui/react'
-import Head from 'next/head'
-import Image from 'next/image'
-import { ChangeEvent, useEffect, useState } from 'react'
-import styles from '../../styles/Home.module.css'
+import { Text, Box, Button, ButtonGroup, Card, CardBody, CardFooter, CardHeader, Checkbox, Divider, Heading, Input, Skeleton, Spinner, Stack } from '@chakra-ui/react'
+import { useEffect, useState } from 'react'
 import { Messenger } from '../../util/Messenger'
+import { useWallets } from '../../context/WalletsProvider'
+import { truncateAccount } from '../../util/Utils'
 
 export default function Accounts() {
   interface Message {
     msg: string
   }
+  const { wallets, isLoadingWallets } = useWallets()
 
-  const [text, setText] = useState('')
-  const [messenger, setMessenger] = useState<Messenger<Message>>()
+  const [sender, setSender] = useState('')
+  const [selectedAccounts, setSelectedAccounts] = useState<boolean[][]>([])
+  const [messenger, setMessenger] = useState<Messenger<string, Message>>()
   const [isLoading, setIsLoading] = useState(true)
 
-
   useEffect(() => {
-    console.log(window.location.origin)
-    const msgr = new Messenger<Message>(window.opener, window.location.origin)
+    const msgr = new Messenger<string, Message>(window.opener, window.location.origin)
     setMessenger(msgr)
 
     const setupMessenger = async () => {
       msgr.onMessage(({ data }) => {
-        setText(data.msg)
+        setSender(data)
         setIsLoading(false)
       })
 
@@ -39,26 +38,104 @@ export default function Accounts() {
     }
   }, [])
 
+  useEffect(() => {
+    const accounts: boolean[][] = []
+
+    wallets.forEach((wallet, walletIndex) => {
+      accounts.push([])
+
+      wallet.accounts.forEach(() => {
+        accounts[walletIndex].push(false)
+      })
+    })
+
+    setSelectedAccounts([...accounts])
+  }, [wallets])
+
+  const updateSelectedAccounts = (walletIndex: number, accountIndex: number, checked: boolean) => {
+    selectedAccounts[walletIndex][accountIndex] = checked
+
+    setSelectedAccounts([...selectedAccounts])
+  }
+
+  const updateAllSelectedAccounts = (walletIndex: number, checked: boolean) => {
+    for (let index = 0; index < selectedAccounts[walletIndex].length; index++) {
+      selectedAccounts[walletIndex][index] = checked
+    }
+
+    setSelectedAccounts([...selectedAccounts])
+  }
+
+  const hasLoadedAccounts = selectedAccounts.length > 0
+
   const onClick = () => {
     console.log(messenger)
-    messenger!.sendMessage({ msg: text })
+    // messenger!.sendMessage(text)
   }
 
   const close = () => {
     self.close()
   }
 
-  const onChange = (ev: ChangeEvent<HTMLInputElement>) => {
-    setText(ev.target.value)
-  }
-
-  if (isLoading) return <Spinner />
-
   return (
-    <Box>
-      <Input value={text} onChange={onChange}></Input>
-      <Button onClick={onClick}>click</Button>
-      <Button onClick={close}>cancel</Button>
+    <Box padding={{ base: 4, md: 8 }} minHeight='400px'>
+      <Stack mt='6' spacing='3'>
+        <Card>
+          <CardHeader>
+            <Heading size='md'>Accounts request</Heading>
+          </CardHeader>
+          <Divider />
+          <CardBody>
+            <Skeleton isLoaded={hasLoadedAccounts && !isLoading}>
+              <Text>
+                Select the accounts you would like to share with the website &quot;{sender}&quot;:
+              </Text>
+              <Divider marginTop={4} marginBottom={4} />
+              {
+                hasLoadedAccounts && wallets.map((wallet, walletIndex) => {
+                  const allChecked = selectedAccounts[walletIndex].every(Boolean)
+                  const isIndeterminate = selectedAccounts[walletIndex].some(Boolean) && !allChecked
+
+                  return (
+                    <Box key={wallet.name}>
+                      <Checkbox
+                        isChecked={allChecked}
+                        isIndeterminate={isIndeterminate}
+                        onChange={(e) => updateAllSelectedAccounts(walletIndex, e.target.checked)}
+                      >
+                        <Heading size='sm'>{wallet.name}</Heading>
+                      </Checkbox>
+                      <Stack pl={6} mt={1} spacing={1}>
+                        {
+                          wallet.accounts.map((account, accountIndex) => {
+                            return (
+                              <Checkbox
+                                key={account.public.address}
+                                isChecked={selectedAccounts[walletIndex][accountIndex]}
+                                onChange={(e) => updateSelectedAccounts(walletIndex, accountIndex, e.target.checked)}
+                              >
+                                {account.public.name} ({truncateAccount(account.public.address)})
+                              </Checkbox>
+                            )
+                          })
+                        }
+                      </Stack>
+                      <Divider marginTop={4} marginBottom={4} />
+                    </Box>
+                  )
+                })
+              }
+            </Skeleton>
+          </CardBody>
+          <Divider />
+          <CardFooter>
+            <ButtonGroup>
+              <Button disabled={isLoadingWallets || isLoading} onClick={close} colorScheme='red'>Cancel</Button>
+              <Button disabled={isLoadingWallets || isLoading} onClick={onClick} colorScheme='blue'>Confirm</Button>
+            </ButtonGroup>
+          </CardFooter>
+        </Card>
+      </Stack>
     </Box>
   )
 }

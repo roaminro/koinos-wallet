@@ -2,7 +2,6 @@ import { ChangeEvent, useEffect, useState } from 'react'
 import { Box, Button, FormControl, FormErrorMessage, FormHelperText, FormLabel, Input, Spinner, Text, useToast } from '@chakra-ui/react'
 import { Messenger } from '../../util/Messenger'
 import { Account } from '../../util/HDKoinos'
-import { loadWalletAccounts } from '../../util/Storage'
 
 export default function Unlock() {
   const toast = useToast()
@@ -45,9 +44,9 @@ export default function Unlock() {
     setIsUnlocking(true)
     setUnlockError('')
     try {
-      const accounts = await loadWalletAccounts(password)
-      console.log(accounts)
-      messenger!.sendMessage(accounts)
+      // const accounts = await loadWalletAccounts(password)
+      // console.log(accounts)
+      // messenger!.sendMessage(accounts)
     } catch (error) {
       console.error(error)
       setUnlockError((error as Error).message)

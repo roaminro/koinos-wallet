@@ -57,14 +57,15 @@ export default function WalletConnector() {
           // sendError('test from iframe')
         } else if (data.msg === 'popup') {
           try {
-            await unlock(sender)
+            // await unlock(sender)
 
             return new Promise((resolve) => {
-              let params = 'popup=yes,scrollbars=no,resizable=no,status=no,location=no,toolbar=no,menubar=no,width=300,height=300,left=-1000,top=-1000'
-              const newWindow = window.open('/embed/accounts', 'test', params)!
+              const params = 'popup=yes,scrollbars=no,resizable=yes,status=no,location=no,toolbar=no,menubar=no,width=400,height=500'
+              const newWindow = window.open('/embed/accounts', 'Accounts', params)!
+              newWindow.resizeTo(400, 500)
 
               newWindow.onload = async () => {  //wait til load to add onunload event
-                const popupMsgr = new Messenger<Message, Message>(newWindow, window.location.origin)
+                const popupMsgr = new Messenger<Message, string>(newWindow, window.location.origin)
                 newWindow.onunload = () => {
                   popupMsgr.removeListener()
                   sendError('request was cancelled')
@@ -80,7 +81,7 @@ export default function WalletConnector() {
 
                 await popupMsgr.connect()
                 console.log('connected to popup')
-                await popupMsgr.sendMessage({ msg: 'init test' })
+                await popupMsgr.sendMessage(sender)
               }
 
               newWindow.focus()

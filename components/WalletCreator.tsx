@@ -268,7 +268,9 @@ export default function WalletCreator({ importingSecretPhrase = false }: WalletC
               <Divider />
               <CardFooter>
                 <Button disabled={isCreatingWallet || isCreateButtonDisabled} isLoading={isCreatingWallet} variant='solid' colorScheme='green' onClick={createWallet}>
-                  Create wallet
+                  {
+                    importingSecretPhrase ? 'Import wallet' : 'Create wallet'
+                  }
                 </Button>
               </CardFooter>
             </Card>
