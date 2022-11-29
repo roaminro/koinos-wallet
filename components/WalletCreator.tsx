@@ -94,7 +94,7 @@ export default function WalletCreator({ importingSecretPhrase = false }: WalletC
 
       addWallet({
         name: walletName,
-        encryptedSecretPhrase: await encrypt(secretPhrase, password),
+        secretPhrase: await encrypt(secretPhrase, password),
         accounts: [account]
       })
 

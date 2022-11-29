@@ -1,6 +1,7 @@
 import { Button, FormControl, FormErrorMessage, FormHelperText, FormLabel, Input, InputGroup, InputRightAddon, NumberDecrementStepper, NumberIncrementStepper, NumberInput, NumberInputField, NumberInputStepper, Skeleton, Stack } from '@chakra-ui/react'
 import { ChangeEvent, useEffect, useState } from 'react'
 import { usePasswordManager } from '../hooks/PasswordManager'
+import { getSetting, setSetting } from '../util/Settings'
 
 const DEFAULT_AUTOLOCK_TIME_KEY = 'DEFAULT_AUTOLOCK_TIME'
 const AUTOLOCK_DEADLINE_KEY = 'AUTOLOCK_DEADLINE'
@@ -19,14 +20,14 @@ export default function Unlock({ onUnlock }: UnlockProps) {
   const [isLoading, setIsLoading] = useState(true)
 
   const checkAutoLock = () => {
-    const autolockDeadlineStr = localStorage.getItem(AUTOLOCK_DEADLINE_KEY)
+    const autolockDeadlineStr = getSetting<number>(AUTOLOCK_DEADLINE_KEY)
 
     if (autolockDeadlineStr) {
       const now = new Date()
-      const autolockDeadline = new Date(parseInt(autolockDeadlineStr))
+      const autolockDeadline = new Date(autolockDeadlineStr)
 
       if (now >= autolockDeadline) {
-        localStorage.removeItem(AUTOLOCK_DEADLINE_KEY)
+        setSetting(AUTOLOCK_DEADLINE_KEY, 0)
       } else {
         return true
       }
@@ -41,10 +42,10 @@ export default function Unlock({ onUnlock }: UnlockProps) {
       onUnlock()
     }
 
-    const defaultUnlockTime = localStorage.getItem(DEFAULT_AUTOLOCK_TIME_KEY)
+    const defaultUnlockTime = getSetting<number>(DEFAULT_AUTOLOCK_TIME_KEY)
 
     if (defaultUnlockTime) {
-      setUnlockTime(parseInt(defaultUnlockTime))
+      setUnlockTime(defaultUnlockTime)
     }
 
     setIsLoading(false)
@@ -63,11 +64,11 @@ export default function Unlock({ onUnlock }: UnlockProps) {
     try {
       await checkPassword(password)
 
-      localStorage.setItem(DEFAULT_AUTOLOCK_TIME_KEY, unlockTime.toString())
+      setSetting(DEFAULT_AUTOLOCK_TIME_KEY, unlockTime)
 
       if (unlockTime > 0) {
         const unlockTimeDeadline = new Date().getTime() + (unlockTime * 60 * 1000)
-        localStorage.setItem(AUTOLOCK_DEADLINE_KEY, unlockTimeDeadline.toString())
+        setSetting(AUTOLOCK_DEADLINE_KEY, unlockTimeDeadline)
       }
 
       onUnlock()

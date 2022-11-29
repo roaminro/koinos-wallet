@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { decrypt, encrypt } from '../util/Encryption'
+import { getSetting, setSetting } from '../util/Settings'
 
 const PASSWORD_CHECKER_KEY = 'PASSWORD_CHECKER'
 
@@ -8,7 +9,7 @@ export const usePasswordManager = () => {
   const [isLoadingPasswordManager, setisLoadingPasswordManager] = useState(true)
 
   useEffect(() => {
-    const pwdChecker = localStorage.getItem(PASSWORD_CHECKER_KEY)
+    const pwdChecker = getSetting<string>(PASSWORD_CHECKER_KEY)
 
     if (pwdChecker) {
       setPasswordChecker(pwdChecker)
@@ -19,7 +20,7 @@ export const usePasswordManager = () => {
 
   useEffect(() => {
     if (passwordChecker) {
-      localStorage.setItem(PASSWORD_CHECKER_KEY, passwordChecker)
+      setSetting(PASSWORD_CHECKER_KEY, passwordChecker)
     }
   }, [passwordChecker])
 

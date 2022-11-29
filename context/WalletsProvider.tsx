@@ -5,7 +5,7 @@ const WALLETS_KEY = 'WALLETS'
 
 export type Wallet = {
   name: string
-  encryptedSecretPhrase: string
+  secretPhrase: string
   accounts: Account[]
 }
 

@@ -1,36 +1,21 @@
 import { utils } from 'koilib'
+import { getSetting, setSetting } from './Settings'
 
 const ENCRYPTION_SALT_KEY = 'ENCRYPTION_SALT'
 const ENCRYPTION_IV_KEY = 'ENCRYPTION_IV'
-
-export function loadEncryptionSalt() {
-  return localStorage.getItem(ENCRYPTION_SALT_KEY)
-}
-
-export function saveEncryptionSalt(encryptionSalt: string) {
-  localStorage.setItem(ENCRYPTION_SALT_KEY, encryptionSalt)
-}
-
-export function loadEncryptionIV() {
-  return localStorage.getItem(ENCRYPTION_IV_KEY)
-}
-
-export function saveEncryptionIV(encryptionIV: string) {
-  localStorage.setItem(ENCRYPTION_IV_KEY, encryptionIV)
-}
 
 function getEncryptionOptions(): {
   salt: ArrayBufferLike;
   iv: ArrayBufferLike;
 } {
-  let saltString = loadEncryptionSalt()
-  let ivString = loadEncryptionIV()
+  let saltString = getSetting<string>(ENCRYPTION_SALT_KEY)
+  let ivString = getSetting<string>(ENCRYPTION_IV_KEY)
 
   if (!saltString || !ivString) {
     saltString = utils.toHexString(window.crypto.getRandomValues(new Uint8Array(16)))
     ivString = utils.toHexString(window.crypto.getRandomValues(new Uint8Array(12)))
-    saveEncryptionSalt(saltString!)
-    saveEncryptionIV(ivString!)
+    setSetting(ENCRYPTION_SALT_KEY, saltString)
+    setSetting(ENCRYPTION_IV_KEY, ivString)
   }
   const salt = utils.toUint8Array(saltString).buffer
   const iv = utils.toUint8Array(ivString).buffer
