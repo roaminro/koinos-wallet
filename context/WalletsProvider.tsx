@@ -1,7 +1,6 @@
 import { ReactNode, useContext, useState, createContext, useEffect } from 'react'
+import { WALLETS_KEY } from '../util/Constants'
 import { Account } from '../util/HDKoinos'
-
-const WALLETS_KEY = 'WALLETS'
 
 export type Wallet = {
   name: string

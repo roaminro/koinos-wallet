@@ -4,9 +4,7 @@ import { useRouter } from 'next/router'
 
 import { usePasswordManager } from '../hooks/PasswordManager'
 import { getSetting, setSetting } from '../util/Settings'
-
-const DEFAULT_AUTOLOCK_TIME_KEY = 'DEFAULT_AUTOLOCK_TIME'
-const AUTOLOCK_DEADLINE_KEY = 'AUTOLOCK_DEADLINE'
+import { DEFAULT_AUTOLOCK_TIME_KEY } from '../util/Constants'
 
 export default function Unlock() {
   const router = useRouter()
@@ -37,9 +35,6 @@ export default function Unlock() {
       await checkPassword(password)
 
       setSetting(DEFAULT_AUTOLOCK_TIME_KEY, unlockTime)
-
-      const unlockTimeDeadline = new Date().getTime() + (unlockTime * 60 * 1000)
-      setSetting(AUTOLOCK_DEADLINE_KEY, unlockTimeDeadline)
 
       const returnUrl = router.query.returnUrl || '/dashboard'
       router.push(returnUrl as string)
@@ -75,7 +70,7 @@ export default function Unlock() {
           }
         </FormControl>
         <FormControl>
-          <FormLabel>Keep unlocked</FormLabel>
+          <FormLabel>Auto-lock</FormLabel>
           <InputGroup>
             <NumberInput step={1} min={1} value={unlockTime} onChange={handleUnlockTimeChange}>
               <NumberInputField />
@@ -86,7 +81,7 @@ export default function Unlock() {
             </NumberInput>
             <InputRightAddon>min.</InputRightAddon>
           </InputGroup>
-          <FormHelperText>Keep application unlocked for {unlockTime} minutes.</FormHelperText>
+          <FormHelperText>Auto-lock the application after {unlockTime} minutes of inactivity.</FormHelperText>
         </FormControl>
         <Button isLoading={isUnlocking} onClick={onUnlockClick}>Unlock</Button>
       </Stack>

@@ -1,8 +1,7 @@
 import { useEffect, useState } from 'react'
+import { PASSWORD_CHECKER_KEY } from '../util/Constants'
 import { decrypt, encrypt } from '../util/Encryption'
 import { getSetting, setSetting } from '../util/Settings'
-
-const PASSWORD_CHECKER_KEY = 'PASSWORD_CHECKER'
 
 export const usePasswordManager = () => {
   const [passwordChecker, setPasswordChecker] = useState<string>()

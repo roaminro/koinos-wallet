@@ -2,8 +2,8 @@ import React, { useState, useEffect, ReactNode, ReactElement, useCallback } from
 import { useRouter } from 'next/router'
 
 import { getSetting, setSetting } from '../util/Settings'
-
-const AUTOLOCK_DEADLINE_KEY = 'AUTOLOCK_DEADLINE'
+import { debounce } from '../util/Utils'
+import { AUTOLOCK_DEADLINE_KEY, DEFAULT_AUTOLOCK_TIME_KEY } from '../util/Constants'
 
 export default function RouteGuard({
   children,
@@ -53,23 +53,6 @@ export default function RouteGuard({
     }
   }, [router])
 
-
-  useEffect(() => {
-    console.log('start checkAutoLock')
-
-    let timeout: number
-    timeout = window.setTimeout(function cb() {
-      console.log('checkAutoLock')
-      authCheck(router.asPath)
-      timeout = window.setTimeout(cb, 5000)
-    }, 5000)
-
-    return () => {
-      console.log('clear checkAutoLock')
-      window.clearTimeout(timeout)
-    }
-  }, [authCheck, router])
-
   useEffect(() => {
     // on initial load - run auth check 
     authCheck(router.asPath)
@@ -87,6 +70,42 @@ export default function RouteGuard({
       router.events.off('routeChangeComplete', authCheck)
     }
   }, [authCheck, router.asPath, router.events])
+
+  useEffect(() => {
+    console.log('start checkAutoLock')
+
+    // check aut lock timeout
+    let checkAutoLockTimeout: number
+    checkAutoLockTimeout = window.setTimeout(function cb() {
+      console.log('checkAutoLock')
+      authCheck(router.asPath)
+      checkAutoLockTimeout = window.setTimeout(cb, 5000)
+    }, 5000)
+
+    const interactionEvents = ['click', 'keydown', 'scroll']
+
+    // interactions handling
+    const eventHandler = (ev:any) => {
+      const unlockTime = getSetting<number>(DEFAULT_AUTOLOCK_TIME_KEY) || 1
+      const unlockTimeDeadline = new Date().getTime() + (unlockTime * 60 * 1000)
+      setSetting(AUTOLOCK_DEADLINE_KEY, unlockTimeDeadline)
+    }
+
+    const debouncedEventHandler = debounce((ev: any) => eventHandler(ev))
+
+    interactionEvents.forEach((eventName) => {
+      window.addEventListener(eventName, debouncedEventHandler)
+    })
+
+    return () => {
+      window.clearTimeout(checkAutoLockTimeout)
+      
+      interactionEvents.forEach((eventName) => {
+        window.removeEventListener(eventName, debouncedEventHandler)
+      })
+    }
+  }, [authCheck, router])
+
 
   return (
     <>

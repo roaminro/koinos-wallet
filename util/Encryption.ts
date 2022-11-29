@@ -1,8 +1,6 @@
 import { utils } from 'koilib'
+import { ENCRYPTION_SALT_KEY, ENCRYPTION_IV_KEY } from './Constants'
 import { getSetting, setSetting } from './Settings'
-
-const ENCRYPTION_SALT_KEY = 'ENCRYPTION_SALT'
-const ENCRYPTION_IV_KEY = 'ENCRYPTION_IV'
 
 function getEncryptionOptions(): {
   salt: ArrayBufferLike;

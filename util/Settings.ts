@@ -1,4 +1,4 @@
-const SETTINGS_KEY = 'SETTINGS'
+import { SETTINGS_KEY } from './Constants'
 
 export const getSettings = () => {
   const obj = localStorage.getItem(SETTINGS_KEY)

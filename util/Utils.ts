@@ -19,4 +19,13 @@ export const equalArray = (a: string[], b: string[]) => {
   return true
 }
 
+export const debounce = (fn: Function, ms = 500) => {
+  let timeoutId: number
+
+  return function (this: any, ...args: any[]) {
+    window.clearTimeout(timeoutId)
+    timeoutId = window.setTimeout(() => fn.apply(this, args), ms)
+  }
+}
+
 export const truncateAccount = (account: string) => `${account.substring(0, 4)}...${account.substring(account.length - 4)}`
