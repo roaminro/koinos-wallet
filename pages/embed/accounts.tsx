@@ -97,7 +97,7 @@ export default function Accounts() {
                   const isIndeterminate = selectedAccounts[walletIndex].some(Boolean) && !allChecked
 
                   return (
-                    <Box key={wallet.name}>
+                    <Box key={walletIndex}>
                       <Checkbox
                         isChecked={allChecked}
                         isIndeterminate={isIndeterminate}
@@ -110,7 +110,7 @@ export default function Accounts() {
                           wallet.accounts.map((account, accountIndex) => {
                             return (
                               <Checkbox
-                                key={account.public.address}
+                                key={`${walletIndex}-${accountIndex}`}
                                 isChecked={selectedAccounts[walletIndex][accountIndex]}
                                 onChange={(e) => updateSelectedAccounts(walletIndex, accountIndex, e.target.checked)}
                               >
