@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 import { Messenger } from '../../util/Messenger'
 import { useWallets } from '../../context/WalletsProvider'
 import { truncateAccount } from '../../util/Utils'
+import Unlock from '../../components/Unlock'
 
 export default function Accounts() {
   interface Message {
@@ -14,6 +15,7 @@ export default function Accounts() {
   const [selectedAccounts, setSelectedAccounts] = useState<boolean[][]>([])
   const [messenger, setMessenger] = useState<Messenger<string, Message>>()
   const [isLoading, setIsLoading] = useState(true)
+  const [isLocked, setIsLocked] = useState(true)
 
   useEffect(() => {
     const msgr = new Messenger<string, Message>(window.opener, window.location.origin)
@@ -66,6 +68,10 @@ export default function Accounts() {
     setSelectedAccounts([...selectedAccounts])
   }
 
+  const onUnlock = () => {
+    setIsLocked(false)
+  }
+
   const hasLoadedAccounts = selectedAccounts.length > 0
 
   const onClick = () => {
@@ -80,6 +86,7 @@ export default function Accounts() {
   return (
     <Box padding={{ base: 4, md: 8 }} minHeight='400px'>
       <Stack mt='6' spacing='3'>
+
         <Card>
           <CardHeader>
             <Heading size='md'>Accounts request</Heading>
@@ -92,7 +99,10 @@ export default function Accounts() {
               </Text>
               <Divider marginTop={4} marginBottom={4} />
               {
-                hasLoadedAccounts && wallets.map((wallet, walletIndex) => {
+                isLocked && <Unlock onUnlock={onUnlock} />
+              }
+              {
+                !isLocked && hasLoadedAccounts && wallets.map((wallet, walletIndex) => {
                   const allChecked = selectedAccounts[walletIndex].every(Boolean)
                   const isIndeterminate = selectedAccounts[walletIndex].some(Boolean) && !allChecked
 
@@ -131,10 +141,11 @@ export default function Accounts() {
           <CardFooter>
             <ButtonGroup>
               <Button disabled={isLoadingWallets || isLoading} onClick={close} colorScheme='red'>Cancel</Button>
-              <Button disabled={isLoadingWallets || isLoading} onClick={onClick} colorScheme='blue'>Confirm</Button>
+              <Button disabled={isLoadingWallets || isLoading || isLocked} onClick={onClick} colorScheme='blue'>Confirm</Button>
             </ButtonGroup>
           </CardFooter>
         </Card>
+
       </Stack>
     </Box>
   )
