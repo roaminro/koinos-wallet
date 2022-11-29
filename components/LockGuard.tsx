@@ -1,4 +1,4 @@
-import React, { useState, useEffect, ReactNode, ReactElement } from 'react'
+import React, { useState, useEffect, ReactNode, ReactElement, useCallback } from 'react'
 import { useRouter } from 'next/router'
 
 import { getSetting, setSetting } from '../util/Settings'
@@ -30,38 +30,9 @@ export default function RouteGuard({
     return false
   }
 
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      checkAutoLock()
-    }, 60000)
-
-    return () => clearInterval(interval)
-  }, [])
-
-  useEffect(() => {
-    // on initial load - run auth check 
-    authCheck(router.asPath)
-
-    // on route change start - hide page content by setting authorized to false  
-    const hideContent = () => setAuthorized(false)
-    router.events.on('routeChangeStart', hideContent)
-
-    // on route change complete - run auth check 
-    router.events.on('routeChangeComplete', authCheck)
-
-    // unsubscribe from events in useEffect return function
-    return () => {
-      router.events.off('routeChangeStart', hideContent)
-      router.events.off('routeChangeComplete', authCheck)
-    }
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
-
-  function authCheck(url: string) {
-    // redirect to unlock page if accessing a private page and not unlocked 
+  const authCheck = useCallback((url: string) => {
     const publicPaths = [
+      '/',
       '/unlock',
       '/welcome',
       '/create-wallet',
@@ -80,7 +51,42 @@ export default function RouteGuard({
     } else {
       setAuthorized(true)
     }
-  }
+  }, [router])
+
+
+  useEffect(() => {
+    console.log('start checkAutoLock')
+
+    let timeout: number
+    timeout = window.setTimeout(function cb() {
+      console.log('checkAutoLock')
+      authCheck(router.asPath)
+      timeout = window.setTimeout(cb, 5000)
+    }, 5000)
+
+    return () => {
+      console.log('clear checkAutoLock')
+      window.clearTimeout(timeout)
+    }
+  }, [authCheck, router])
+
+  useEffect(() => {
+    // on initial load - run auth check 
+    authCheck(router.asPath)
+
+    // on route change start - hide page content by setting authorized to false  
+    const hideContent = () => setAuthorized(false)
+    router.events.on('routeChangeStart', hideContent)
+
+    // on route change complete - run auth check 
+    router.events.on('routeChangeComplete', authCheck)
+
+    // unsubscribe from events in useEffect return function
+    return () => {
+      router.events.off('routeChangeStart', hideContent)
+      router.events.off('routeChangeComplete', authCheck)
+    }
+  }, [authCheck, router.asPath, router.events])
 
   return (
     <>
