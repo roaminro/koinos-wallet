@@ -25,12 +25,11 @@ export type OnMessageFnArgs<IncomingDataType> = {
 export type OnMessageFnType<IncomingDataType> = (args: OnMessageFnArgs<IncomingDataType>) => Promise<void> | void
 export type OnRequestFnType<IncomingDataType, OutgoingDataType> = (args: OnRequestFnArgs<IncomingDataType, OutgoingDataType>) => Promise<void> | void
 
-const CONNECTION_REQUEST_TYPE = 'messenger::connection::request'
-const CONNECTION_REQUEST_ACK_TYPE = 'messenger::connection::ack'
+const PING_REQUEST_TYPE = 'messenger::ping::request'
+const PING_REQUEST_ACK_TYPE = 'messenger::ping::ack'
 
 export class Messenger<IncomingDataType, OutgoingDataType> {
   private id: string
-  private targetId: string
   private target: Window
   private targetOrigin: string
   private onMessageFn?: OnMessageFnType<IncomingDataType>
@@ -38,9 +37,8 @@ export class Messenger<IncomingDataType, OutgoingDataType> {
   private onMessageListenerAdded: boolean
   private connectionCancelled: boolean
 
-  constructor(target: Window, targetOrigin = '*') {
-    this.id = crypto.randomUUID()
-    this.targetId = ''
+  constructor(target: Window, id: string, targetOrigin = '*') {
+    this.id = id
     this.target = target
     this.targetOrigin = targetOrigin
     this.onMessageListenerAdded = false
@@ -49,17 +47,16 @@ export class Messenger<IncomingDataType, OutgoingDataType> {
   }
 
   private onMessageListener = async (event: MessageEvent<IMessage>) => {
+    console.log('event', this.id, event.data)
     if (this.targetOrigin !== '*' && !this.targetOrigin.startsWith(event.origin)) return
 
     const { data, ports } = event
 
-    if (data.type !== CONNECTION_REQUEST_TYPE && data.to !== this.id) return
+    if (data.type !== PING_REQUEST_TYPE && data.to !== this.id) return
 
     if (data && ports && ports[0]) {
-      if (data.type === CONNECTION_REQUEST_TYPE) {
-        ports[0].postMessage({ type: CONNECTION_REQUEST_ACK_TYPE, data: this.id })
-        this.targetId = data.from
-        this.targetOrigin = event.origin
+      if (data.type === PING_REQUEST_TYPE) {
+        ports[0].postMessage({ type: PING_REQUEST_ACK_TYPE })
       } else if (this.onRequestFn) {
         await this.onRequestFn({
           sender: event.origin,
@@ -87,24 +84,23 @@ export class Messenger<IncomingDataType, OutgoingDataType> {
   private addMessageListener = () => {
     if (!this.onMessageListenerAdded) {
       this.onMessageListenerAdded = true
-      window.addEventListener('message', (event) => this.onMessageListener(event))
+      window.addEventListener('message', this.onMessageListener)
     }
   }
 
-  connect = async (numberOfAttempt: number = 20) => {
+  ping = async (targetId: string, numberOfAttempt: number = 20) => {
     if (this.connectionCancelled) {
       throw new Error('connection was cancelled')
     }
 
     try {
-      const targetId = await this._sendRequest({ type: CONNECTION_REQUEST_TYPE, from: this.id }, 500)
-      this.targetId = targetId as string
+      await this._sendRequest({ type: PING_REQUEST_TYPE, from: this.id, to: targetId }, 500)
     } catch (error) {
       if (--numberOfAttempt <= 0) {
-        throw new Error('could not connect to target')
+        throw new Error(`could not ping target "${targetId}"`)
       }
 
-      await this.connect(numberOfAttempt)
+      await this.ping(targetId, numberOfAttempt)
     }
   }
 
@@ -123,24 +119,16 @@ export class Messenger<IncomingDataType, OutgoingDataType> {
     }
   }
 
-  sendMessage = (message: OutgoingDataType) => this._sendMessage({ data: JSON.stringify(message), to: this.targetId, from: this.id })
+  sendMessage = (targetId: string, message: OutgoingDataType) => this._sendMessage({ data: JSON.stringify(message), to: targetId, from: this.id })
 
   private _sendMessage = (message: IMessage) => {
-    if (this.targetId === '') {
-      throw new Error('messenger is not connected, please call "connect" first')
-    }
     this.target.postMessage(message, this.targetOrigin)
   }
 
-  sendRequest = <MessageType>(message: MessageType, timeout = 10000) => this._sendRequest({ data: JSON.stringify(message), to: this.targetId, from: this.id }, timeout)
+  sendRequest = <MessageType>(targetId: string, message: MessageType, timeout = 10000) => this._sendRequest({ data: JSON.stringify(message), to: targetId, from: this.id }, timeout)
 
   private _sendRequest = (message: IMessage, timeout = 10000) => (
     new Promise((resolve, reject) => {
-      if (message.type !== CONNECTION_REQUEST_TYPE && this.targetId === '') {
-        reject('messenger is not connected, please call "connect" first')
-        return
-      }
-
       let requestTimeout: number
 
       const {

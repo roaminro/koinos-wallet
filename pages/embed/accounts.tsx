@@ -22,7 +22,7 @@ export default function Accounts() {
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    const msgr = new Messenger<string, IAccount[]>(window.opener, window.location.origin)
+    const msgr = new Messenger<string, IAccount[]>(window.opener, 'accounts-popup-child', window.location.origin)
     setMessenger(msgr)
 
     const setupMessenger = async () => {
@@ -31,7 +31,7 @@ export default function Accounts() {
         setIsLoading(false)
       })
 
-      await msgr.connect()
+      await msgr.ping('accounts-popup-parent')
       console.log('connected to parent iframe')
     }
 
@@ -89,7 +89,7 @@ export default function Accounts() {
       })
     })
 
-    messenger!.sendMessage(accounts)
+    messenger!.sendMessage('accounts-popup-parent', accounts)
   }
 
   const close = () => {

@@ -5,7 +5,7 @@ import { getSetting, setSetting } from '../util/Settings'
 import { debounce } from '../util/Utils'
 import { AUTOLOCK_DEADLINE_KEY, DEFAULT_AUTOLOCK_TIME_KEY } from '../util/Constants'
 
-export default function RouteGuard({
+export default function LockGuard({
   children,
 }: {
   children: ReactNode;

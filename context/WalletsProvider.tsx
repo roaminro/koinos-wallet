@@ -23,7 +23,7 @@ export const WalletsContext = createContext<WalletContextType>({
 export const useWallets = () => useContext(WalletsContext)
 
 export const WalletsProvider = ({
-  children,
+  children
 }: {
   children: ReactNode;
 }): JSX.Element => {
