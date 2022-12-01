@@ -30,24 +30,23 @@ const PING_REQUEST_ACK_TYPE = 'messenger::ping::ack'
 
 export class Messenger<IncomingDataType, OutgoingDataType> {
   private id: string
-  private target: Window
+  private target: Window | ServiceWorker
+  private isTargetWindow: boolean
   private targetOrigin: string
   private onMessageFn?: OnMessageFnType<IncomingDataType>
   private onRequestFn?: OnRequestFnType<IncomingDataType, OutgoingDataType>
   private onMessageListenerAdded: boolean
-  private connectionCancelled: boolean
 
-  constructor(target: Window, id: string, targetOrigin = '*') {
+  constructor(target: Window | ServiceWorker, id: string, isTargetWindow = true, targetOrigin = '*') {
     this.id = id
     this.target = target
+    this.isTargetWindow = isTargetWindow
     this.targetOrigin = targetOrigin
     this.onMessageListenerAdded = false
-    this.connectionCancelled = false
     this.addMessageListener()
   }
 
   private onMessageListener = async (event: MessageEvent<IMessage>) => {
-    console.log('event', this.id, event.data)
     if (this.targetOrigin !== '*' && !this.targetOrigin.startsWith(event.origin)) return
 
     const { data, ports } = event
@@ -84,13 +83,13 @@ export class Messenger<IncomingDataType, OutgoingDataType> {
   private addMessageListener = () => {
     if (!this.onMessageListenerAdded) {
       this.onMessageListenerAdded = true
-      window.addEventListener('message', this.onMessageListener)
+      self.addEventListener('message', this.onMessageListener)
     }
   }
 
   ping = async (targetId: string, numberOfAttempt: number = 20) => {
-    if (this.connectionCancelled) {
-      throw new Error('connection was cancelled')
+    if (!this.onMessageListenerAdded) {
+      throw new Error('ping was cancelled')
     }
 
     try {
@@ -113,16 +112,20 @@ export class Messenger<IncomingDataType, OutgoingDataType> {
   }
 
   removeListener = () => {
-    this.connectionCancelled = true
     if (this.onMessageListenerAdded) {
-      window.removeEventListener('message', this.onMessageListener)
+      this.onMessageListenerAdded = false
+      self.removeEventListener('message', this.onMessageListener)
     }
   }
 
   sendMessage = (targetId: string, message: OutgoingDataType) => this._sendMessage({ data: JSON.stringify(message), to: targetId, from: this.id })
 
   private _sendMessage = (message: IMessage) => {
-    this.target.postMessage(message, this.targetOrigin)
+    if (this.isTargetWindow) {
+      (this.target as Window).postMessage(message, this.targetOrigin)
+    } else {
+      (this.target as ServiceWorker).postMessage(message)
+    }
   }
 
   sendRequest = <MessageType>(targetId: string, message: MessageType, timeout = 10000) => this._sendRequest({ data: JSON.stringify(message), to: targetId, from: this.id }, timeout)
@@ -138,7 +141,7 @@ export class Messenger<IncomingDataType, OutgoingDataType> {
 
       port1.onmessage = (evt) => {
         if (requestTimeout) {
-          window.clearTimeout(requestTimeout)
+          self.clearTimeout(requestTimeout)
         }
         port1.close()
 
@@ -151,10 +154,15 @@ export class Messenger<IncomingDataType, OutgoingDataType> {
         }
       }
 
-      this.target.postMessage(message, this.targetOrigin, [port2])
+
+      if (this.isTargetWindow) {
+        (this.target as Window).postMessage(message, this.targetOrigin, [port2])
+      } else {
+        (this.target as ServiceWorker).postMessage(message, [port2])
+      }
 
       if (timeout) {
-        requestTimeout = window.setTimeout(() => {
+        requestTimeout = self.setTimeout(() => {
           reject('request timed out')
         }, timeout)
       }

@@ -35,7 +35,7 @@ export default function WalletConnector() {
 
             newWindow.onload = async () => {  //wait til load to add onunload event
               try {
-                const popupMsgr = new Messenger<IAccount[], string>(newWindow, 'accounts-popup-parent', window.location.origin)
+                const popupMsgr = new Messenger<IAccount[], string>(newWindow, 'accounts-popup-parent', true, window.location.origin)
                 newWindow.onunload = () => {
                   popupMsgr.removeListener()
                   sendError('request was cancelled')

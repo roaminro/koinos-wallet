@@ -22,7 +22,7 @@ export default function Accounts() {
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    const msgr = new Messenger<string, IAccount[]>(window.opener, 'accounts-popup-child', window.location.origin)
+    const msgr = new Messenger<string, IAccount[]>(window.opener, 'accounts-popup-child', true, window.location.origin)
     setMessenger(msgr)
 
     const setupMessenger = async () => {
@@ -96,6 +96,8 @@ export default function Accounts() {
     self.close()
   }
 
+  const hasSelectedOneAccount = selectedAccounts.some((wallet) => wallet.some(Boolean)) 
+
   return (
     <Box padding={{ base: 4, md: 8 }} minHeight='400px'>
       <Stack mt='6' spacing='3'>
@@ -151,7 +153,7 @@ export default function Accounts() {
           <CardFooter>
             <ButtonGroup>
               <Button onClick={close} colorScheme='red'>Cancel</Button>
-              <Button disabled={isLoadingWallets || isLoading} onClick={onClickConfirm} colorScheme='blue'>Confirm</Button>
+              <Button disabled={isLoadingWallets || isLoading || !hasSelectedOneAccount} onClick={onClickConfirm} colorScheme='blue'>Confirm</Button>
             </ButtonGroup>
           </CardFooter>
         </Card>
