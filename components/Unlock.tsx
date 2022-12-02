@@ -2,14 +2,14 @@ import { Button, FormControl, FormErrorMessage, FormHelperText, FormLabel, Input
 import { ChangeEvent, useEffect, useState } from 'react'
 import { useRouter } from 'next/router'
 
-import { usePasswordManager } from '../hooks/PasswordManager'
 import { getSetting, setSetting } from '../util/Settings'
-import { DEFAULT_AUTOLOCK_TIME_KEY } from '../util/Constants'
+import { AUTOLOCK_DEADLINE_KEY, DEFAULT_AUTOLOCK_TIME_KEY } from '../util/Constants'
+import { useWallets } from '../context/WalletsProvider'
+
 
 export default function Unlock() {
   const router = useRouter()
-
-  const { isLoadingPasswordManager, checkPassword } = usePasswordManager()
+  const { unlock } = useWallets()
 
   const [password, setPassword] = useState('')
   const [unlockTime, setUnlockTime] = useState(1)
@@ -32,9 +32,12 @@ export default function Unlock() {
   const onUnlockClick = async () => {
     setIsUnlocking(true)
     try {
-      await checkPassword(password)
+      await unlock(password)
 
       setSetting(DEFAULT_AUTOLOCK_TIME_KEY, unlockTime)
+
+      const unlockTimeDeadline = new Date().getTime() + (unlockTime * 60 * 1000)
+      setSetting(AUTOLOCK_DEADLINE_KEY, unlockTimeDeadline)
 
       const returnUrl = router.query.returnUrl || '/dashboard'
       router.push(returnUrl as string)
@@ -54,7 +57,7 @@ export default function Unlock() {
   }
 
   return (
-    <Skeleton isLoaded={!isLoading && !isLoadingPasswordManager}>
+    <Skeleton isLoaded={!isLoading}>
       <Stack
         borderWidth="thin"
         borderColor="inherit"

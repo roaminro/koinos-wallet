@@ -36,7 +36,7 @@ export default function Welcome() {
               <Stack mt='6' spacing='3'>
                 <Heading size='md'>Import an existing wallet</Heading>
                 <Text>
-                  Import an existing wallet if you already have a 12 words &quote;Secret Phrase&quote; available.
+                  Import an existing wallet if you already have a 12 words &quot;Secret Phrase&quot; available.
                 </Text>
               </Stack>
             </CardBody>

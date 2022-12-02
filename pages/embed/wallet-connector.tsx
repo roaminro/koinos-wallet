@@ -3,7 +3,7 @@ import { Messenger } from '../../util/Messenger'
 import { IAccount } from './accounts'
 
 interface IncomingMessage {
-  method: string
+  command: string
   arguments?: string
 }
 
@@ -20,14 +20,8 @@ export default function WalletConnector() {
     setMessenger(msgr)
 
     const setupMessenger = async () => {
-      msgr.onMessage(({ data, sender }) => {
-        console.log('msgr received', data)
-      })
-
       msgr.onRequest(async ({ sender, data, sendData, sendError }) => {
-        console.log('onRequest iframe', data)
-
-        if (data.method === 'getAccounts') {
+        if (data.command === 'get-accounts') {
           return new Promise((resolve) => {
             const params = 'popup=yes,scrollbars=no,resizable=yes,status=no,location=no,toolbar=no,menubar=no,width=400,height=500'
             const newWindow = window.open('/embed/accounts', 'Accounts', params)!
@@ -43,7 +37,6 @@ export default function WalletConnector() {
                 }
 
                 popupMsgr.onMessage(({ data: accounts }) => {
-                  console.log('popupMsgr received', accounts)
                   sendData({ result: accounts })
                   popupMsgr.removeListener()
                   newWindow.close()

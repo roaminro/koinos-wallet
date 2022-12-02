@@ -4,7 +4,7 @@ import { Messenger } from '../../util/Messenger'
 import { useWallets } from '../../context/WalletsProvider'
 import { truncateAccount } from '../../util/Utils'
 
-export interface IAccount {
+interface IAccount {
   name: string
   address: string
   signers: {
