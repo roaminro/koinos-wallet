@@ -128,10 +128,10 @@ export class Messenger<IncomingDataType, OutgoingDataType> {
     }
   }
 
-  sendRequest = <MessageType>(targetId: string, message: MessageType, timeout = 10000) => this._sendRequest({ data: JSON.stringify(message), to: targetId, from: this.id }, timeout)
+  sendRequest = (targetId: string, message: OutgoingDataType, timeout = 10000) => this._sendRequest({ data: JSON.stringify(message), to: targetId, from: this.id }, timeout)
 
   private _sendRequest = (message: IMessage, timeout = 10000) => (
-    new Promise((resolve, reject) => {
+    new Promise<IncomingDataType>((resolve, reject) => {
       let requestTimeout: number
 
       const {
@@ -150,7 +150,7 @@ export class Messenger<IncomingDataType, OutgoingDataType> {
         if (message.error) {
           reject(message.error)
         } else {
-          resolve(message.data)
+          resolve(message.data as IncomingDataType)
         }
       }
 

@@ -15,3 +15,5 @@ export const PUBLIC_PATHS = [
     '/import-wallet',
     '/embed/wallet-connector'
 ]
+
+export const VAULT_SERVICE_WORKER_ID = 'vault-connector-parent'

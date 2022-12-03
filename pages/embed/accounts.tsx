@@ -3,36 +3,31 @@ import { useEffect, useState } from 'react'
 import { Messenger } from '../../util/Messenger'
 import { useWallets } from '../../context/WalletsProvider'
 import { truncateAccount } from '../../util/Utils'
-
-interface IAccount {
-  name: string
-  address: string
-  signers: {
-    name: string,
-    address: string,
-  }[]
-}
+import { Account } from '../../util/Vault'
 
 export default function Accounts() {
-  const { wallets, isLoadingWallets } = useWallets()
+  const { wallets } = useWallets()
 
   const [sender, setSender] = useState('')
   const [selectedAccounts, setSelectedAccounts] = useState<boolean[][]>([])
-  const [messenger, setMessenger] = useState<Messenger<string, IAccount[]>>()
+  const [messenger, setMessenger] = useState<Messenger<string, Account[]|null>>()
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    const msgr = new Messenger<string, IAccount[]>(window.opener, 'accounts-popup-child', true, window.location.origin)
+    const msgr = new Messenger<string, Account[]|null>(window.opener, 'accounts-popup-child', true, window.location.origin)
     setMessenger(msgr)
 
     const setupMessenger = async () => {
       msgr.onMessage(({ data }) => {
-        setSender(data)
-        setIsLoading(false)
+        
       })
 
       await msgr.ping('accounts-popup-parent')
       console.log('connected to parent iframe')
+      const sender = await msgr.sendRequest('accounts-popup-parent', null)
+
+      setSender(sender)
+      setIsLoading(false)
     }
 
     setupMessenger()
@@ -46,7 +41,7 @@ export default function Accounts() {
 
   useEffect(() => {
     const accounts: boolean[][] = []
-
+    console.log('wallets', wallets)
     wallets.forEach((wallet, walletIndex) => {
       accounts.push([])
 
@@ -75,16 +70,12 @@ export default function Accounts() {
   const hasLoadedAccounts = selectedAccounts.length > 0
 
   const onClickConfirm = () => {
-    const accounts: IAccount[] = []
+    const accounts: Account[] = []
 
     wallets.forEach((wallet, walletIndex) => {
       wallet.accounts.forEach((account, accountIndex) => {
         if (selectedAccounts[walletIndex][accountIndex]) {
-          accounts.push({
-            name: '',
-            address: account.public.address,
-            signers: []
-          })
+          accounts.push(account)
         }
       })
     })
@@ -153,7 +144,7 @@ export default function Accounts() {
           <CardFooter>
             <ButtonGroup>
               <Button onClick={close} colorScheme='red'>Cancel</Button>
-              <Button disabled={isLoadingWallets || isLoading || !hasSelectedOneAccount} onClick={onClickConfirm} colorScheme='blue'>Confirm</Button>
+              <Button disabled={isLoading || !hasSelectedOneAccount} onClick={onClickConfirm} colorScheme='blue'>Confirm</Button>
             </ButtonGroup>
           </CardFooter>
         </Card>

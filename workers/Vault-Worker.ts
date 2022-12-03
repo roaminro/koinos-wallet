@@ -1,34 +1,49 @@
 import { Messenger } from '../util/Messenger'
+import { Vault } from '../util/Vault'
 
-interface IncomingMessage {
+export interface IncomingMessage {
   command: string
   arguments?: string
 }
 
-interface OutgoingMessage {
-  result: string
+export interface OutgoingMessage {
+  result?: string
 }
- 
-const messenger = new Messenger<number, number>(self, 'vault', false)
 
-let cnter = 0
+const messenger = new Messenger<IncomingMessage, OutgoingMessage>(self, 'vault-connector-parent', false)
 
+const vault = new Vault()
 
 messenger.onMessage(({ data, sender }) => {
-  // console.log('msgr received', data)
-
-  cnter++
-  console.log('cnter:', cnter, new Date().toLocaleString())
-  // setTimeout(() => {
-  //   console.log('timeout from worker')
-  // }, 2000)
+  console.log('Vault onMessage:', data)
 })
 
-messenger.onRequest(({ data, sender, sendData }) => {
-  console.log('request received', data)
-  cnter++
-  console.log('cnter:', cnter, new Date().toLocaleString())
-  sendData(cnter)
+messenger.onRequest(async ({ data, sender, sendData, sendError }) => {
+  console.log('Vault onRequest:', data)
+
+  try {
+    if (data.command === 'unlock') {
+      const { password, encryptedVault } = JSON.parse(data.arguments!)
+      const wallets = await vault.unlock(password, encryptedVault)
+      sendData({ result: JSON.stringify(wallets) })
+    } else if (data.command === 'lock') {
+      vault.lock()
+      sendData({})
+    } else if (data.command === 'addWallet') {
+      const { walletName, accountName, secretPhrase } = JSON.parse(data.arguments!)
+      const newWallets = await vault.addWallet(walletName, accountName, secretPhrase)
+      sendData({ result: JSON.stringify(newWallets) })
+    } else if (data.command === 'serialize') {
+      const { password } = JSON.parse(data.arguments!)
+      sendData({ result: await vault.serialize(password) })
+    } else if (data.command === 'isLocked') {
+      sendData({ result: JSON.stringify(vault.isLocked()) })
+    }
+
+    console.log('vault-state', vault)
+  } catch (error) {
+    sendError((error as Error).message)
+  }
 })
 
 

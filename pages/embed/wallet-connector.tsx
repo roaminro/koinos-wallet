@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Messenger } from '../../util/Messenger'
-import { IAccount } from './accounts'
+import { Account } from '../../util/Vault'
 
 interface IncomingMessage {
   command: string
@@ -8,16 +8,16 @@ interface IncomingMessage {
 }
 
 interface OutgoingMessage {
-  result: IAccount[]
+  result: Account[]
 }
 
 export default function WalletConnector() {
 
-  const [messenger, setMessenger] = useState<Messenger<IncomingMessage, OutgoingMessage>>()
+  const messenger = useRef<Messenger<IncomingMessage, OutgoingMessage>>()
 
   useEffect(() => {
     const msgr = new Messenger<IncomingMessage, OutgoingMessage>(parent.window, 'wallet-connector-child')
-    setMessenger(msgr)
+    messenger.current = msgr
 
     const setupMessenger = async () => {
       msgr.onRequest(async ({ sender, data, sendData, sendError }) => {
@@ -29,7 +29,7 @@ export default function WalletConnector() {
 
             newWindow.onload = async () => {  //wait til load to add onunload event
               try {
-                const popupMsgr = new Messenger<IAccount[], string>(newWindow, 'accounts-popup-parent', true, window.location.origin)
+                const popupMsgr = new Messenger<Account[], string>(newWindow, 'accounts-popup-parent', true, window.location.origin)
                 newWindow.onunload = () => {
                   popupMsgr.removeListener()
                   sendError('request was cancelled')
@@ -43,8 +43,9 @@ export default function WalletConnector() {
                   resolve()
                 })
 
-                await popupMsgr.ping('accounts-popup-child', 100)
-                popupMsgr.sendMessage('accounts-popup-child', sender)
+                popupMsgr.onRequest(({ sendData }) => {
+                  sendData(sender)
+                })
               } catch (error) {
                 sendError('request was cancelled')
                 resolve()

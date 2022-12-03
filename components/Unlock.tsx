@@ -43,7 +43,7 @@ export default function Unlock() {
       router.push(returnUrl as string)
     } catch (error) {
       console.error(error)
-      setUnlockError((error as Error).message)
+      setUnlockError(error as string)
     }
     setIsUnlocking(false)
   }
