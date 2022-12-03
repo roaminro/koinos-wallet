@@ -2,9 +2,9 @@ import '../styles/globals.css'
 import type { AppProps } from 'next/app'
 import { ChakraProvider } from '@chakra-ui/react'
 import Head from 'next/head'
-import LockGuard from '../components/LockGuard'
+import RouteGuard from '../components/RouteGuard'
 import { WalletsProvider } from '../context/WalletsProvider'
-import { useCallback, useEffect, useRef } from 'react'
+import { useEffect, useRef } from 'react'
 import { Messenger } from '../util/Messenger'
 
 export default function App({ Component, pageProps }: AppProps) {
@@ -22,6 +22,15 @@ export default function App({ Component, pageProps }: AppProps) {
     }
 
     let registration: ServiceWorkerRegistration
+
+    
+    let interval = window.setInterval(async () => {
+      const msgr = new Messenger<number, number>(workerRef.current?.active!, 'vault-connector-child', false)
+      // await msgr.ping('vault')
+      const res = await msgr.sendRequest('vault', 2)
+      console.log('res', res, new Date().toLocaleString())
+      document.title = `${res} / ${new Date().toLocaleString()}`
+    }, 20000)
 
     const registerServiceWorker = async () => {
 
@@ -68,6 +77,7 @@ export default function App({ Component, pageProps }: AppProps) {
     registerServiceWorker()
 
     return () => {
+      clearInterval(interval)
       if ('serviceWorker' in navigator) {
         console.log('unregistering')
         registration?.unregister()
@@ -75,18 +85,8 @@ export default function App({ Component, pageProps }: AppProps) {
     }
   }, [])
 
-  const handleWork = useCallback(async () => {
-    console.log('clicking')
-    const msgr = new Messenger<number, number>(workerRef.current?.active!, 'vault-connector-child', false)
-    await msgr.ping('vault')
-    console.log('connected to vault')
-    const res = await msgr.sendRequest('vault', 100000)
-    console.log('res', res)
-  }, [])
-
   return (
     <ChakraProvider>
-      <button onClick={handleWork}>Calculatef PI</button>
       <WalletsProvider>
         <Head>
           <title>Wallet</title>
@@ -95,9 +95,9 @@ export default function App({ Component, pageProps }: AppProps) {
             content="width=device-width, height=device-height, initial-scale=1.0, minimum-scale=1.0"
           />
         </Head>
-        <LockGuard>
+        <RouteGuard>
           <Component {...pageProps} />
-        </LockGuard>
+        </RouteGuard>
       </WalletsProvider>
     </ChakraProvider>
   )

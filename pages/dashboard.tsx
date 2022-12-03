@@ -1,8 +1,11 @@
+import { Box } from '@chakra-ui/react'
+import Nav from '../components/Nav'
 
 export default function Dashboard() {
   return (
-    <div>
+    <Box>
+      <Nav />
       DASHBOARD
-    </div>
+    </Box>
   )
 }
