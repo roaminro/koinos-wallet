@@ -38,6 +38,8 @@ messenger.onRequest(async ({ data, sender, sendData, sendError }) => {
       sendData({ result: await vault.serialize(password) })
     } else if (data.command === 'isLocked') {
       sendData({ result: JSON.stringify(vault.isLocked()) })
+    } else if (data.command === 'getAccounts') {
+      sendData({ result: JSON.stringify(vault.getAccounts()) })
     }
 
     console.log('vault-state', vault)

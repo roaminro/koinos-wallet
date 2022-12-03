@@ -2,7 +2,7 @@ import { ReactNode, useContext, useState, createContext, useEffect, useRef, useC
 import { useRouter } from 'next/router'
 
 import { AUTOLOCK_DEADLINE_KEY, DEFAULT_AUTOLOCK_TIME_KEY, PUBLIC_PATHS, VAULT_KEY, VAULT_SERVICE_WORKER_ID } from '../util/Constants'
-import { Vault, Wallet } from '../util/Vault'
+import {  Wallet } from '../util/Vault'
 import { getSetting, setSetting } from '../util/Settings'
 import { debounce } from '../util/Utils'
 import { Messenger } from '../util/Messenger'
@@ -15,6 +15,7 @@ type WalletContextType = {
   lock: () => Promise<void>
   addWallet: (password: string, walletName: string, accountName: string, secretPhrase: string) => Promise<void>
   isLocked: boolean
+  isLoading: boolean
   isVaultSetup: () => boolean
 }
 
@@ -24,6 +25,7 @@ export const WalletsContext = createContext<WalletContextType>({
   lock: () => new Promise((resolve) => resolve()),
   addWallet: (password: string, walletName: string, accountName: string, secretPhrase: string) => new Promise((resolve) => resolve()),
   isLocked: true,
+  isLoading: true,
   isVaultSetup: () => false,
 })
 
@@ -39,12 +41,12 @@ export const WalletsProvider = ({
 
   const [wallets, setWallets] = useState<Wallet[]>([])
   const [isLocked, setIsLocked] = useState(true)
-  // const vault = useRef<Vault>(new Vault())
+  const [isLoading, setIsLoading] = useState(true)
   const vaultServiceWorker = useRef<ServiceWorkerRegistration>()
   const vaultMessenger = useRef<Messenger<OutgoingMessage, IncomingMessage>>()
 
   useEffect(() => {
-    if (isLocked) {
+    if (!isLoading && isLocked) {
       const path = router.asPath.split('?')[0]
       if (!PUBLIC_PATHS.includes(path)) {
         router.push({
@@ -53,7 +55,7 @@ export const WalletsProvider = ({
         })
       }
     }
-  }, [isLocked, router])
+  }, [isLoading, isLocked, router])
 
   const unlock = async (password: string) => {
     const encryptedVault = localStorage.getItem(VAULT_KEY)
@@ -149,17 +151,19 @@ export const WalletsProvider = ({
     }, 20000)
 
     const setup = async () => {
+      setIsLoading(true)
       if ('serviceWorker' in navigator) {
         try {
           registration = await navigator.serviceWorker.register(new URL('../workers/Vault-Worker.ts', import.meta.url))
 
           registration.addEventListener('updatefound', () => {
-            console.log('A new Vault worker is being installed')
-            registration.installing?.addEventListener('statechange', () => {
-              if ('installed' === registration.installing?.state) {
-                console.log('Done installing new Vault worker')
-              }
-            })
+            console.log('A new Vault worker version was found')
+          })
+
+          registration.installing?.addEventListener('statechange', () => {
+            if ('installed' === registration.installing?.state) {
+              console.log('Done installing new Vault worker')
+            }
           })
 
           if (registration.installing) {
@@ -172,17 +176,32 @@ export const WalletsProvider = ({
             // when in development mode
             // the service worker doesn't get updated automatically, so force it
             if (process.env.NODE_ENV === 'development') {
-              console.log('Vault worker updating')
-              await registration.update()
+              // console.log('Vault worker updating')
+              // await registration.update()
             }
           }
-
-          console.log('Vault worker ready')
 
           vaultServiceWorker.current = registration
 
           msgr = new Messenger<OutgoingMessage, IncomingMessage>(registration.active!, 'vault-connector-child', false)
           vaultMessenger.current = msgr
+
+          const { result: isLockedResult } = await msgr.sendRequest(VAULT_SERVICE_WORKER_ID, {
+            command: 'isLocked'
+          })
+      
+          // get accounts if already unlocked
+          if (!JSON.parse(isLockedResult!)) {
+            const { result: getAccountsResult } = await msgr.sendRequest(VAULT_SERVICE_WORKER_ID, {
+              command: 'getAccounts'
+            })
+
+            setWallets([...JSON.parse(getAccountsResult!)])
+
+            setIsLocked(false)
+          }
+
+          setIsLoading(false)
 
         } catch (error) {
           console.error(`Vault worker registration failed with ${error}`)
@@ -196,10 +215,10 @@ export const WalletsProvider = ({
       clearTimeout(timeout)
       msgr?.removeListener()
 
-      if ('serviceWorker' in navigator) {
-        console.log('Unregistering Vault worker')
-        // registration?.unregister()
-      }
+      // if ('serviceWorker' in navigator) {
+      //   console.log('Unregistering Vault worker')
+      //   registration?.unregister()
+      // }
     }
   }, [])
 
@@ -229,8 +248,6 @@ export const WalletsProvider = ({
 
     const newWallets = JSON.parse(addWalletResult!)
 
-    console.log('newWallets', newWallets)
-
     // save vault to localstorage
     const { result: serializedVault } = await vaultMessenger.current!.sendRequest(VAULT_SERVICE_WORKER_ID, {
       command: 'serialize',
@@ -246,7 +263,7 @@ export const WalletsProvider = ({
   }
 
   return (
-    <WalletsContext.Provider value={{ wallets, unlock, lock, addWallet, isLocked, isVaultSetup }}>
+    <WalletsContext.Provider value={{ wallets, unlock, lock, addWallet, isLoading, isLocked, isVaultSetup }}>
       {children}
     </WalletsContext.Provider>
   )
