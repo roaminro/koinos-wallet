@@ -3,14 +3,7 @@ import { useEffect, useState } from 'react'
 import { Messenger } from '../../util/Messenger'
 import { useWallets } from '../../context/WalletsProvider'
 import { truncateAccount } from '../../util/Utils'
-import { Account } from '../../util/Vault'
-
-export interface IAccount {
-  address: string
-  signers: {
-    address: string,
-  }[]
-}
+import { IAccount } from '../../wallet_connector_handlers/accountsHandler'
 
 export default function Accounts() {
   const { wallets } = useWallets()
