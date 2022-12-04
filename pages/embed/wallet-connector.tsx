@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { Messenger } from '../../util/Messenger'
 import { Account } from '../../util/Vault'
+import { useWallets } from '../../context/WalletsProvider'
 
 interface IncomingMessage {
   command: string
@@ -12,6 +13,7 @@ interface OutgoingMessage {
 }
 
 export default function WalletConnector() {
+  const { isVaultSetup } = useWallets()
 
   const messenger = useRef<Messenger<IncomingMessage, OutgoingMessage>>()
 
@@ -21,7 +23,10 @@ export default function WalletConnector() {
 
     const setupMessenger = async () => {
       msgr.onRequest(async ({ sender, data, sendData, sendError }) => {
-        if (data.command === 'get-accounts') {
+        if (!isVaultSetup()) {
+          window.open('/welcome', '_blank')
+          sendError('wallet not setup')
+        } else if (data.command === 'get-accounts') {
           return new Promise((resolve) => {
             const params = 'popup=yes,scrollbars=no,resizable=yes,status=no,location=no,toolbar=no,menubar=no,width=400,height=500'
             const newWindow = window.open('/embed/accounts', 'Accounts', params)!

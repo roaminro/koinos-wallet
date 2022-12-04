@@ -9,7 +9,7 @@ import { useWallets } from '../context/WalletsProvider'
 
 export default function Unlock() {
   const router = useRouter()
-  const { unlock } = useWallets()
+  const { unlock, isLocked } = useWallets()
 
   const [password, setPassword] = useState('')
   const [unlockTime, setUnlockTime] = useState(1)
@@ -19,6 +19,11 @@ export default function Unlock() {
 
 
   useEffect(() => {
+    if (!isLocked) {
+      const returnUrl = router.query.returnUrl || '/dashboard'
+      router.push(returnUrl as string)
+    }
+  
     const defaultUnlockTime = getSetting<number>(DEFAULT_AUTOLOCK_TIME_KEY)
 
     if (defaultUnlockTime) {
@@ -26,7 +31,7 @@ export default function Unlock() {
     }
 
     setIsLoading(false)
-  }, [])
+  }, [isLocked, router])
 
 
   const onUnlockClick = async () => {

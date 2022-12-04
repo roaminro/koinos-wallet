@@ -98,6 +98,7 @@ export const WalletsProvider = ({
     }
 
     if (!isLocked && shouldLock) {
+      debug('auto-locking application')
       await lock()
     }
 
@@ -148,7 +149,8 @@ export const WalletsProvider = ({
         await msgr?.ping(VAULT_SERVICE_WORKER_ID)
         debug('Vault worker alive')
       } catch (error) {
-        debug('Vault worker offline')
+        debug('Vault worker offline, reloading...')
+        window.location.reload()
       }
       timeout = window.setTimeout(cb, 20000)
     }, 20000)
@@ -159,7 +161,7 @@ export const WalletsProvider = ({
         try {
           registration = await navigator.serviceWorker.register(new URL('../workers/Vault-Worker.ts', import.meta.url))
 
-          registration.addEventListener('updatefound', () => {
+          registration.addEventListener('updatefound', async () => {
             debug('A new Vault worker version was found')
             registration.installing?.addEventListener('statechange', () => {
               if (registration.waiting) {
@@ -167,9 +169,6 @@ export const WalletsProvider = ({
                 // we now may invoke our update UX safely
                 debug('Vault worker updated, refreshing...')
                 window.location.reload()
-              } else {
-                // apparently installation must have failed (SW state is 'redundant')
-                // it makes no sense to think about this update any more
               }
             })
           })
@@ -188,13 +187,6 @@ export const WalletsProvider = ({
             })
           } else if (registration.active) {
             debug('Vault worker active')
-
-            // when in development mode
-            // the service worker doesn't get updated automatically, so force it
-            if (process.env.NODE_ENV === 'development') {
-              debug('Vault worker updating')
-              await registration.update()
-            }
           }
 
           const { result: isLockedResult } = await msgr.sendRequest(VAULT_SERVICE_WORKER_ID, {
@@ -225,11 +217,6 @@ export const WalletsProvider = ({
     return () => {
       clearTimeout(timeout)
       msgr?.removeListener()
-
-      // if ('serviceWorker' in navigator) {
-      //   console.log('Unregistering Vault worker')
-      //   registration?.unregister()
-      // }
     }
   }, [])
 
