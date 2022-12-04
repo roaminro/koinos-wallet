@@ -1,3 +1,5 @@
+import { logLevel } from '../app.config'
+
 const CHARS = new Set('_-0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ')
 export const isAlphanumeric = (str: string) => {
   for (let i = 0, len = str.length; i < len; i++) {
@@ -29,3 +31,15 @@ export const debounce = (fn: Function, ms = 500) => {
 }
 
 export const truncateAccount = (account: string) => `${account.substring(0, 4)}...${account.substring(account.length - 4)}`
+
+export const debug = (...args: any) => {
+  if (logLevel === 'debug') {
+    console.log(...args)
+  }
+}
+
+export const info = (...args: any) => {
+  if (logLevel === 'info') {
+    console.log(...args)
+  }
+}

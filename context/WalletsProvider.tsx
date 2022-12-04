@@ -2,9 +2,9 @@ import { ReactNode, useContext, useState, createContext, useEffect, useRef, useC
 import { useRouter } from 'next/router'
 
 import { AUTOLOCK_DEADLINE_KEY, DEFAULT_AUTOLOCK_TIME_KEY, PUBLIC_PATHS, VAULT_KEY, VAULT_SERVICE_WORKER_ID } from '../util/Constants'
-import {  Wallet } from '../util/Vault'
+import { Wallet } from '../util/Vault'
 import { getSetting, setSetting } from '../util/Settings'
-import { debounce } from '../util/Utils'
+import { debounce, debug } from '../util/Utils'
 import { Messenger } from '../util/Messenger'
 import { IncomingMessage, OutgoingMessage } from '../workers/Vault-Worker'
 
@@ -70,7 +70,6 @@ export const WalletsProvider = ({
       })
 
       const wallets = JSON.parse(result!)
-      console.log(wallets)
       setIsLocked(false)
       setWallets([...wallets])
     }
@@ -144,9 +143,13 @@ export const WalletsProvider = ({
     let msgr: Messenger<OutgoingMessage, IncomingMessage>
 
     let timeout = window.setTimeout(async function cb() {
-      console.log('vault start ping')
-      await msgr?.ping(VAULT_SERVICE_WORKER_ID)
-      console.log('vault keep alive')
+      try {
+        debug('Vault worker ping')
+        await msgr?.ping(VAULT_SERVICE_WORKER_ID)
+        debug('Vault worker alive')
+      } catch (error) {
+        debug('Vault worker offline')
+      }
       timeout = window.setTimeout(cb, 20000)
     }, 20000)
 
@@ -157,39 +160,47 @@ export const WalletsProvider = ({
           registration = await navigator.serviceWorker.register(new URL('../workers/Vault-Worker.ts', import.meta.url))
 
           registration.addEventListener('updatefound', () => {
-            console.log('A new Vault worker version was found')
+            debug('A new Vault worker version was found')
+            registration.installing?.addEventListener('statechange', () => {
+              if (registration.waiting) {
+                // our new instance is now waiting for activation (its state is 'installed')
+                // we now may invoke our update UX safely
+                debug('Vault worker updated, refreshing...')
+                window.location.reload()
+              } else {
+                // apparently installation must have failed (SW state is 'redundant')
+                // it makes no sense to think about this update any more
+              }
+            })
           })
-
-          registration.installing?.addEventListener('statechange', () => {
-            if ('installed' === registration.installing?.state) {
-              console.log('Done installing new Vault worker')
-            }
-          })
-
-          if (registration.installing) {
-            console.log('Vault worker installing')
-          } else if (registration.waiting) {
-            console.log('Vault worker installed')
-          } else if (registration.active) {
-            console.log('Vault worker active')
-
-            // when in development mode
-            // the service worker doesn't get updated automatically, so force it
-            if (process.env.NODE_ENV === 'development') {
-              // console.log('Vault worker updating')
-              // await registration.update()
-            }
-          }
 
           vaultServiceWorker.current = registration
 
           msgr = new Messenger<OutgoingMessage, IncomingMessage>(registration.active!, 'vault-connector-child', false)
           vaultMessenger.current = msgr
 
+          if (registration.installing) {
+            debug('Vault worker installing')
+          } else if (registration.waiting) {
+            debug('Vault worker installed')
+            msgr.sendMessage(VAULT_SERVICE_WORKER_ID, {
+              command: 'skipWaiting'
+            })
+          } else if (registration.active) {
+            debug('Vault worker active')
+
+            // when in development mode
+            // the service worker doesn't get updated automatically, so force it
+            if (process.env.NODE_ENV === 'development') {
+              debug('Vault worker updating')
+              await registration.update()
+            }
+          }
+
           const { result: isLockedResult } = await msgr.sendRequest(VAULT_SERVICE_WORKER_ID, {
             command: 'isLocked'
           })
-      
+
           // get accounts if already unlocked
           if (!JSON.parse(isLockedResult!)) {
             const { result: getAccountsResult } = await msgr.sendRequest(VAULT_SERVICE_WORKER_ID, {

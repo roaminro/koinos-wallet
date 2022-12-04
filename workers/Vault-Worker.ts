@@ -1,5 +1,12 @@
 import { Messenger } from '../util/Messenger'
 import { Vault } from '../util/Vault'
+import { vaultWorkerLogLevel } from '../app.config'
+
+const debug = (...args: any) => {
+  if (vaultWorkerLogLevel === 'debug') {
+    console.log(...args)
+  }
+}
 
 export interface IncomingMessage {
   command: string
@@ -15,11 +22,15 @@ const messenger = new Messenger<IncomingMessage, OutgoingMessage>(self, 'vault-c
 const vault = new Vault()
 
 messenger.onMessage(({ data, sender }) => {
-  console.log('Vault onMessage:', data)
+  debug('Vault onMessage:', data)
+  if (data.command === 'skipWaiting') {
+    //@ts-ignore
+    self.skipWaiting()
+  }
 })
 
 messenger.onRequest(async ({ data, sender, sendData, sendError }) => {
-  console.log('Vault onRequest:', data)
+  debug('Vault onRequest:', data)
 
   try {
     if (data.command === 'unlock') {
@@ -42,7 +53,7 @@ messenger.onRequest(async ({ data, sender, sendData, sendError }) => {
       sendData({ result: JSON.stringify(vault.getAccounts()) })
     }
 
-    console.log('vault-state', vault)
+    debug('vault-state', vault)
   } catch (error) {
     sendError((error as Error).message)
   }
@@ -50,7 +61,7 @@ messenger.onRequest(async ({ data, sender, sendData, sendError }) => {
 
 
 self.addEventListener('install', (event) => {
-  console.log('installing a new version of the Vault')
+  debug('installing a new version of the Vault')
   //@ts-ignore
   self.skipWaiting()
 })
