@@ -5,16 +5,23 @@ import { useWallets } from '../../context/WalletsProvider'
 import { truncateAccount } from '../../util/Utils'
 import { Account } from '../../util/Vault'
 
+export interface IAccount {
+  address: string
+  signers: {
+    address: string,
+  }[]
+}
+
 export default function Accounts() {
   const { wallets } = useWallets()
 
   const [sender, setSender] = useState('')
   const [selectedAccounts, setSelectedAccounts] = useState<boolean[][]>([])
-  const [messenger, setMessenger] = useState<Messenger<string, Account[]|null>>()
+  const [messenger, setMessenger] = useState<Messenger<string, IAccount[]|null>>()
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    const msgr = new Messenger<string, Account[]|null>(window.opener, 'accounts-popup-child', true, window.location.origin)
+    const msgr = new Messenger<string, IAccount[]|null>(window.opener, 'accounts-popup-child', true, window.location.origin)
     setMessenger(msgr)
 
     const setupMessenger = async () => {
@@ -70,12 +77,23 @@ export default function Accounts() {
   const hasLoadedAccounts = selectedAccounts.length > 0
 
   const onClickConfirm = () => {
-    const accounts: Account[] = []
+    const accounts: IAccount[] = []
 
     wallets.forEach((wallet, walletIndex) => {
       wallet.accounts.forEach((account, accountIndex) => {
         if (selectedAccounts[walletIndex][accountIndex]) {
-          accounts.push(account)
+          const acct: IAccount = {
+            address: account.public.address,
+            signers: []
+          } 
+
+          account.signers.forEach(signer => {
+            acct.signers.push({
+              address: signer.public.address
+            })
+          })
+
+          accounts.push(acct)
         }
       })
     })
