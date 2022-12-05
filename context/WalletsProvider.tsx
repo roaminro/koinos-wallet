@@ -6,7 +6,7 @@ import { Wallet, Account } from '../util/Vault'
 import { getSetting, setSetting } from '../util/Settings'
 import { debounce, debug } from '../util/Utils'
 import { Messenger } from '../util/Messenger'
-import { AddAccountArguments, AddAccountResult, AddWalletArguments, AddWalletResult, GetAccountsResult, ImportAccountArguments, ImportAccountResult, IncomingMessage, IsLockedResult, OutgoingMessage, SerializeResult, UnlockArguments, UnlockResult } from '../workers/Vault-Worker'
+import { AddAccountArguments, AddAccountResult, AddWalletArguments, AddWalletResult, GetAccountsResult, ImportAccountArguments, ImportAccountResult, IncomingMessage, IsLockedResult, OutgoingMessage, SerializeResult, UnlockArguments, UnlockResult } from '../workers/Vault-Worker-Interfaces'
 
 
 type WalletContextType = {
@@ -50,6 +50,12 @@ export const WalletsProvider = ({
   const [isLoading, setIsLoading] = useState(true)
   const vaultServiceWorker = useRef<ServiceWorkerRegistration>()
   const vaultMessenger = useRef<Messenger<OutgoingMessage, IncomingMessage>>()
+
+  useEffect(() => {
+    if (isVaultSetup() && !isLocked && !isLoading) {
+      saveVault()
+    }
+  }, [isLocked, isLoading, wallets])
 
   useEffect(() => {
     if (!isLoading && isLocked) {

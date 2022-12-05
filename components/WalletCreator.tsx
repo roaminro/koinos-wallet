@@ -15,10 +15,9 @@ interface WalletCreateProps {
 export default function WalletCreator({ importingSecretRecoveryPhrase = false }: WalletCreateProps) {
   const router = useRouter()
   const toast = useToast()
-  const { addWallet, addAccount, saveVault } = useWallets()
+  const { addWallet } = useWallets()
 
   const [walletName, setWalletName] = useState('')
-  const [accountName, setAccountName] = useState('')
   const [secretRecoveryPhrase, setSecretRecoveryPhrase] = useState('')
   const [isSecretRecoveryPhraseSaved, setIsSecretRecoveryPhraseSaved] = useState(false)
   const [secretRecoveryPhraseConfirmation, setSecretRecoveryPhraseConfirmation] = useState<string[]>([])
@@ -45,10 +44,6 @@ export default function WalletCreator({ importingSecretRecoveryPhrase = false }:
     setWalletName(e.target.value)
   }
 
-  const handleAccountNameChange = (e: ChangeEvent<HTMLInputElement>) => {
-    setAccountName(e.target.value)
-  }
-
   const handleSavedSecretRecoveryPhraseChange = (e: ChangeEvent<HTMLInputElement>) => {
     setIsSecretRecoveryPhraseSaved(e.target.checked)
     setRandomizedSecretRecoveryPhraseWords(secretRecoveryPhrase.split(' ').sort(() => Math.random() - 0.5))
@@ -70,12 +65,12 @@ export default function WalletCreator({ importingSecretRecoveryPhrase = false }:
 
     try {
       const newWallet = await addWallet(walletName, secretRecoveryPhrase)
-      await addAccount(newWallet.index, accountName)
-      await saveVault()
 
       setSecretRecoveryPhrase('')
       setSecretRecoveryPhraseWords([])
       setRandomizedSecretRecoveryPhraseWords([])
+
+      router.push(`/add-account/${newWallet.index}`)
 
       toast({
         title: 'Wallet successfully created',
@@ -83,8 +78,6 @@ export default function WalletCreator({ importingSecretRecoveryPhrase = false }:
         status: 'success',
         isClosable: true,
       })
-
-      router.push('/dashboard')
     } catch (error) {
       console.error(error)
       toast({
@@ -99,7 +92,6 @@ export default function WalletCreator({ importingSecretRecoveryPhrase = false }:
   }
 
   const isWalletNameInvalid = walletName.length < 1 || !isAlphanumeric(walletName)
-  const isAccountNameInvalid = accountName.length < 1 || !isAlphanumeric(accountName)
   // if we are importing a seed phrase, then just check the number of words entered
   const isSecretRecoveryPhraseConfirmed = importingSecretRecoveryPhrase ? secretRecoveryPhrase.split(' ').length === 12 : equalArray(secretRecoveryPhraseWords, secretRecoveryPhraseConfirmation)
 
@@ -108,12 +100,10 @@ export default function WalletCreator({ importingSecretRecoveryPhrase = false }:
   if (importingSecretRecoveryPhrase) {
     isCreateImportButtonDisabled =
       isWalletNameInvalid
-      || isAccountNameInvalid
       || !isSecretRecoveryPhraseConfirmed
   } else {
     isCreateImportButtonDisabled =
       isWalletNameInvalid
-      || isAccountNameInvalid
       || !isSecretRecoveryPhraseSaved
       || !isSecretRecoveryPhraseConfirmed
   }
@@ -140,14 +130,6 @@ export default function WalletCreator({ importingSecretRecoveryPhrase = false }:
                   <FormHelperText>The wallet name is an easy way for you to identify a wallet.</FormHelperText>
                   {
                     isWalletNameInvalid && <FormErrorMessage>The wallet name must be at least 1 character and can only composed of the following characters (_-[0-9][a-z][A-Z]).</FormErrorMessage>
-                  }
-                </FormControl>
-                <FormControl isRequired isInvalid={isAccountNameInvalid}>
-                  <FormLabel>Account Name</FormLabel>
-                  <Input value={accountName} onChange={handleAccountNameChange} />
-                  <FormHelperText>The account name is an easy way for you to identify an account.</FormHelperText>
-                  {
-                    isAccountNameInvalid && <FormErrorMessage>The account name must be at least 1 character and can only composed of the following characters (_-[0-9][a-z][A-Z]).</FormErrorMessage>
                   }
                 </FormControl>
                 {

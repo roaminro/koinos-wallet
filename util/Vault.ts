@@ -53,24 +53,24 @@ export class Vault {
 
     if (encryptedVault) {
       this.vault = await decrypt(password, encryptedVault) as Wallet[]
-  
+
       this.vault.forEach((wallet, walletIndex) => {
         const publicWallet: Wallet = {
           name: wallet.name,
           index: walletIndex,
           accounts: []
         }
-  
+
         wallet.accounts.forEach((account, accountIndex) => {
           const signers: Signer[] = []
-  
+
           account.signers.forEach((signer) => signers.push({
             public: {
               name: signer.public.name,
               address: signer.public.address
             }
           }))
-  
+
           publicWallet.accounts.push({
             public: {
               name: account.public.name,
@@ -80,7 +80,7 @@ export class Vault {
             signers
           })
         })
-  
+
         this.publicVault.push(publicWallet)
       })
     }
@@ -103,13 +103,17 @@ export class Vault {
   }
 
   async checkPassword(password: string) {
+    this.checkVaultUnlocked()
+
     if (password !== this.password) {
       throw new Error('invalid password')
-      
+
     }
   }
 
   async serialize() {
+    this.checkVaultUnlocked()
+
     return await encrypt(this.password, this.vault)
   }
 
@@ -119,16 +123,16 @@ export class Vault {
     }
   }
 
-  private getLastAccountKeyPath(walletIndex: number) {
+  private getNextAccountIndex(walletIndex: number) {
     for (let index = this.vault[walletIndex].accounts.length - 1; index >= 0; index--) {
       const account = this.vault[walletIndex].accounts[index]
 
       if (account.public.keyPath) {
-        account.public.keyPath
+        return parseInt(HDKoinos.parsePath(account.public.keyPath).accountIndex) + 1
       }
     }
 
-    return "m/44'/659'/0'/0/0"
+    return 0
   }
 
   getWalletSecretRecoveryPhrase(walletIndex: number) {
@@ -178,6 +182,44 @@ export class Vault {
     return publicWallet
   }
 
+  updateWalletName(walletIndex: number, walletName: string) {
+    this.checkVaultUnlocked()
+
+    if (walletIndex >= this.vault.length) {
+      throw new Error(`no wallet present at index ${walletIndex}`)
+    }
+
+    this.vault[walletIndex].name = walletName
+    this.publicVault[walletIndex].name = walletName
+
+    return this.publicVault[walletIndex]
+  }
+
+  removeWallet(walletIndex: number) {
+    this.checkVaultUnlocked()
+
+    if (walletIndex >= this.vault.length) {
+      throw new Error(`no wallet present at index ${walletIndex}`)
+    }
+
+    for (let index = 0; index < this.vault.length; index++) {
+      if (index > walletIndex) {
+        this.vault[index].index -= 1
+      }
+    }
+
+    for (let index = 0; index < this.publicVault.length; index++) {
+      if (index > walletIndex) {
+        this.publicVault[index].index -= 1
+      }
+    }
+
+    this.vault.splice(walletIndex, 1)
+    this.publicVault.splice(walletIndex, 1)
+
+    return this.publicVault
+  }
+
   addAccount(walletIndex: number, accountName: string) {
     this.checkVaultUnlocked()
 
@@ -185,8 +227,7 @@ export class Vault {
       throw new Error(`no wallet present at index ${walletIndex}`)
     }
 
-    const lastAccountKeyPath = this.getLastAccountKeyPath(walletIndex)
-    const accountKeyIndex = parseInt(HDKoinos.parsePath(lastAccountKeyPath).accountIndex) + 1
+    const accountKeyIndex = this.getNextAccountIndex(walletIndex)
 
     const hdKoinos = new HDKoinos(this.vault[walletIndex].secretRecoveryPhrase!)
     const account = hdKoinos.deriveKeyAccount(accountKeyIndex, accountName)
@@ -214,6 +255,52 @@ export class Vault {
     this.publicVault[walletIndex].accounts.push(publicAccount)
 
     return publicAccount
+  }
+
+  updateAccountName(walletIndex: number, accountIndex: number, accountName: string) {
+    this.checkVaultUnlocked()
+
+    if (walletIndex >= this.vault.length) {
+      throw new Error(`no wallet present at index ${walletIndex}`)
+    }
+
+    if (accountIndex >= this.vault[walletIndex].accounts.length) {
+      throw new Error(`no account present at index ${accountIndex}`)
+    }
+
+    this.vault[walletIndex].accounts[accountIndex].public.name = accountName
+    this.publicVault[walletIndex].accounts[accountIndex].public.name = accountName
+
+    return this.publicVault[walletIndex].accounts[accountIndex]
+  }
+
+  removeAccount(walletIndex: number, accountIndex: number) {
+    this.checkVaultUnlocked()
+
+    if (walletIndex >= this.vault.length) {
+      throw new Error(`no wallet present at index ${walletIndex}`)
+    }
+
+    if (accountIndex >= this.vault[walletIndex].accounts.length) {
+      throw new Error(`no account present at index ${accountIndex}`)
+    }
+
+    for (let index = 0; index < this.vault[walletIndex].accounts.length; index++) {
+      if (index > accountIndex) {
+        this.vault[walletIndex].accounts[index].public.index -= 1
+      }
+    }
+
+    for (let index = 0; index < this.publicVault[walletIndex].accounts.length; index++) {
+      if (index > accountIndex) {
+        this.publicVault[walletIndex].accounts[index].public.index -= 1
+      }
+    }
+
+    this.vault[walletIndex].accounts.splice(accountIndex, 1)
+    this.publicVault[walletIndex].accounts.splice(accountIndex, 1)
+
+    return this.publicVault[walletIndex]
   }
 
   importAccount(walletIndex: number, accountName: string, accountPrivateKey: string) {
@@ -250,6 +337,44 @@ export class Vault {
     this.publicVault[walletIndex].accounts.push(publicAccount)
 
     return publicAccount
+  }
+
+  addAccountSigners(walletIndex: number, accountIndex: number, signers: Signer[]) {
+    this.checkVaultUnlocked()
+
+    if (walletIndex >= this.vault.length) {
+      throw new Error(`no wallet present at index ${walletIndex}`)
+    }
+
+    if (accountIndex >= this.vault[walletIndex].accounts.length) {
+      throw new Error(`no account present at index ${accountIndex}`)
+    }
+
+    this.vault[walletIndex].accounts[accountIndex].signers.push(...signers)
+    this.publicVault[walletIndex].accounts[accountIndex].signers.push(...signers)
+
+    return  this.publicVault[walletIndex].accounts[accountIndex]
+  }
+
+  removeAccountSigner(walletIndex: number, accountIndex: number, signerIndex: number) {
+    this.checkVaultUnlocked()
+
+    if (walletIndex >= this.vault.length) {
+      throw new Error(`no wallet present at index ${walletIndex}`)
+    }
+
+    if (accountIndex >= this.vault[walletIndex].accounts.length) {
+      throw new Error(`no account present at index ${accountIndex}`)
+    }
+
+    if (signerIndex >= this.vault[walletIndex].accounts[accountIndex].signers.length) {
+      throw new Error(`no signer present at index ${signerIndex}`)
+    }
+
+    this.vault[walletIndex].accounts[accountIndex].signers.splice(signerIndex, 1)
+    this.publicVault[walletIndex].accounts[accountIndex].signers.splice(signerIndex, 1)
+
+    return  this.publicVault[walletIndex].accounts[accountIndex]
   }
 
   getAccounts() {
