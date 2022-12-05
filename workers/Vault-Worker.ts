@@ -57,8 +57,8 @@ messenger.onRequest(async ({ data, sender, sendData, sendError }) => {
       }
 
       case 'importAccount': {
-        const { walletIndex, accountName, accountPrivateKey } = data.arguments as ImportAccountArguments
-        sendData({ result: vault.importAccount(walletIndex, accountName, accountPrivateKey) })
+        const { walletIndex, accountName, accountAddress, accountPrivateKey } = data.arguments as ImportAccountArguments
+        sendData({ result: vault.importAccount(walletIndex, accountName, accountAddress, accountPrivateKey) })
         break
       }
 

@@ -22,7 +22,7 @@ export interface Account {
   }
 
   private?: {
-    privateKey: string
+    privateKey?: string
   }
 
   signers: Signer[]
@@ -303,7 +303,7 @@ export class Vault {
     return this.publicVault[walletIndex]
   }
 
-  importAccount(walletIndex: number, accountName: string, accountPrivateKey: string) {
+  importAccount(walletIndex: number, accountName: string, accountAddress: string, accountPrivateKey?: string) {
     this.checkVaultUnlocked()
 
     if (walletIndex >= this.vault.length) {
@@ -311,7 +311,6 @@ export class Vault {
     }
 
     const accountIndex = this.vault[walletIndex].accounts.length
-    const accountAddress = KoilibSigner.fromWif(accountPrivateKey).getAddress()
 
     this.vault[walletIndex].accounts.push({
       public: {

@@ -62,7 +62,8 @@ export type AddAccountResult = Account
 export type ImportAccountArguments = {
   walletIndex: number
   accountName: string
-  accountPrivateKey: string
+  accountAddress: string
+  accountPrivateKey?: string
 }
 
 export type ImportAccountResult = Account

@@ -15,7 +15,7 @@ type WalletContextType = {
   lock: () => Promise<void>
   addWallet: (walletName: string, secretRecoveryPhrase?: string) => Promise<Wallet>
   addAccount: (walletIndex: number, accountName: string) => Promise<Account>
-  importAccount: (walletIndex: number, accountName: string, accountPrivateKey: string) => Promise<Account>
+  importAccount: (walletIndex: number, accountName: string, accountAddress: string, accountPrivateKey?: string) => Promise<Account>
   isLocked: boolean
   isLoading: boolean
   saveVault: () => Promise<void>
@@ -28,7 +28,7 @@ export const WalletsContext = createContext<WalletContextType>({
   lock: () => new Promise((resolve) => resolve()),
   addWallet: (walletName: string, secretRecoveryPhrase?: string) => new Promise((resolve) => resolve({ index: 0, name: '', accounts: [] })),
   addAccount: (walletIndex: number, accountName: string) => new Promise((resolve) => resolve({ public: { index: 0, name: '', address: '' }, signers: [] })),
-  importAccount: (walletIndex: number, accountName: string, accountPrivateKey: string) => new Promise((resolve) => resolve({ public: { index: 0, name: '', address: '' }, signers: [] })),
+  importAccount: (walletIndex: number, accountName: string, accountAddress: string, accountPrivateKey?: string) => new Promise((resolve) => resolve({ public: { index: 0, name: '', address: '' }, signers: [] })),
   isLocked: true,
   isLoading: true,
   saveVault: () => new Promise((resolve) => resolve()),
@@ -275,13 +275,14 @@ export const WalletsProvider = ({
     return newAccount
   }
 
-  const importAccount = async (walletIndex: number, accountName: string, accountPrivateKey: string) => {
+  const importAccount = async (walletIndex: number, accountName: string, accountAddress: string, accountPrivateKey?: string) => {
     // add account to wallet
     const { result: importAccountResult } = await vaultMessenger.current!.sendRequest(VAULT_SERVICE_WORKER_ID, {
       command: 'importAccount',
       arguments: {
         walletIndex,
         accountName,
+        accountAddress,
         accountPrivateKey
       } as ImportAccountArguments
     })
