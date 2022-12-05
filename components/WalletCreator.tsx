@@ -1,4 +1,4 @@
-import { useToast, Textarea, Box, Button, Card, CardBody, CardFooter, Divider, Heading, Stack, FormControl, FormHelperText, FormLabel, Input, FormErrorMessage, Checkbox, Tag, TagCloseButton, TagLabel, TagLeftIcon, Skeleton, CardHeader } from '@chakra-ui/react'
+import { useToast, Textarea, Box, Button, Card, CardBody, CardFooter, Divider, Heading, Stack, FormControl, FormHelperText, FormLabel, Input, FormErrorMessage, Checkbox, Tag, TagCloseButton, TagLabel, TagLeftIcon, CardHeader } from '@chakra-ui/react'
 import { useRouter } from 'next/router'
 import { ChangeEvent, useEffect, useState } from 'react'
 import { AddIcon, MinusIcon } from '@chakra-ui/icons'
@@ -92,7 +92,7 @@ export default function WalletCreator({ importingSecretRecoveryPhrase = false }:
   }
 
   const isWalletNameInvalid = walletName.length < 1 || !isAlphanumeric(walletName)
-  // if we are importing a seed phrase, then just check the number of words entered
+  // if we are importing a secret recovery phrase, then just check the number of words entered
   const isSecretRecoveryPhraseConfirmed = importingSecretRecoveryPhrase ? secretRecoveryPhrase.split(' ').length === 12 : equalArray(secretRecoveryPhraseWords, secretRecoveryPhraseConfirmation)
 
   let isCreateImportButtonDisabled = true

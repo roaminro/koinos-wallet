@@ -353,7 +353,7 @@ export class Vault {
     this.vault[walletIndex].accounts[accountIndex].signers.push(...signers)
     this.publicVault[walletIndex].accounts[accountIndex].signers.push(...signers)
 
-    return  this.publicVault[walletIndex].accounts[accountIndex]
+    return this.publicVault[walletIndex].accounts[accountIndex]
   }
 
   removeAccountSigner(walletIndex: number, accountIndex: number, signerIndex: number) {
@@ -374,7 +374,7 @@ export class Vault {
     this.vault[walletIndex].accounts[accountIndex].signers.splice(signerIndex, 1)
     this.publicVault[walletIndex].accounts[accountIndex].signers.splice(signerIndex, 1)
 
-    return  this.publicVault[walletIndex].accounts[accountIndex]
+    return this.publicVault[walletIndex].accounts[accountIndex]
   }
 
   getAccounts() {
