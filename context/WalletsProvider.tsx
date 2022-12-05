@@ -2,20 +2,23 @@ import { ReactNode, useContext, useState, createContext, useEffect, useRef, useC
 import { useRouter } from 'next/router'
 
 import { AUTOLOCK_DEADLINE_KEY, DEFAULT_AUTOLOCK_TIME_KEY, PUBLIC_PATHS, VAULT_KEY, VAULT_SERVICE_WORKER_ID } from '../util/Constants'
-import { Wallet } from '../util/Vault'
+import { Wallet, Account } from '../util/Vault'
 import { getSetting, setSetting } from '../util/Settings'
 import { debounce, debug } from '../util/Utils'
 import { Messenger } from '../util/Messenger'
-import { IncomingMessage, OutgoingMessage } from '../workers/Vault-Worker'
+import { AddAccountArguments, AddAccountResult, AddWalletArguments, AddWalletResult, GetAccountsResult, ImportAccountArguments, ImportAccountResult, IncomingMessage, IsLockedResult, OutgoingMessage, SerializeResult, UnlockArguments, UnlockResult } from '../workers/Vault-Worker'
 
 
 type WalletContextType = {
   wallets: Wallet[]
   unlock: (password: string) => Promise<void>
   lock: () => Promise<void>
-  addWallet: (password: string, walletName: string, accountName: string, secretPhrase: string) => Promise<void>
+  addWallet: (walletName: string, secretRecoveryPhrase?: string) => Promise<Wallet>
+  addAccount: (walletIndex: number, accountName: string) => Promise<Account>
+  importAccount: (walletIndex: number, accountName: string, accountPrivateKey: string) => Promise<Account>
   isLocked: boolean
   isLoading: boolean
+  saveVault: () => Promise<void>
   isVaultSetup: () => boolean
 }
 
@@ -23,9 +26,12 @@ export const WalletsContext = createContext<WalletContextType>({
   wallets: [],
   unlock: (password: string) => new Promise((resolve) => resolve()),
   lock: () => new Promise((resolve) => resolve()),
-  addWallet: (password: string, walletName: string, accountName: string, secretPhrase: string) => new Promise((resolve) => resolve()),
+  addWallet: (walletName: string, secretRecoveryPhrase?: string) => new Promise((resolve) => resolve({ index: 0, name: '', accounts: [] })),
+  addAccount: (walletIndex: number, accountName: string) => new Promise((resolve) => resolve({ public: { index: 0, name: '', address: '' }, signers: [] })),
+  importAccount: (walletIndex: number, accountName: string, accountPrivateKey: string) => new Promise((resolve) => resolve({ public: { index: 0, name: '', address: '' }, signers: [] })),
   isLocked: true,
   isLoading: true,
+  saveVault: () => new Promise((resolve) => resolve()),
   isVaultSetup: () => false,
 })
 
@@ -60,19 +66,16 @@ export const WalletsProvider = ({
   const unlock = async (password: string) => {
     const encryptedVault = localStorage.getItem(VAULT_KEY)
 
-    if (encryptedVault) {
-      const { result } = await vaultMessenger.current!.sendRequest(VAULT_SERVICE_WORKER_ID, {
-        command: 'unlock',
-        arguments: JSON.stringify({
-          password,
-          encryptedVault
-        })
-      })
+    const { result } = await vaultMessenger.current!.sendRequest(VAULT_SERVICE_WORKER_ID, {
+      command: 'unlock',
+      arguments: {
+        password,
+        encryptedVault
+      } as UnlockArguments
+    })
 
-      const wallets = JSON.parse(result!)
-      setIsLocked(false)
-      setWallets([...wallets])
-    }
+    setIsLocked(false)
+    setWallets(result as UnlockResult)
   }
 
   const lock = useCallback(async () => {
@@ -194,12 +197,12 @@ export const WalletsProvider = ({
           })
 
           // get accounts if already unlocked
-          if (!JSON.parse(isLockedResult!)) {
+          if (!(isLockedResult as IsLockedResult)) {
             const { result: getAccountsResult } = await msgr.sendRequest(VAULT_SERVICE_WORKER_ID, {
               command: 'getAccounts'
             })
 
-            setWallets([...JSON.parse(getAccountsResult!)])
+            setWallets(getAccountsResult as GetAccountsResult)
 
             setIsLocked(false)
           }
@@ -224,44 +227,91 @@ export const WalletsProvider = ({
     return localStorage.getItem(VAULT_KEY) !== null
   }
 
-  const addWallet = async (password: string, walletName: string, accountName: string, secretPhrase: string) => {
-    const { result: isLockedResult } = await vaultMessenger.current!.sendRequest(VAULT_SERVICE_WORKER_ID, {
-      command: 'isLocked'
-    })
-
-    // unlock vault if necessary
-    if (JSON.parse(isLockedResult!)) {
-      await unlock(password)
-    }
-
+  const addWallet = async (walletName: string, secretRecoveryPhrase?: string) => {
     // add wallet to vault
     const { result: addWalletResult } = await vaultMessenger.current!.sendRequest(VAULT_SERVICE_WORKER_ID, {
       command: 'addWallet',
-      arguments: JSON.stringify({
+      arguments: {
         walletName,
-        accountName,
-        secretPhrase
-      })
+        secretRecoveryPhrase
+      } as AddWalletArguments
     })
 
-    const newWallets = JSON.parse(addWalletResult!)
+    const newWallet = addWalletResult as AddWalletResult
 
-    // save vault to localstorage
-    const { result: serializedVault } = await vaultMessenger.current!.sendRequest(VAULT_SERVICE_WORKER_ID, {
-      command: 'serialize',
-      arguments: JSON.stringify({
-        password
-      })
-    })
-
-    localStorage.setItem(VAULT_KEY, serializedVault!)
+    console.log('newWallet', newWallet)
 
     // update state
-    setWallets(newWallets)
+    setWallets([...wallets, newWallet])
+   
+    return newWallet
+  }
+
+  const addAccount = async (walletIndex: number, accountName: string) => {
+    // add account to wallet
+    const { result: addAccountResult } = await vaultMessenger.current!.sendRequest(VAULT_SERVICE_WORKER_ID, {
+      command: 'addAccount',
+      arguments: {
+        walletIndex,
+        accountName
+      } as AddAccountArguments
+    })
+
+    const newAccount = addAccountResult as AddAccountResult
+
+    console.log('wallets', wallets)
+
+    wallets[walletIndex].accounts.push(newAccount)
+
+    // update state
+    setWallets([...wallets])
+
+    return newAccount
+  }
+
+  const importAccount = async (walletIndex: number, accountName: string, accountPrivateKey: string) => {
+    // add account to wallet
+    const { result: importAccountResult } = await vaultMessenger.current!.sendRequest(VAULT_SERVICE_WORKER_ID, {
+      command: 'importAccount',
+      arguments: {
+        walletIndex,
+        accountName,
+        accountPrivateKey
+      } as ImportAccountArguments
+    })
+
+    const newAccount = importAccountResult as ImportAccountResult
+
+    wallets[walletIndex].accounts.push(newAccount)
+
+    // update state
+    setWallets([...wallets])
+
+    return newAccount
+  }
+
+  const saveVault = async () => {
+    // save vault to localstorage
+    const { result: serializedVault } = await vaultMessenger.current!.sendRequest(VAULT_SERVICE_WORKER_ID, {
+      command: 'serialize'
+    })
+
+    localStorage.setItem(VAULT_KEY, serializedVault as SerializeResult)
   }
 
   return (
-    <WalletsContext.Provider value={{ wallets, unlock, lock, addWallet, isLoading, isLocked, isVaultSetup }}>
+    <WalletsContext.Provider value={{
+      wallets,
+      unlock,
+      lock,
+      addWallet,
+      addAccount,
+      importAccount,
+      isLoading,
+      isLocked,
+      saveVault,
+      isVaultSetup
+    }}>
       {children}
     </WalletsContext.Provider>
   )

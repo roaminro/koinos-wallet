@@ -4,6 +4,6 @@ export default function ImportWallet() {
 
 
   return (
-    <WalletCreator importingSecretPhrase={true} />
+    <WalletCreator importingSecretRecoveryPhrase={true} />
   )
 }
