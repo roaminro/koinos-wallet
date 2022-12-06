@@ -277,10 +277,10 @@ export default function Networks() {
                   <InputGroup>
                     <Input value={nameserviceAddress} onChange={handleNameServiceChange} />
                     <InputRightElement>
-                      <Tooltip label="Fetch token info from rpc" aria-label='Fetch token info from rpc'>
+                      <Tooltip label="Fetch token information from rpc" aria-label='Fetch token information from rpc'>
                         <IconButton
                           disabled={!rpcUrl || !nameserviceAddress}
-                          aria-label='Fetch token info from rpc'
+                          aria-label='Fetch token information from rpc'
                           icon={<RepeatIcon />}
                           onClick={fetchTokenInformation} />
                       </Tooltip>
