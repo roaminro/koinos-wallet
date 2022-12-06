@@ -10,12 +10,12 @@ import { AddAccountArguments, AddAccountResult, AddWalletArguments, AddWalletRes
 
 
 type WalletContextType = {
-  wallets: Wallet[]
+  wallets: Record<string, Wallet>
   unlock: (password: string) => Promise<void>
   lock: () => Promise<void>
   addWallet: (walletName: string, secretRecoveryPhrase?: string) => Promise<Wallet>
-  addAccount: (walletIndex: number, accountName: string) => Promise<Account>
-  importAccount: (walletIndex: number, accountName: string, accountAddress: string, accountPrivateKey?: string) => Promise<Account>
+  addAccount: (walletName: string, accountName: string) => Promise<Account>
+  importAccount: (walletName: string, accountName: string, accountAddress: string, accountPrivateKey?: string) => Promise<Account>
   isLocked: boolean
   isLoading: boolean
   saveVault: () => Promise<void>
@@ -23,12 +23,12 @@ type WalletContextType = {
 }
 
 export const WalletsContext = createContext<WalletContextType>({
-  wallets: [],
+  wallets: {},
   unlock: (password: string) => new Promise((resolve) => resolve()),
   lock: () => new Promise((resolve) => resolve()),
-  addWallet: (walletName: string, secretRecoveryPhrase?: string) => new Promise((resolve) => resolve({ index: 0, name: '', accounts: [] })),
-  addAccount: (walletIndex: number, accountName: string) => new Promise((resolve) => resolve({ public: { index: 0, name: '', address: '' }, signers: [] })),
-  importAccount: (walletIndex: number, accountName: string, accountAddress: string, accountPrivateKey?: string) => new Promise((resolve) => resolve({ public: { index: 0, name: '', address: '' }, signers: [] })),
+  addWallet: (walletName: string, secretRecoveryPhrase?: string) => new Promise((resolve) => resolve({ name: '', accounts: {} })),
+  addAccount: (walletName: string, accountName: string) => new Promise((resolve) => resolve({ public: { name: '', address: '' }, signers: {} })),
+  importAccount: (walletName: string, accountName: string, accountAddress: string, accountPrivateKey?: string) => new Promise((resolve) => resolve({ public: { name: '', address: '' }, signers: {} })),
   isLocked: true,
   isLoading: true,
   saveVault: () => new Promise((resolve) => resolve()),
@@ -45,7 +45,7 @@ export const WalletsProvider = ({
 
   const router = useRouter()
 
-  const [wallets, setWallets] = useState<Wallet[]>([])
+  const [wallets, setWallets] = useState<Record<string, Wallet>>({})
   const [isLocked, setIsLocked] = useState(true)
   const [isLoading, setIsLoading] = useState(true)
   const vaultServiceWorker = useRef<ServiceWorkerRegistration>()
@@ -89,7 +89,7 @@ export const WalletsProvider = ({
       command: 'lock'
     })
     setIsLocked(true)
-    setWallets([])
+    setWallets({})
   }, [])
 
   const checkAutoLock = useCallback(async () => {
@@ -248,39 +248,39 @@ export const WalletsProvider = ({
     console.log('newWallet', newWallet)
 
     // update state
-    setWallets([...wallets, newWallet])
+    setWallets({ ...wallets, [walletName]: newWallet })
    
     return newWallet
   }
 
-  const addAccount = async (walletIndex: number, accountName: string) => {
+  const addAccount = async (walletName: string, accountName: string) => {
     // add account to wallet
     const { result: addAccountResult } = await vaultMessenger.current!.sendRequest(VAULT_SERVICE_WORKER_ID, {
       command: 'addAccount',
       arguments: {
-        walletIndex,
+        walletName,
         accountName
       } as AddAccountArguments
     })
 
     const newAccount = addAccountResult as AddAccountResult
 
-    console.log('wallets', wallets)
+    console.log('newAccount', newAccount)
 
-    wallets[walletIndex].accounts.push(newAccount)
+    wallets[walletName].accounts[accountName] = newAccount
 
     // update state
-    setWallets([...wallets])
+    setWallets({...wallets})
 
     return newAccount
   }
 
-  const importAccount = async (walletIndex: number, accountName: string, accountAddress: string, accountPrivateKey?: string) => {
+  const importAccount = async (walletName: string, accountName: string, accountAddress: string, accountPrivateKey?: string) => {
     // add account to wallet
     const { result: importAccountResult } = await vaultMessenger.current!.sendRequest(VAULT_SERVICE_WORKER_ID, {
       command: 'importAccount',
       arguments: {
-        walletIndex,
+        walletName,
         accountName,
         accountAddress,
         accountPrivateKey
@@ -289,10 +289,10 @@ export const WalletsProvider = ({
 
     const newAccount = importAccountResult as ImportAccountResult
 
-    wallets[walletIndex].accounts.push(newAccount)
+    wallets[walletName].accounts[accountName] = newAccount
 
     // update state
-    setWallets([...wallets])
+    setWallets({...wallets})
 
     return newAccount
   }

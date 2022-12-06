@@ -1,7 +1,7 @@
 import { Box, Stack, Card, CardHeader, Heading, Divider, CardBody, FormControl, FormLabel, Input, FormHelperText, FormErrorMessage, Textarea, Checkbox, Tag, TagLeftIcon, TagLabel, CardFooter, Button, useToast } from '@chakra-ui/react'
 import { useRouter } from 'next/router'
 import { ChangeEvent, useState } from 'react'
-import Nav from '../components/Nav'
+import SidebarWithHeader from '../components/Sidebar'
 import { useWallets } from '../context/WalletsProvider'
 
 export default function CreatePassword() {
@@ -61,7 +61,6 @@ export default function CreatePassword() {
 
   return (
     <>
-      <Nav />
       <Box padding={{ base: 4, md: 8 }} margin='auto' maxWidth='1024px'>
         <Stack mt='6' spacing='3' align='center'>
           <Card maxW='sm'>

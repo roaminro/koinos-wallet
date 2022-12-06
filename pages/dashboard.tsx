@@ -1,11 +1,13 @@
 import { Box } from '@chakra-ui/react'
-import Nav from '../components/Nav'
+import SimpleSidebar from '../components/Sidebar'
 
 export default function Dashboard() {
   return (
     <Box>
-      <Nav />
-      DASHBOARD
+      <SimpleSidebar>
+        DASHBOARD
+
+      </SimpleSidebar>
     </Box>
   )
 }

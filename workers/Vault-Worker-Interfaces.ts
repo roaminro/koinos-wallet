@@ -43,7 +43,7 @@ export type UnlockArguments = {
   encryptedVault?: string
 }
 
-export type UnlockResult = Wallet[]
+export type UnlockResult = Record<string, Wallet>
 
 export type AddWalletArguments = {
   walletName: string
@@ -53,14 +53,14 @@ export type AddWalletArguments = {
 export type AddWalletResult = Wallet
 
 export type AddAccountArguments = {
-  walletIndex: number
+  walletName: string
   accountName: string
 }
 
 export type AddAccountResult = Account
 
 export type ImportAccountArguments = {
-  walletIndex: number
+  walletName: string
   accountName: string
   accountAddress: string
   accountPrivateKey?: string
@@ -78,62 +78,62 @@ export type CheckPasswordResult = void
 
 export type IsLockedResult = boolean
 
-export type GetAccountsResult = Wallet[]
+export type GetAccountsResult = Record<string, Wallet>
 
 export type GetWalletSecretRecoveryPhraseArguments = {
-  walletIndex: number
+  walletName: string
 }
 
 export type GetWalletSecretRecoveryPhraseResult = string
 
 export type GetAccountPrivateKeyArguments = {
-  walletIndex: number
-  accountIndex: number
+  walletName: string
+  accountName: string
 }
 
 export type GetAccountPrivateKeyResult = string
 
 export type UpdateWalletNameArguments = {
-  walletIndex: number
-  walletName: string
+  oldWalletName: string
+  newWalletName: string
 }
 
 export type UpdateWalletNameResult = Wallet
 
 export type RemoveWalletArguments = {
-  walletIndex: number
+  walletName: string
 }
 
-export type RemoveWalletResult = Wallet[]
+export type RemoveWalletResult = Record<string, Wallet>
 
 
 export type UpdateAccountNameArguments = {
-  walletIndex: number
-  accountIndex: number
-  accountName: string
+  walletName: string
+  oldAccountName: string
+  newAccountName: string
 }
 
 export type UpdateAccountNameResult = Account
 
 export type RemoveAccountArguments = {
-  walletIndex: number
-  accountIndex: number
+  walletName: string
+  accountName: string
 }
 
 export type RemoveAccountResult = Wallet
 
 export type AddAccountSignersArguments = {
-  walletIndex: number
-  accountIndex: number
-  signers: Signer[]
+  walletName: string
+  accountName: string
+  signers: Record<string, Signer>
 }
 
 export type AddAccountSignersResult = Account
 
 export type RemoveAccountSignerArguments = {
-  walletIndex: number
-  accountIndex: number
-  signerIndex: number
+  walletName: string
+  accountName: string
+  signerName: string
 }
 
 export type RemoveAccountSignerResult = Account

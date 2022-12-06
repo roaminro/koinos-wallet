@@ -1,14 +1,13 @@
 import { Box, Button, Card, CardBody, CardFooter, Divider, Heading, Stack, Text } from '@chakra-ui/react'
 import { useRouter } from 'next/router'
 
-import Nav from '../components/Nav'
+import SidebarWithHeader from '../components/Sidebar'
 
 export default function Welcome() {
   const router = useRouter()
 
   return (
     <>
-      <Nav />
       <Box padding={{ base: 4, md: 8 }} margin='auto' maxWidth='1024px'>
         <Stack mt='6' spacing='3' align='center'>
 
