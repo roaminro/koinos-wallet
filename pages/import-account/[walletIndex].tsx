@@ -42,7 +42,6 @@ export default function ImportAccount() {
 
   const handleWatchModeChange = (e: ChangeEvent<HTMLInputElement>) => {
     setWatchMode(e.target.checked)
-
   }
 
   const importAccountClick = async () => {

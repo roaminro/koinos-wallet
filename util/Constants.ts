@@ -1,3 +1,5 @@
+import { Network } from '../context/NetworksProvider'
+
 export const SETTINGS_KEY = 'SETTINGS'
 
 export const VAULT_KEY = 'VAULT'
@@ -14,3 +16,6 @@ export const PUBLIC_PATHS = [
 ]
 
 export const VAULT_SERVICE_WORKER_ID = 'vault-connector-parent'
+
+export const NETWORKS_KEY = 'NETWORKS'
+export const SELECTED_NETWORK_KEY = 'SELECTED_NETWORK'
