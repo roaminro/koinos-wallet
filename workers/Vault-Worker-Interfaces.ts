@@ -45,6 +45,13 @@ export type UnlockArguments = {
 
 export type UnlockResult = Record<string, Wallet>
 
+export type TryDecryptArguments = {
+  password: string
+  encryptedVault: string
+}
+
+export type TryDecryptResult = void
+
 export type AddWalletArguments = {
   walletName: string
   secretRecoveryPhrase?: string

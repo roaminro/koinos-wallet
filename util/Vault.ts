@@ -93,6 +93,10 @@ export class Vault {
     return this.publicVault
   }
 
+  async tryDecrypt(password: string, encryptedVault: string) {
+    await decrypt(password, encryptedVault) as Record<string, Wallet>
+  }
+
   lock() {
     this.locked = true
     this.vault = {}

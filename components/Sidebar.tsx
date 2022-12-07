@@ -24,13 +24,14 @@ import {
 } from '@chakra-ui/react'
 import {
   FiHome,
-  FiSettings,
   FiMenu,
   FiChevronDown,
   FiLock,
   FiMoon,
   FiSun,
-  FiCreditCard
+  FiCreditCard,
+  FiGlobe,
+  FiHardDrive
 } from 'react-icons/fi'
 import { IconType } from 'react-icons'
 import { useRouter } from 'next/router'
@@ -45,7 +46,8 @@ interface LinkItemProps {
 const LinkItems: Array<LinkItemProps> = [
   { name: 'Dashboard', icon: FiHome, href: '/dashboard' },
   { name: 'Wallets', icon: FiCreditCard, href: '/wallets' },
-  { name: 'Settings', icon: FiSettings, href: '/settings'  },
+  { name: 'Networks', icon: FiGlobe, href: '/networks' },
+  { name: 'Vault', icon: FiHardDrive, href: '/vault' },
 ]
 
 export default function SidebarWithHeader({

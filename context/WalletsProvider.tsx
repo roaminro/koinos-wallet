@@ -6,7 +6,7 @@ import { Wallet, Account } from '../util/Vault'
 import { getSetting, setSetting } from '../util/Settings'
 import { debounce, debug } from '../util/Utils'
 import { Messenger } from '../util/Messenger'
-import { AddAccountArguments, AddAccountResult, AddWalletArguments, AddWalletResult, GetAccountsResult, ImportAccountArguments, ImportAccountResult, IncomingMessage, IsLockedResult, OutgoingMessage, SerializeResult, UnlockArguments, UnlockResult } from '../workers/Vault-Worker-Interfaces'
+import { AddAccountArguments, AddAccountResult, AddWalletArguments, AddWalletResult, GetAccountsResult, ImportAccountArguments, ImportAccountResult, IncomingMessage, IsLockedResult, OutgoingMessage, SerializeResult, TryDecryptArguments, UnlockArguments, UnlockResult } from '../workers/Vault-Worker-Interfaces'
 
 
 type WalletContextType = {
@@ -14,6 +14,7 @@ type WalletContextType = {
   unlock: (password: string) => Promise<void>
   lock: () => Promise<void>
   addWallet: (walletName: string, secretRecoveryPhrase?: string) => Promise<Wallet>
+  tryDecrypt: (walletName: string, encryptedVault: string) => Promise<void>
   addAccount: (walletName: string, accountName: string) => Promise<Account>
   importAccount: (walletName: string, accountName: string, accountAddress: string, accountPrivateKey?: string) => Promise<Account>
   isLocked: boolean
@@ -27,6 +28,7 @@ export const WalletsContext = createContext<WalletContextType>({
   unlock: (password: string) => new Promise((resolve) => resolve()),
   lock: () => new Promise((resolve) => resolve()),
   addWallet: (walletName: string, secretRecoveryPhrase?: string) => new Promise((resolve) => resolve({ name: '', accounts: {} })),
+  tryDecrypt: (password: string, encryptedVault: string) => new Promise((resolve) => resolve()),
   addAccount: (walletName: string, accountName: string) => new Promise((resolve) => resolve({ public: { name: '', address: '' }, signers: {} })),
   importAccount: (walletName: string, accountName: string, accountAddress: string, accountPrivateKey?: string) => new Promise((resolve) => resolve({ public: { name: '', address: '' }, signers: {} })),
   isLocked: true,
@@ -91,6 +93,16 @@ export const WalletsProvider = ({
     setIsLocked(true)
     setWallets({})
   }, [])
+
+  const tryDecrypt = async (password: string, encryptedVault: string) => {
+    await vaultMessenger.current!.sendRequest(VAULT_SERVICE_WORKER_ID, {
+      command: 'tryDecrypt',
+      arguments: {
+        password,
+        encryptedVault
+      } as TryDecryptArguments
+    })
+  }
 
   const checkAutoLock = useCallback(async () => {
     const autolockDeadlineStr = getSetting<number>(AUTOLOCK_DEADLINE_KEY)
@@ -317,7 +329,8 @@ export const WalletsProvider = ({
       isLoading,
       isLocked,
       saveVault,
-      isVaultSetup
+      isVaultSetup,
+      tryDecrypt
     }}>
       {children}
     </WalletsContext.Provider>

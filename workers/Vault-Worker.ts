@@ -1,7 +1,7 @@
 import { Messenger } from '../util/Messenger'
 import { Vault } from '../util/Vault'
 import { vaultWorkerLogLevel } from '../app.config'
-import { IncomingMessage, OutgoingMessage, UnlockArguments, AddWalletArguments, AddAccountArguments, ImportAccountArguments, CheckPasswordArguments, GetWalletSecretRecoveryPhraseArguments, GetAccountPrivateKeyArguments, UpdateWalletNameArguments, RemoveWalletArguments, UpdateAccountNameArguments, RemoveAccountArguments, AddAccountSignersArguments, RemoveAccountSignerArguments } from './Vault-Worker-Interfaces'
+import { IncomingMessage, OutgoingMessage, UnlockArguments, AddWalletArguments, AddAccountArguments, ImportAccountArguments, CheckPasswordArguments, GetWalletSecretRecoveryPhraseArguments, GetAccountPrivateKeyArguments, UpdateWalletNameArguments, RemoveWalletArguments, UpdateAccountNameArguments, RemoveAccountArguments, AddAccountSignersArguments, RemoveAccountSignerArguments, TryDecryptArguments } from './Vault-Worker-Interfaces'
 
 const debug = (...args: any) => {
   if (vaultWorkerLogLevel === 'debug') {
@@ -41,6 +41,13 @@ messenger.onRequest(async ({ data, sender, sendData, sendError }) => {
       case 'lock': {
         vault.lock()
         sendData({})
+        break
+      }
+
+      case 'tryDecrypt': {
+        const { password, encryptedVault } = data.arguments as TryDecryptArguments
+        await vault.tryDecrypt(password, encryptedVault)
+        sendData({ })
         break
       }
 

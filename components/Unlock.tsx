@@ -1,4 +1,4 @@
-import { Button, FormControl, FormErrorMessage, FormHelperText, FormLabel, Input, InputGroup, InputRightAddon, NumberDecrementStepper, NumberIncrementStepper, NumberInput, NumberInputField, NumberInputStepper, Skeleton, Stack } from '@chakra-ui/react'
+import { Button, Card, CardBody, CardFooter, CardHeader, Center, Divider, FormControl, FormErrorMessage, FormHelperText, FormLabel, Heading, Input, InputGroup, InputRightAddon, NumberDecrementStepper, NumberIncrementStepper, NumberInput, NumberInputField, NumberInputStepper, Skeleton, Stack } from '@chakra-ui/react'
 import { ChangeEvent, useEffect, useState } from 'react'
 import { useRouter } from 'next/router'
 
@@ -69,37 +69,51 @@ export default function Unlock() {
   }
 
   return (
-    <Skeleton isLoaded={!isLoading}>
-      <Stack
-        borderWidth="thin"
-        borderColor="inherit"
-        borderRadius="md"
-        padding="4"
-      >
-        <FormControl isRequired isInvalid={!!unlockError}>
-          <FormLabel>Password</FormLabel>
-          <Input type='password' value={password} onChange={handlePasswordChange} />
-          <FormHelperText>Enter your password to unlock the application.</FormHelperText>
-          {
-            !!unlockError && <FormErrorMessage>{unlockError}</FormErrorMessage>
-          }
-        </FormControl>
-        <FormControl>
-          <FormLabel>Auto-lock</FormLabel>
-          <InputGroup>
-            <NumberInput step={1} min={1} value={unlockTime} onChange={handleUnlockTimeChange}>
-              <NumberInputField />
-              <NumberInputStepper>
-                <NumberIncrementStepper />
-                <NumberDecrementStepper />
-              </NumberInputStepper>
-            </NumberInput>
-            <InputRightAddon>min.</InputRightAddon>
-          </InputGroup>
-          <FormHelperText>Auto-lock the application after {unlockTime} minutes of inactivity.</FormHelperText>
-        </FormControl>
-        <Button isLoading={isUnlocking} onClick={onUnlockClick}>Unlock</Button>
-      </Stack>
-    </Skeleton>
+    <Center h='100vh'>
+      <Card maxW='sm'>
+        <CardHeader>
+          <Heading size='md'>
+            Unlock app
+          </Heading>
+        </CardHeader>
+        <Divider />
+        <CardBody>
+          <Skeleton isLoaded={!isLoading}>
+            <Stack
+              mt='6'
+              spacing='3'
+            >
+              <FormControl isRequired isInvalid={!!unlockError}>
+                <FormLabel>Password</FormLabel>
+                <Input type='password' value={password} onChange={handlePasswordChange} />
+                <FormHelperText>Enter your password to unlock the application.</FormHelperText>
+                {
+                  !!unlockError && <FormErrorMessage>{unlockError}</FormErrorMessage>
+                }
+              </FormControl>
+              <FormControl>
+                <FormLabel>Auto-lock</FormLabel>
+                <InputGroup>
+                  <NumberInput step={1} min={1} value={unlockTime} onChange={handleUnlockTimeChange}>
+                    <NumberInputField />
+                    <NumberInputStepper>
+                      <NumberIncrementStepper />
+                      <NumberDecrementStepper />
+                    </NumberInputStepper>
+                  </NumberInput>
+                  <InputRightAddon>min.</InputRightAddon>
+                </InputGroup>
+                <FormHelperText>Auto-lock the application after {unlockTime} minutes of inactivity.</FormHelperText>
+              </FormControl>
+              <Button
+                isLoading={isUnlocking}
+                variant='solid'
+                colorScheme='green'
+                onClick={onUnlockClick}>Unlock</Button>
+            </Stack>
+          </Skeleton>
+        </CardBody>
+      </Card>
+    </Center>
   )
 }

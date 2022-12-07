@@ -1,14 +1,25 @@
 import { logLevel } from '../app.config'
 
-const CHARS = new Set('_-0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ')
+const CHARS = '_-0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'
 export const isAlphanumeric = (str: string) => {
+  const characters = new Set(CHARS)
   for (let i = 0, len = str.length; i < len; i++) {
-    if (!CHARS.has(str[i])) {
+    if (!characters.has(str[i])) {
       return false
     }
   }
 
   return true
+}
+
+export const generateString = (length: number) => {
+  let result = ' '
+  const charactersLength = CHARS.length
+  for ( let i = 0; i < length; i++ ) {
+    result += CHARS.charAt(Math.floor(Math.random() * charactersLength))
+  }
+
+  return result
 }
 
 export const equalArray = (a: string[], b: string[]) => {
@@ -42,4 +53,14 @@ export const info = (...args: any) => {
   if (logLevel === 'info') {
     console.log(...args)
   }
+}
+
+export const saveFile = async (fileName: string, blob: Blob) => {
+  const a = document.createElement('a')
+  a.download = fileName
+  a.href = URL.createObjectURL(blob)
+  a.addEventListener('click', () => {
+    setTimeout(() => URL.revokeObjectURL(a.href), 30 * 1000)
+  })
+  a.click()
 }

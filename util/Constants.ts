@@ -12,7 +12,8 @@ export const PUBLIC_PATHS = [
     '/unlock',
     '/welcome',
     '/embed/wallet-connector',
-    '/create-password'
+    '/create-password',
+    '/vault'
 ]
 
 export const VAULT_SERVICE_WORKER_ID = 'vault-connector-parent'

@@ -43,7 +43,8 @@ export default function RouteGuard({
 
   return (
     <>
-      {authorized && children}
+      {/* {authorized && children} */}
+      {children}
     </>
   )
 }

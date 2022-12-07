@@ -7,7 +7,7 @@ export default function Welcome() {
   const router = useRouter()
 
   return (
-    <>
+    <SidebarWithHeader>
       <Box padding={{ base: 4, md: 8 }} margin='auto' maxWidth='1024px'>
         <Stack mt='6' spacing='3' align='center'>
 
@@ -48,6 +48,6 @@ export default function Welcome() {
           </Card>
         </Stack>
       </Box>
-    </>
+    </SidebarWithHeader>
   )
 }

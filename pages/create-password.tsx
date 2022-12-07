@@ -1,7 +1,6 @@
-import { Box, Stack, Card, CardHeader, Heading, Divider, CardBody, FormControl, FormLabel, Input, FormHelperText, FormErrorMessage, Textarea, Checkbox, Tag, TagLeftIcon, TagLabel, CardFooter, Button, useToast } from '@chakra-ui/react'
+import { Stack, Card, CardHeader, Heading, Divider, CardBody, FormControl, FormLabel, Input, FormHelperText, FormErrorMessage, CardFooter, Button, useToast, Center } from '@chakra-ui/react'
 import { useRouter } from 'next/router'
 import { ChangeEvent, useState } from 'react'
-import SidebarWithHeader from '../components/Sidebar'
 import { useWallets } from '../context/WalletsProvider'
 
 export default function CreatePassword() {
@@ -60,50 +59,43 @@ export default function CreatePassword() {
   const isConfirmPasswordDisabled = isPasswordInvalid || isPasswordConfirmationInvalid
 
   return (
-    <>
-      <Box padding={{ base: 4, md: 8 }} margin='auto' maxWidth='1024px'>
-        <Stack mt='6' spacing='3' align='center'>
-          <Card maxW='sm'>
-            <CardHeader>
-              <Heading size='md'>
-                Setup password
-              </Heading>
-            </CardHeader>
-            <Divider />
-            <CardBody>
-              <Stack mt='6' spacing='3'>
-                <FormControl isRequired isInvalid={isPasswordInvalid}>
-                  <FormLabel>Password</FormLabel>
-                  <Input type='password' value={password} onChange={handlePasswordChange} />
-                  <FormHelperText>The first time you use this application you need to setup a password that will be used to encrypt your sensitive information in your browser&quot;s secured local storage.</FormHelperText>
-                  {
-                    isPasswordInvalid && <FormErrorMessage>The password must be at least 8 characters.</FormErrorMessage>
-                  }
-                </FormControl>
-                <FormControl isRequired isInvalid={isPasswordConfirmationInvalid}>
-                  <FormLabel>Password Confirmation</FormLabel>
-                  <Input type='password' value={passwordConfirmation} onChange={handlePasswordConfirmationChange} />
-                  <FormHelperText>Confirm the password you entered in the Password field.</FormHelperText>
-                  {
-                    isPasswordConfirmationInvalid && <FormErrorMessage>The password confirmation is different than the password.</FormErrorMessage>
-                  }
-                </FormControl>
-              </Stack>
-            </CardBody>
-            <Divider />
-            <CardFooter>
-              <Button
-                disabled={isConfirmPasswordDisabled}
-                isLoading={isLoading}
-                variant='solid'
-                colorScheme='green'
-                onClick={setupPassword}>
-                Confirm Password
-              </Button>
-            </CardFooter>
-          </Card>
-        </Stack>
-      </Box>
-    </>
+    <Center h='100vh'>
+      <Card maxW='sm'>
+        <CardHeader>
+          <Heading size='md'>
+            Setup password
+          </Heading>
+        </CardHeader>
+        <Divider />
+        <CardBody>
+          <Stack mt='6' spacing='3'>
+            <FormControl isRequired isInvalid={isPasswordInvalid}>
+              <FormLabel>Password</FormLabel>
+              <Input type='password' value={password} onChange={handlePasswordChange} />
+              <FormHelperText>The first time you use this application you need to setup a password that will be used to encrypt your sensitive information in your browser&quot;s secured local storage.</FormHelperText>
+              {
+                isPasswordInvalid && <FormErrorMessage>The password must be at least 8 characters.</FormErrorMessage>
+              }
+            </FormControl>
+            <FormControl isRequired isInvalid={isPasswordConfirmationInvalid}>
+              <FormLabel>Password Confirmation</FormLabel>
+              <Input type='password' value={passwordConfirmation} onChange={handlePasswordConfirmationChange} />
+              <FormHelperText>Confirm the password you entered in the Password field.</FormHelperText>
+              {
+                isPasswordConfirmationInvalid && <FormErrorMessage>The password confirmation is different than the password.</FormErrorMessage>
+              }
+            </FormControl>
+            <Button
+              disabled={isConfirmPasswordDisabled}
+              isLoading={isLoading}
+              variant='solid'
+              colorScheme='green'
+              onClick={setupPassword}>
+              Confirm Password
+            </Button>
+          </Stack>
+        </CardBody>
+      </Card>
+    </Center>
   )
 }
