@@ -9,11 +9,12 @@ export const AUTOLOCK_DEADLINE_KEY = 'AUTOLOCK_DEADLINE'
 
 export const PUBLIC_PATHS = [
     '/',
+    '/embed/wallet-connector',
     '/unlock',
     '/welcome',
-    '/embed/wallet-connector',
     '/create-password',
-    '/vault'
+    '/vault',
+    '/networks'
 ]
 
 export const VAULT_SERVICE_WORKER_ID = 'vault-connector-parent'

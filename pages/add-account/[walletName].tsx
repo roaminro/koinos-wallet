@@ -1,4 +1,4 @@
-import { Box, useToast, Stack, Card, CardHeader, Heading, Divider, CardBody, FormControl, FormLabel, Input, FormHelperText, FormErrorMessage, CardFooter, Button } from '@chakra-ui/react'
+import { useToast, Stack, Card, CardHeader, Heading, Divider, CardBody, FormControl, FormLabel, Input, FormHelperText, FormErrorMessage, Button, Center } from '@chakra-ui/react'
 import { useRouter } from 'next/router'
 import { useState, ChangeEvent } from 'react'
 import SidebarWithHeader from '../../components/Sidebar'
@@ -54,44 +54,37 @@ export default function AddAccount() {
   const isAccountNameInvalid = accountName.length < 1 || !isAlphanumeric(accountName)
 
   return (
-    <>
-      <SidebarWithHeader>
-        <Box padding={{ base: 4, md: 8 }} margin='auto' maxWidth='1024px'>
-          <Stack mt='6' spacing='3' align='center'>
-            <Card maxW='sm'>
-              <CardHeader>
-                <Heading size='md'>
-                  Add account to wallet &quot;{walletName}&quot;
-                </Heading>
-              </CardHeader>
-              <Divider />
-              <CardBody>
-                <Stack mt='6' spacing='3'>
-                  <FormControl isRequired isInvalid={isAccountNameInvalid}>
-                    <FormLabel>Account Name</FormLabel>
-                    <Input value={accountName} onChange={handleAccountNameChange} />
-                    <FormHelperText>The account name is an easy way for you to identify an account.</FormHelperText>
-                    {
-                      isAccountNameInvalid && <FormErrorMessage>The account name must be at least 1 character and can only composed of the following characters (_-[0-9][a-z][A-Z]).</FormErrorMessage>
-                    }
-                  </FormControl>
-                </Stack>
-              </CardBody>
-              <Divider />
-              <CardFooter>
-                <Button
-                  disabled={isAccountNameInvalid || !walletName}
-                  isLoading={isLoading}
-                  variant='solid'
-                  colorScheme='green'
-                  onClick={addAccountClick}>
-                  Add Account
-                </Button>
-              </CardFooter>
-            </Card>
-          </Stack>
-        </Box>
-      </SidebarWithHeader>
-    </>
+    <SidebarWithHeader>
+      <Center>
+        <Card maxW='sm'>
+          <CardHeader>
+            <Heading size='md'>
+              Add account to wallet &quot;{walletName}&quot;
+            </Heading>
+          </CardHeader>
+          <Divider />
+          <CardBody>
+            <Stack mt='6' spacing='3'>
+              <FormControl isRequired isInvalid={isAccountNameInvalid}>
+                <FormLabel>Account Name</FormLabel>
+                <Input value={accountName} onChange={handleAccountNameChange} />
+                <FormHelperText>The account name is an easy way for you to identify an account.</FormHelperText>
+                {
+                  isAccountNameInvalid && <FormErrorMessage>The account name must be at least 1 character and can only composed of the following characters (_-[0-9][a-z][A-Z]).</FormErrorMessage>
+                }
+              </FormControl>
+              <Button
+                disabled={isAccountNameInvalid || !walletName}
+                isLoading={isLoading}
+                variant='solid'
+                colorScheme='green'
+                onClick={addAccountClick}>
+                Add Account
+              </Button>
+            </Stack>
+          </CardBody>
+        </Card>
+      </Center>
+    </SidebarWithHeader>
   )
 }

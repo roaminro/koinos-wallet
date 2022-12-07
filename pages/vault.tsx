@@ -79,7 +79,7 @@ export default function Vault() {
   }
 
   const importVault = async () => {
-    if (isVaultSetup()) {
+    if (isVaultSetup) {
       onOpen()
     } else {
       await importNewVault()
@@ -90,13 +90,11 @@ export default function Vault() {
 
   const isImportVaultDisabled = isPasswordInvalid || !encryptedVault
 
-  const vaultIsSetup = isVaultSetup()
-
   return (
     <SidebarWithHeader>
       <Stack mt='6' spacing='3' align='center'>
         {
-          vaultIsSetup &&
+          isVaultSetup &&
           <Card maxW='sm' minWidth='350px'>
             <CardHeader>
               <Heading size='md'>
@@ -106,7 +104,7 @@ export default function Vault() {
             <Divider />
             <CardBody>
               <Button
-                disabled={!vaultIsSetup}
+                disabled={!isVaultSetup}
                 isLoading={isLoading}
                 variant='solid'
                 colorScheme='green'

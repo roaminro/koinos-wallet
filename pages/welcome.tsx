@@ -35,7 +35,7 @@ export default function Welcome() {
               <Stack mt='6' spacing='3'>
                 <Heading size='md'>Import an existing wallet</Heading>
                 <Text>
-                  Import an existing wallet if you already have a 12 words &quot;Secret Phrase&quot; available.
+                  Import an existing wallet if you already have a 12 words &quot;Secret Recovery Phrase&quot; available.
                 </Text>
               </Stack>
             </CardBody>
@@ -43,6 +43,23 @@ export default function Welcome() {
             <CardFooter>
               <Button variant='solid' colorScheme='blue' onClick={() => router.push('/import-wallet')}>
                 Import wallet
+              </Button>
+            </CardFooter>
+          </Card>
+
+          <Card maxW='sm'>
+            <CardBody>
+              <Stack mt='6' spacing='3'>
+                <Heading size='md'>Import an existing vault</Heading>
+                <Text>
+                  If you already used this application, you can import a vault that you previously exported.
+                </Text>
+              </Stack>
+            </CardBody>
+            <Divider />
+            <CardFooter>
+              <Button variant='solid' colorScheme='blue' onClick={() => router.push('/vault')}>
+                Import vault
               </Button>
             </CardFooter>
           </Card>

@@ -19,7 +19,7 @@ export default function Unlock() {
 
 
   useEffect(() => {
-    if (!isVaultSetup()) {
+    if (!isVaultSetup) {
       router.push({
         pathname: '/create-password',
         query: { returnUrl: router.query.returnUrl }

@@ -42,10 +42,11 @@ interface LinkItemProps {
   name: string
   href: string
   icon: IconType
+  hideWhenVaultNotSetup?: boolean
 }
 const LinkItems: Array<LinkItemProps> = [
-  { name: 'Dashboard', icon: FiHome, href: '/dashboard' },
-  { name: 'Wallets', icon: FiCreditCard, href: '/wallets' },
+  { name: 'Dashboard', icon: FiHome, href: '/dashboard', hideWhenVaultNotSetup: true },
+  { name: 'Wallets', icon: FiCreditCard, href: '/wallets', hideWhenVaultNotSetup: true },
   { name: 'Networks', icon: FiGlobe, href: '/networks' },
   { name: 'Vault', icon: FiHardDrive, href: '/vault' },
 ]
@@ -89,6 +90,8 @@ interface SidebarProps extends BoxProps {
 }
 
 const SidebarContent = ({ onClose, ...rest }: SidebarProps) => {
+  const { isVaultSetup } = useWallets()
+
   return (
     <Box
       transition="3s ease"
@@ -106,6 +109,7 @@ const SidebarContent = ({ onClose, ...rest }: SidebarProps) => {
         <CloseButton display={{ base: 'flex', md: 'none' }} onClick={onClose} />
       </Flex>
       {LinkItems.map((link) => (
+        ((!isVaultSetup && !link.hideWhenVaultNotSetup) || isVaultSetup) && 
         <NavItem key={link.name} href={link.href} icon={link.icon}>
           {link.name}
         </NavItem>

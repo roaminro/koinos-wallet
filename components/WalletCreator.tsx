@@ -1,4 +1,4 @@
-import { useToast, Textarea, Box, Button, Card, CardBody, CardFooter, Divider, Heading, Stack, FormControl, FormHelperText, FormLabel, Input, FormErrorMessage, Checkbox, Tag, TagCloseButton, TagLabel, TagLeftIcon, CardHeader } from '@chakra-ui/react'
+import { useToast, Textarea, Button, Card, CardBody, Divider, Heading, Stack, FormControl, FormHelperText, FormLabel, Input, FormErrorMessage, Checkbox, Tag, TagLabel, TagLeftIcon, CardHeader, Center } from '@chakra-ui/react'
 import { useRouter } from 'next/router'
 import { ChangeEvent, useEffect, useState } from 'react'
 import {
@@ -112,119 +112,110 @@ export default function WalletCreator({ importingSecretRecoveryPhrase = false }:
   }
 
   return (
-    <>
-      <SidebarWithHeader>
-        <Box padding={{ base: 4, md: 8 }} margin='auto' maxWidth='1024px'>
-          <Stack mt='6' spacing='3' align='center'>
-            <Card maxW='sm'>
-              <CardHeader>
-                <Heading size='md'>
-                  {
-                    importingSecretRecoveryPhrase ? 'Import a wallet' : 'Create a new wallet'
-                  }
-                </Heading>
-              </CardHeader>
-              <Divider />
-              <CardBody>
-                <Stack mt='6' spacing='3'>
-                  <FormControl isRequired isInvalid={isWalletNameInvalid}>
-                    <FormLabel>Wallet Name</FormLabel>
-                    <Input value={walletName} onChange={handleWalletNameChange} />
-                    <FormHelperText>The wallet name is an easy way for you to identify a wallet.</FormHelperText>
+    <SidebarWithHeader>
+      <Center>
+        <Card maxW='sm'>
+          <CardHeader>
+            <Heading size='md'>
+              {
+                importingSecretRecoveryPhrase ? 'Import a wallet' : 'Create a new wallet'
+              }
+            </Heading>
+          </CardHeader>
+          <Divider />
+          <CardBody>
+            <Stack mt='6' spacing='3'>
+              <FormControl isRequired isInvalid={isWalletNameInvalid}>
+                <FormLabel>Wallet Name</FormLabel>
+                <Input value={walletName} onChange={handleWalletNameChange} />
+                <FormHelperText>The wallet name is an easy way for you to identify a wallet.</FormHelperText>
+                {
+                  isWalletNameInvalid && <FormErrorMessage>The wallet name must be at least 1 character and can only composed of the following characters (_-[0-9][a-z][A-Z]).</FormErrorMessage>
+                }
+              </FormControl>
+              {
+                !importingSecretRecoveryPhrase &&
+                <>
+                  <FormControl hidden={isSecretRecoveryPhraseSaved}>
+                    <FormLabel>Secret Phrase</FormLabel>
+                    <Textarea value={secretRecoveryPhrase} readOnly={true} />
+                    <FormHelperText>The &quot;Secret Phrase&quot; is the &quot;Master Key&quot; that allows you to recover your accounts. You MUST keep it in a safe place as losing it will result in a loss of the funds.</FormHelperText>
+                  </FormControl>
+                  <FormControl isRequired>
+                    <Checkbox isChecked={isSecretRecoveryPhraseSaved} onChange={handleSavedSecretRecoveryPhraseChange}>I confirm that I saved the &quot;Secret Phrase&quot; in a safe place.</Checkbox>
+                  </FormControl>
+                  <FormControl isRequired hidden={!isSecretRecoveryPhraseSaved} isInvalid={!isSecretRecoveryPhraseConfirmed}>
+                    <FormLabel>Secret Phrase Confirmation</FormLabel>
                     {
-                      isWalletNameInvalid && <FormErrorMessage>The wallet name must be at least 1 character and can only composed of the following characters (_-[0-9][a-z][A-Z]).</FormErrorMessage>
+                      secretRecoveryPhraseConfirmation.map((word, index) => {
+                        if (index === secretRecoveryPhraseConfirmation.length - 1) {
+                          return <Tag
+                            margin={1}
+                            cursor={'pointer'}
+                            size='md'
+                            key={index}
+                            colorScheme='green'
+                            onClick={() => onSecretWordConfirmationClick(index)}
+                          >
+                            <TagLeftIcon boxSize='12px' as={FiMinus} />
+                            <TagLabel>{word}</TagLabel>
+                          </Tag>
+                        } else {
+                          return <Tag
+                            margin={1}
+                            size='md'
+                            key={index}
+                            colorScheme='green'
+                          >
+                            <TagLabel>{word}</TagLabel>
+                          </Tag>
+                        }
+                      })
+                    }
+                    <Divider />
+                    Secret Words available:
+                    {
+                      randomizedSecretRecoveryPhraseWords.map((word, index) => {
+                        return <Tag
+                          margin={1}
+                          cursor={'pointer'}
+                          size='md'
+                          key={index}
+                          colorScheme='blue'
+                          onClick={() => onAvailableSecretWordClick(index)}
+                        >
+                          <TagLeftIcon boxSize='12px' as={FiPlus} />
+                          <TagLabel>{word}</TagLabel>
+                        </Tag>
+                      })
+                    }
+                    <FormHelperText>Select the 12 words composing your &quot;Secret Phrase&quot; in the correct order.</FormHelperText>
+                    {
+                      !isSecretRecoveryPhraseConfirmed && <FormErrorMessage>The &quot;Secret Phrase&quot; confirmation is different than the &quot;Secret Phrase&quot;.</FormErrorMessage>
                     }
                   </FormControl>
+                </>
+              }
+              {
+                importingSecretRecoveryPhrase &&
+                <FormControl isInvalid={!isSecretRecoveryPhraseConfirmed} isRequired>
+                  <FormLabel>Secret Phrase</FormLabel>
+                  <Textarea value={secretRecoveryPhrase} onChange={handleSecretRecoveryPhraseChange} />
+                  <FormHelperText>Type the 12 words composing your &quot;Secret Phrase&quot;, separated by blank spaces.</FormHelperText>
                   {
-                    !importingSecretRecoveryPhrase &&
-                    <>
-                      <FormControl hidden={isSecretRecoveryPhraseSaved}>
-                        <FormLabel>Secret Phrase</FormLabel>
-                        <Textarea value={secretRecoveryPhrase} readOnly={true} />
-                        <FormHelperText>The &quot;Secret Phrase&quot; is the &quot;Master Key&quot; that allows you to recover your accounts. You MUST keep it in a safe place as losing it will result in a loss of the funds.</FormHelperText>
-                      </FormControl>
-                      <FormControl isRequired>
-                        <Checkbox isChecked={isSecretRecoveryPhraseSaved} onChange={handleSavedSecretRecoveryPhraseChange}>I confirm that I saved the &quot;Secret Phrase&quot; in a safe place.</Checkbox>
-                      </FormControl>
-                      <FormControl isRequired hidden={!isSecretRecoveryPhraseSaved} isInvalid={!isSecretRecoveryPhraseConfirmed}>
-                        <FormLabel>Secret Phrase Confirmation</FormLabel>
-                        {
-                          secretRecoveryPhraseConfirmation.map((word, index) => {
-                            if (index === secretRecoveryPhraseConfirmation.length - 1) {
-                              return <Tag
-                                margin={1}
-                                cursor={'pointer'}
-                                size='md'
-                                key={index}
-                                colorScheme='green'
-                                onClick={() => onSecretWordConfirmationClick(index)}
-                              >
-                                <TagLeftIcon boxSize='12px' as={FiMinus} />
-                                <TagLabel>{word}</TagLabel>
-                              </Tag>
-                            } else {
-                              return <Tag
-                                margin={1}
-                                size='md'
-                                key={index}
-                                colorScheme='green'
-                              >
-                                <TagLabel>{word}</TagLabel>
-                              </Tag>
-                            }
-                          })
-                        }
-                        <Divider />
-                        Secret Words available:
-                        {
-                          randomizedSecretRecoveryPhraseWords.map((word, index) => {
-                            return <Tag
-                              margin={1}
-                              cursor={'pointer'}
-                              size='md'
-                              key={index}
-                              colorScheme='blue'
-                              onClick={() => onAvailableSecretWordClick(index)}
-                            >
-                              <TagLeftIcon boxSize='12px' as={FiPlus} />
-                              <TagLabel>{word}</TagLabel>
-                            </Tag>
-                          })
-                        }
-                        <FormHelperText>Select the 12 words composing your &quot;Secret Phrase&quot; in the correct order.</FormHelperText>
-                        {
-                          !isSecretRecoveryPhraseConfirmed && <FormErrorMessage>The &quot;Secret Phrase&quot; confirmation is different than the &quot;Secret Phrase&quot;.</FormErrorMessage>
-                        }
-                      </FormControl>
-                    </>
+                    !isSecretRecoveryPhraseConfirmed && <FormErrorMessage>The &quot;Secret Phrase&quot; should be composed of 12 words.</FormErrorMessage>
                   }
-                  {
-                    importingSecretRecoveryPhrase &&
-                    <>
-                      <FormControl isInvalid={!isSecretRecoveryPhraseConfirmed} isRequired>
-                        <FormLabel>Secret Phrase</FormLabel>
-                        <Textarea value={secretRecoveryPhrase} onChange={handleSecretRecoveryPhraseChange} />
-                        <FormHelperText>Type the 12 words composing your &quot;Secret Phrase&quot;, separated by blank spaces.</FormHelperText>
-                        {
-                          !isSecretRecoveryPhraseConfirmed && <FormErrorMessage>The &quot;Secret Phrase&quot; should be composed of 12 words.</FormErrorMessage>
-                        }
-                      </FormControl>
-                    </>
-                  }
-                </Stack>
-              </CardBody>
-              <Divider />
-              <CardFooter>
-                <Button disabled={isCreatingWallet || isCreateImportButtonDisabled} isLoading={isCreatingWallet} variant='solid' colorScheme='green' onClick={createWallet}>
-                  {
-                    importingSecretRecoveryPhrase ? 'Import wallet' : 'Create wallet'
-                  }
-                </Button>
-              </CardFooter>
-            </Card>
-          </Stack>
-        </Box>
-      </SidebarWithHeader>
-    </>
+                </FormControl>
+              }
+              <Button disabled={isCreatingWallet || isCreateImportButtonDisabled} isLoading={isCreatingWallet} variant='solid' colorScheme='green' onClick={createWallet}>
+                {
+                  importingSecretRecoveryPhrase ? 'Import wallet' : 'Create wallet'
+                }
+              </Button>
+            </Stack>
+          </CardBody>
+        </Card>
+      </Center>
+    </SidebarWithHeader>
   )
 }

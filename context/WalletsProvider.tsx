@@ -20,7 +20,7 @@ type WalletContextType = {
   isLocked: boolean
   isLoading: boolean
   saveVault: () => Promise<void>
-  isVaultSetup: () => boolean
+  isVaultSetup: boolean
 }
 
 export const WalletsContext = createContext<WalletContextType>({
@@ -34,7 +34,7 @@ export const WalletsContext = createContext<WalletContextType>({
   isLocked: true,
   isLoading: true,
   saveVault: () => new Promise((resolve) => resolve()),
-  isVaultSetup: () => false,
+  isVaultSetup: false,
 })
 
 export const useWallets = () => useContext(WalletsContext)
@@ -50,14 +50,15 @@ export const WalletsProvider = ({
   const [wallets, setWallets] = useState<Record<string, Wallet>>({})
   const [isLocked, setIsLocked] = useState(true)
   const [isLoading, setIsLoading] = useState(true)
+  const [isVaultSetup, setIsVaultSetup] = useState(false)
   const vaultServiceWorker = useRef<ServiceWorkerRegistration>()
   const vaultMessenger = useRef<Messenger<OutgoingMessage, IncomingMessage>>()
 
   useEffect(() => {
-    if (isVaultSetup() && !isLocked && !isLoading) {
+    if (isVaultSetup && !isLocked && !isLoading) {
       saveVault()
     }
-  }, [isLocked, isLoading, wallets])
+  }, [isLocked, isLoading, wallets, isVaultSetup])
 
   useEffect(() => {
     if (!isLoading && isLocked) {
@@ -83,6 +84,7 @@ export const WalletsProvider = ({
     })
 
     setIsLocked(false)
+    setIsVaultSetup(encryptedVault !== null)
     setWallets(result as UnlockResult)
   }
 
@@ -160,6 +162,8 @@ export const WalletsProvider = ({
 
 
   useEffect(() => {
+
+    setIsVaultSetup(localStorage.getItem(VAULT_KEY) !== null)
 
     let registration: ServiceWorkerRegistration
     let msgr: Messenger<OutgoingMessage, IncomingMessage>
@@ -240,10 +244,6 @@ export const WalletsProvider = ({
       msgr?.removeListener()
     }
   }, [])
-
-  const isVaultSetup = () => {
-    return localStorage.getItem(VAULT_KEY) !== null
-  }
 
   const addWallet = async (walletName: string, secretRecoveryPhrase?: string) => {
     // add wallet to vault

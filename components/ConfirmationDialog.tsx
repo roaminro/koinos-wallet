@@ -63,17 +63,6 @@ export const ConfirmationDialog = ({
           </AlertDialogBody>
 
           <AlertDialogFooter>
-            {declineText ? (
-              <Button
-                ref={modalRef as React.LegacyRef<HTMLButtonElement> | undefined}
-                onClick={() => {
-                  if (onDecline) onDecline()
-                  onClose()
-                }}
-              >
-                {declineText}
-              </Button>
-            ) : null}
             <Button
               ml={3}
               colorScheme='red'
@@ -85,6 +74,19 @@ export const ConfirmationDialog = ({
             >
               {acceptText}
             </Button>
+            {
+              declineText && (
+                <Button
+                  ref={modalRef as React.LegacyRef<HTMLButtonElement> | undefined}
+                  onClick={() => {
+                    if (onDecline) onDecline()
+                    onClose()
+                  }}
+                >
+                  {declineText}
+                </Button>
+              )
+            }
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialogOverlay>

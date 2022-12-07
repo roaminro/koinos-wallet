@@ -25,7 +25,7 @@ export default function WalletConnector() {
 
     const setupMessenger = async () => {
       msgr.onRequest(async ({ sender, data, sendData, sendError }) => {
-        if (!isVaultSetup()) {
+        if (!isVaultSetup) {
           window.open('/welcome', '_blank')
           sendError('request was cancelled')
         } else {
