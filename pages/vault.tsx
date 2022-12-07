@@ -1,4 +1,4 @@
-import { Box, Stack, Card, CardHeader, Heading, Divider, CardBody, FormControl, FormLabel, Input, FormHelperText, FormErrorMessage, Textarea, Checkbox, Tag, TagLeftIcon, TagLabel, CardFooter, Button, useToast, useDisclosure } from '@chakra-ui/react'
+import { Stack, Card, CardHeader, Heading, Divider, CardBody, FormControl, FormLabel, Input, FormHelperText, FormErrorMessage, Button, useToast, useDisclosure } from '@chakra-ui/react'
 import { useRouter } from 'next/router'
 import { ChangeEvent, useRef, useState } from 'react'
 import { useWallets } from '../context/WalletsProvider'
@@ -9,6 +9,7 @@ import { ConfirmationDialog } from '../components/ConfirmationDialog'
 
 
 export default function Vault() {
+  const router = useRouter()
   const toast = useToast()
   const { isOpen, onOpen, onClose } = useDisclosure()
 
@@ -59,6 +60,7 @@ export default function Vault() {
       await tryDecrypt(password, encryptedVault!)
       localStorage.setItem(VAULT_KEY, encryptedVault!)
       await unlock(password)
+      router.push('/dashboard')
       toast({
         title: 'Vault successfully import',
         description: 'Your vault was successfully imported!',
