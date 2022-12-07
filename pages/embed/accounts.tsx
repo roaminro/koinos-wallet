@@ -1,4 +1,4 @@
-import { Text, Box, Button, ButtonGroup, Card, CardBody, CardFooter, CardHeader, Checkbox, Divider, Heading, Input, Skeleton, Spinner, Stack } from '@chakra-ui/react'
+import { Text, Box, Button, ButtonGroup, Card, CardBody, CardFooter, CardHeader, Checkbox, Divider, Heading, Input, Skeleton, Spinner, Stack, Center } from '@chakra-ui/react'
 import { useEffect, useState } from 'react'
 import { Messenger } from '../../util/Messenger'
 import { useWallets } from '../../context/WalletsProvider'
@@ -121,78 +121,74 @@ export default function Accounts() {
   }
 
   return (
-    <Box padding={{ base: 4, md: 8 }} minHeight='400px'>
-      <Stack mt='6' spacing='3'>
+    <Center>
+      <Card>
+        <CardHeader>
+          <Heading size='md'>Accounts request</Heading>
+        </CardHeader>
+        <Divider />
+        <CardBody>
+          <Skeleton isLoaded={hasLoadedAccounts && !isLoading}>
+            <Text>
+              Select the accounts you would like to share with the website &quot;{sender}&quot;:
+            </Text>
+            <Divider marginTop={4} marginBottom={4} />
+            {
+              hasLoadedAccounts && Object.keys(wallets).map((walletName, walletIndex) => {
+                const wallet = wallets[walletName]
+                let allChecked = true
 
-        <Card>
-          <CardHeader>
-            <Heading size='md'>Accounts request</Heading>
-          </CardHeader>
-          <Divider />
-          <CardBody>
-            <Skeleton isLoaded={hasLoadedAccounts && !isLoading}>
-              <Text>
-                Select the accounts you would like to share with the website &quot;{sender}&quot;:
-              </Text>
-              <Divider marginTop={4} marginBottom={4} />
-              {
-                hasLoadedAccounts && Object.keys(wallets).map((walletName, walletIndex) => {
-                  const wallet = wallets[walletName]
-                  let allChecked = true
-
-                  let oneAccountIsSelected = false
-                  for (const accountName in wallet.accounts) {
-                    if (selectedAccounts[walletName][accountName] === true) {
-                      oneAccountIsSelected = true
-                    } else {
-                      allChecked = false
-                    }
+                let oneAccountIsSelected = false
+                for (const accountName in wallet.accounts) {
+                  if (selectedAccounts[walletName][accountName] === true) {
+                    oneAccountIsSelected = true
+                  } else {
+                    allChecked = false
                   }
-                  
-                  const isIndeterminate = oneAccountIsSelected && !allChecked
+                }
 
-                  return (
-                    <Box key={walletIndex}>
-                      <Checkbox
-                        isChecked={allChecked}
-                        isIndeterminate={isIndeterminate}
-                        onChange={(e) => updateAllSelectedAccounts(walletName, e.target.checked)}
-                      >
-                        <Heading size='sm'>{wallet.name}</Heading>
-                      </Checkbox>
-                      <Stack pl={6} mt={1} spacing={1}>
-                        {
-                         Object.keys(wallet.accounts).map((accountName, accountIndex) => {
+                const isIndeterminate = oneAccountIsSelected && !allChecked
+
+                return (
+                  <Box key={walletIndex}>
+                    <Checkbox
+                      isChecked={allChecked}
+                      isIndeterminate={isIndeterminate}
+                      onChange={(e) => updateAllSelectedAccounts(walletName, e.target.checked)}
+                    >
+                      <Heading size='sm'>{wallet.name}</Heading>
+                    </Checkbox>
+                    <Stack pl={6} mt={1} spacing={1}>
+                      {
+                        Object.keys(wallet.accounts).map((accountName, accountIndex) => {
                           const account = wallet.accounts[accountName]
-                            return (
-                              <Checkbox
-                                key={`${walletIndex}-${accountIndex}`}
-                                isChecked={selectedAccounts[walletName][accountName]}
-                                onChange={(e) => updateSelectedAccounts(walletName, accountName, e.target.checked)}
-                              >
-                                {account.public.name} ({truncateAccount(account.public.address)})
-                              </Checkbox>
-                            )
-                          })
-                        }
-                      </Stack>
-                      <Divider marginTop={4} marginBottom={4} />
-                    </Box>
-                  )
-                })
-              }
-            </Skeleton>
-          </CardBody>
-          <Divider />
-          <CardFooter>
-            <ButtonGroup>
-              <Button onClick={close} colorScheme='red'>Cancel</Button>
-              <Button disabled={isLoading || !hasSelectedOneAccount} onClick={onClickConfirm} colorScheme='blue'>Confirm</Button>
-            </ButtonGroup>
-          </CardFooter>
-        </Card>
-
-      </Stack>
-    </Box>
+                          return (
+                            <Checkbox
+                              key={`${walletIndex}-${accountIndex}`}
+                              isChecked={selectedAccounts[walletName][accountName]}
+                              onChange={(e) => updateSelectedAccounts(walletName, accountName, e.target.checked)}
+                            >
+                              {account.public.name} ({truncateAccount(account.public.address)})
+                            </Checkbox>
+                          )
+                        })
+                      }
+                    </Stack>
+                    <Divider marginTop={4} marginBottom={4} />
+                  </Box>
+                )
+              })
+            }
+          </Skeleton>
+        </CardBody>
+        <Divider />
+        <CardFooter>
+          <ButtonGroup spacing='6' width='100%'>
+            <Button onClick={close} colorScheme='red'>Cancel</Button>
+            <Button width='100%' disabled={isLoading || !hasSelectedOneAccount} onClick={onClickConfirm} colorScheme='green'>Confirm</Button>
+          </ButtonGroup>
+        </CardFooter>
+      </Card>
+    </Center>
   )
 }
