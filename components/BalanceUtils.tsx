@@ -45,7 +45,7 @@ const getTokenBalanceFetcher =
         owner,
       })
 
-      return result?.value || '0'
+      return result?.value as string
     }
 
 const getManaBalanceFetcher =
@@ -56,7 +56,7 @@ const getManaBalanceFetcher =
     async () => {
       const mana = await provider.getAccountRc(account)
 
-      return mana || '0'
+      return mana
     }
 
 export function asFloat(value: string, decimals: number): number {
