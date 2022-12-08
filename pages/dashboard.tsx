@@ -1,13 +1,15 @@
 import { FiClipboard } from 'react-icons/fi'
-import { Box, Button, Card, CardBody, CardHeader, Center, Divider, Flex, Heading, IconButton, Menu, MenuButton, MenuDivider, MenuItem, MenuItemOption, MenuList, MenuOptionGroup, Skeleton, Stack, Stat, StatHelpText, StatLabel, StatNumber, Tooltip, useClipboard, useToast, VStack } from '@chakra-ui/react'
+import { Box, Button, Card, CardBody, CardHeader, Center, Divider, Flex, Heading, IconButton, Link, Menu, MenuButton, MenuDivider, MenuItem, MenuItemOption, MenuList, MenuOptionGroup, Skeleton, Stack, Stat, StatHelpText, StatLabel, StatNumber, Table, TableCaption, TableContainer, Tbody, Td, Tfoot, Th, Thead, Tooltip, Tr, useClipboard, useToast, VStack } from '@chakra-ui/react'
 import router from 'next/router'
 import { useCallback, useEffect, useState } from 'react'
 import { FiChevronDown } from 'react-icons/fi'
 import SimpleSidebar from '../components/Sidebar'
 import { useWallets } from '../context/WalletsProvider'
-import { truncateAccount } from '../util/Utils'
+import { truncateAccount, truncateTransactionId } from '../util/Utils'
 import { asFloat, useManaBalance, useTokenBalance } from '../components/BalanceUtils'
 import { useNetworks } from '../context/NetworksProvider'
+import { useAccountHistory } from '../components/AccountHistoryUtils'
+import { ExternalLinkIcon } from '@chakra-ui/icons'
 
 export default function Dashboard() {
   const { wallets, selectedAccount, selectAccount } = useWallets()
@@ -17,6 +19,8 @@ export default function Dashboard() {
 
   const { balance: koinBalance, isLoading: isLoadingKoinBalance } = useTokenBalance(selectedAccount?.account.public.address, selectedNetwork?.tokenAddress)
   const { mana, isLoading: isLoadingManaBalance } = useManaBalance(selectedAccount?.account.public.address)
+
+  const { transactions, isLoading: isLoadingAccountHistory } = useAccountHistory(selectedAccount?.account.public.address)
 
   useEffect(() => {
     if (selectedAccount) {
@@ -109,10 +113,10 @@ export default function Dashboard() {
               </Heading>
               {
                 <Stat>
-                  <Skeleton isLoaded={!isLoadingKoinBalance && !!selectedNetwork}>
+                  <Skeleton isLoaded={!isLoadingKoinBalance}>
                     <StatNumber>{`${asFloat(koinBalance!, selectedNetwork?.tokenDecimals!)} ${selectedNetwork?.tokenSymbol}`}</StatNumber>
                   </Skeleton>
-                  <Skeleton isLoaded={!isLoadingManaBalance && !!selectedNetwork}>
+                  <Skeleton isLoaded={!isLoadingManaBalance}>
                     <StatHelpText>{asFloat(mana!, selectedNetwork?.tokenDecimals!)} mana</StatHelpText>
                   </Skeleton>
 
@@ -123,7 +127,28 @@ export default function Dashboard() {
           <Divider />
           <CardBody>
             <Stack mt='6' spacing='3'>
-              {koinBalance} koin
+              <Heading size='sm'>Last 10 transactions</Heading>
+              <Skeleton isLoaded={!isLoadingAccountHistory}>
+
+                <TableContainer>
+                  <Table variant='simple'>
+                    <Tbody>
+                      {
+                        transactions?.map(historyx =>
+                          <Tr key={historyx.trx.transaction.id}>
+                            <Td>
+                              <Link href={`${selectedNetwork?.explorerUrl}/tx/${historyx.trx.transaction.id}`} isExternal>
+                                {truncateTransactionId(historyx.trx.transaction.id!)} <ExternalLinkIcon mx='2px' />
+                              </Link>
+                            </Td>
+                          </Tr>
+                        )
+                      }
+                    </Tbody>
+                  </Table>
+                </TableContainer>
+              </Skeleton>
+
             </Stack>
           </CardBody>
         </Card>

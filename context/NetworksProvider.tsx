@@ -55,9 +55,12 @@ export const NetworksProvider = ({
     const savedSelectedNetwork = localStorage.getItem(SELECTED_NETWORK_KEY)
 
     if (savedSelectedNetwork) {
-      setSelectedNetwork(JSON.parse(savedSelectedNetwork))
+      const savedNetwork = JSON.parse(savedSelectedNetwork)
+      setSelectedNetwork(savedNetwork)
+      setProvider(new Provider(savedNetwork.rpcUrl))
     } else {
       setSelectedNetwork(appConfig.defaultNetworks[0])
+      setProvider(new Provider(appConfig.defaultNetworks[0].rpcUrl))
     }
   }, [])
 
@@ -70,13 +73,13 @@ export const NetworksProvider = ({
   useEffect(() => {
     if (selectedNetwork) {
       localStorage.setItem(SELECTED_NETWORK_KEY, JSON.stringify(selectedNetwork))
-      setProvider(new Provider(selectedNetwork.rpcUrl))
     }
   }, [selectedNetwork])
 
 
   const selectNetwork = (network: Network) => {
     setSelectedNetwork(network)
+    setProvider(new Provider(network.rpcUrl))
   }
 
   const addNetwork = (network: Network) => {

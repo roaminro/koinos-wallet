@@ -43,6 +43,8 @@ export const debounce = (fn: Function, ms = 500) => {
 
 export const truncateAccount = (account: string) => `${account.substring(0, 4)}...${account.substring(account.length - 4)}`
 
+export const truncateTransactionId = (txId: string) => `${txId.substring(0, 11)}...${txId.substring(txId.length - 5)}`
+
 export const debug = (...args: any) => {
   if (logLevel === 'debug') {
     console.log(...args)
