@@ -17,7 +17,7 @@ export type Network = {
 
 type NetworksContextType = {
   networks: Network[]
-  selectedNetwork: Network
+  selectedNetwork?: Network
   provider?: Provider
   selectNetwork: (network: Network) => void
   addNetwork: (network: Network) => void
@@ -27,7 +27,6 @@ type NetworksContextType = {
 
 export const NetworksContext = createContext<NetworksContextType>({
   networks: appConfig.defaultNetworks,
-  selectedNetwork: appConfig.defaultNetworks[0],
   selectNetwork: (network: Network) => { },
   addNetwork: (network: Network) => { },
   updateNetwork: (network: Network) => { },
@@ -44,7 +43,7 @@ export const NetworksProvider = ({
 
   const [networks, setNetworks] = useState<Network[]>(appConfig.defaultNetworks)
   const [provider, setProvider] = useState<Provider>()
-  const [selectedNetwork, setSelectedNetwork] = useState<Network>(appConfig.defaultNetworks[0])
+  const [selectedNetwork, setSelectedNetwork] = useState<Network>()
 
   useEffect(() => {
     const savedNetworks = localStorage.getItem(NETWORKS_KEY)
@@ -57,6 +56,8 @@ export const NetworksProvider = ({
 
     if (savedSelectedNetwork) {
       setSelectedNetwork(JSON.parse(savedSelectedNetwork))
+    } else {
+      setSelectedNetwork(appConfig.defaultNetworks[0])
     }
   }, [])
 
@@ -101,6 +102,7 @@ export const NetworksProvider = ({
     <NetworksContext.Provider value={{
       networks,
       selectedNetwork,
+      provider,
       selectNetwork,
       addNetwork,
       updateNetwork,

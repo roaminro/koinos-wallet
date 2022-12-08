@@ -192,13 +192,13 @@ const MobileNav = ({ onOpen, ...rest }: MobileProps) => {
       <HStack spacing={{ base: '0', md: '6' }}>
         <Menu>
           <MenuButton as={Button} rightIcon={<FiChevronDown />}>
-            {selectedNetwork.name}
+            {selectedNetwork?.name}
           </MenuButton>
           <MenuList>
             <MenuOptionGroup 
             title='Networks' 
             type='radio' 
-            value={selectedNetwork.chainId}
+            value={selectedNetwork?.chainId}
             >
               {
                 networks.map((network) => (

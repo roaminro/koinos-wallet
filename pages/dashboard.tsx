@@ -1,23 +1,28 @@
 import { FiClipboard } from 'react-icons/fi'
-import { Box, Button, Card, CardBody, CardHeader, Center, Divider, Flex, Heading, IconButton, Menu, MenuButton, MenuDivider, MenuItem, MenuItemOption, MenuList, MenuOptionGroup, Stack, Tooltip, useClipboard, useToast, VStack } from '@chakra-ui/react'
+import { Box, Button, Card, CardBody, CardHeader, Center, Divider, Flex, Heading, IconButton, Menu, MenuButton, MenuDivider, MenuItem, MenuItemOption, MenuList, MenuOptionGroup, Skeleton, Stack, Stat, StatHelpText, StatLabel, StatNumber, Tooltip, useClipboard, useToast, VStack } from '@chakra-ui/react'
 import router from 'next/router'
-import { useEffect } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { FiChevronDown } from 'react-icons/fi'
 import SimpleSidebar from '../components/Sidebar'
 import { useWallets } from '../context/WalletsProvider'
 import { truncateAccount } from '../util/Utils'
+import { asFloat, useManaBalance, useTokenBalance } from '../components/BalanceUtils'
+import { useNetworks } from '../context/NetworksProvider'
 
 export default function Dashboard() {
   const { wallets, selectedAccount, selectAccount } = useWallets()
-  const { onCopy, setValue } = useClipboard('')
+  const { selectedNetwork } = useNetworks()
+  const { onCopy, setValue: setClipoard } = useClipboard('')
   const toast = useToast()
 
+  const { balance: koinBalance, isLoading: isLoadingKoinBalance } = useTokenBalance(selectedAccount?.account.public.address, selectedNetwork?.tokenAddress)
+  const { mana, isLoading: isLoadingManaBalance } = useManaBalance(selectedAccount?.account.public.address)
 
   useEffect(() => {
     if (selectedAccount) {
-      setValue(selectedAccount.account.public.address)
+      setClipoard(selectedAccount.account.public.address)
     }
-  }, [selectedAccount, setValue])
+  }, [selectedAccount, setClipoard])
 
   const onCopyAddress = () => {
     onCopy()
@@ -79,7 +84,7 @@ export default function Dashboard() {
                   }
                 </MenuList>
               </Menu>
-              <Heading as='h3' size='md'>
+              <Heading as='h3' size='sm'>
                 {
                   selectedAccount && (
                     <>
@@ -102,13 +107,23 @@ export default function Dashboard() {
                   )
                 }
               </Heading>
-            </VStack>
+              {
+                <Stat>
+                  <Skeleton isLoaded={!isLoadingKoinBalance && !!selectedNetwork}>
+                    <StatNumber>{`${asFloat(koinBalance!, selectedNetwork?.tokenDecimals!)} ${selectedNetwork?.tokenSymbol}`}</StatNumber>
+                  </Skeleton>
+                  <Skeleton isLoaded={!isLoadingManaBalance && !!selectedNetwork}>
+                    <StatHelpText>{asFloat(mana!, selectedNetwork?.tokenDecimals!)} mana</StatHelpText>
+                  </Skeleton>
 
+                </Stat>
+              }
+            </VStack>
           </CardHeader>
           <Divider />
           <CardBody>
             <Stack mt='6' spacing='3'>
-
+              {koinBalance} koin
             </Stack>
           </CardBody>
         </Card>
