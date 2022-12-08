@@ -21,3 +21,4 @@ export const VAULT_SERVICE_WORKER_ID = 'vault-connector-parent'
 
 export const NETWORKS_KEY = 'NETWORKS'
 export const SELECTED_NETWORK_KEY = 'SELECTED_NETWORK'
+export const SELECTED_ACCOUNT_KEY = 'SELECTED_ACCOUNT'

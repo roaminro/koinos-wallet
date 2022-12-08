@@ -1,7 +1,7 @@
 import { ReactNode, useContext, useState, createContext, useEffect, useRef, useCallback } from 'react'
 import { useRouter } from 'next/router'
 
-import { AUTOLOCK_DEADLINE_KEY, DEFAULT_AUTOLOCK_TIME_KEY, PUBLIC_PATHS, VAULT_KEY, VAULT_SERVICE_WORKER_ID } from '../util/Constants'
+import { AUTOLOCK_DEADLINE_KEY, DEFAULT_AUTOLOCK_TIME_KEY, PUBLIC_PATHS, SELECTED_ACCOUNT_KEY, VAULT_KEY, VAULT_SERVICE_WORKER_ID } from '../util/Constants'
 import { Wallet, Account } from '../util/Vault'
 import { getSetting, setSetting } from '../util/Settings'
 import { debounce, debug } from '../util/Utils'
@@ -17,10 +17,17 @@ type WalletContextType = {
   tryDecrypt: (walletName: string, encryptedVault: string) => Promise<void>
   addAccount: (walletName: string, accountName: string) => Promise<Account>
   importAccount: (walletName: string, accountName: string, accountAddress: string, accountPrivateKey?: string) => Promise<Account>
+  selectAccount: (walletName: string, account: Account) => void
   isLocked: boolean
   isLoading: boolean
   saveVault: () => Promise<void>
   isVaultSetup: boolean
+  selectedAccount?: SelectedAccount
+}
+
+type SelectedAccount = {
+  walletName: string
+  account: Account
 }
 
 export const WalletsContext = createContext<WalletContextType>({
@@ -31,10 +38,11 @@ export const WalletsContext = createContext<WalletContextType>({
   tryDecrypt: (password: string, encryptedVault: string) => new Promise((resolve) => resolve()),
   addAccount: (walletName: string, accountName: string) => new Promise((resolve) => resolve({ public: { name: '', address: '' }, signers: {} })),
   importAccount: (walletName: string, accountName: string, accountAddress: string, accountPrivateKey?: string) => new Promise((resolve) => resolve({ public: { name: '', address: '' }, signers: {} })),
+  selectAccount: (walletName: string, account: Account) => {},
   isLocked: true,
   isLoading: true,
   saveVault: () => new Promise((resolve) => resolve()),
-  isVaultSetup: false,
+  isVaultSetup: false
 })
 
 export const useWallets = () => useContext(WalletsContext)
@@ -51,6 +59,7 @@ export const WalletsProvider = ({
   const [isLocked, setIsLocked] = useState(true)
   const [isLoading, setIsLoading] = useState(true)
   const [isVaultSetup, setIsVaultSetup] = useState(false)
+  const [selectedAccount, setSelectedAccount] = useState<SelectedAccount>()
   const vaultServiceWorker = useRef<ServiceWorkerRegistration>()
   const vaultMessenger = useRef<Messenger<OutgoingMessage, IncomingMessage>>()
 
@@ -165,6 +174,11 @@ export const WalletsProvider = ({
 
     setIsVaultSetup(localStorage.getItem(VAULT_KEY) !== null)
 
+    const savedSelectedAccount = localStorage.getItem(SELECTED_ACCOUNT_KEY)
+    if (savedSelectedAccount) {
+      setSelectedAccount(JSON.parse(savedSelectedAccount))
+    }
+
     let registration: ServiceWorkerRegistration
     let msgr: Messenger<OutgoingMessage, IncomingMessage>
 
@@ -245,6 +259,12 @@ export const WalletsProvider = ({
     }
   }, [])
 
+  useEffect(() => {
+    if (selectedAccount) {
+      localStorage.setItem(SELECTED_ACCOUNT_KEY, JSON.stringify(selectedAccount))
+    }
+  }, [selectedAccount])
+
   const addWallet = async (walletName: string, secretRecoveryPhrase?: string) => {
     // add wallet to vault
     const { result: addWalletResult } = await vaultMessenger.current!.sendRequest(VAULT_SERVICE_WORKER_ID, {
@@ -318,6 +338,13 @@ export const WalletsProvider = ({
     localStorage.setItem(VAULT_KEY, serializedVault as SerializeResult)
   }
 
+  const selectAccount = (walletName: string, account: Account) => {
+    setSelectedAccount({
+      walletName,
+      account
+    })
+  }
+
   return (
     <WalletsContext.Provider value={{
       wallets,
@@ -330,7 +357,9 @@ export const WalletsProvider = ({
       isLocked,
       saveVault,
       isVaultSetup,
-      tryDecrypt
+      tryDecrypt,
+      selectedAccount,
+      selectAccount
     }}>
       {children}
     </WalletsContext.Provider>

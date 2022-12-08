@@ -1,3 +1,4 @@
+import { Provider } from 'koilib'
 import { ReactNode, useContext, useState, createContext, useEffect } from 'react'
 import appConfig from '../app.config'
 import { NETWORKS_KEY, SELECTED_NETWORK_KEY } from '../util/Constants'
@@ -17,6 +18,7 @@ export type Network = {
 type NetworksContextType = {
   networks: Network[]
   selectedNetwork: Network
+  provider?: Provider
   selectNetwork: (network: Network) => void
   addNetwork: (network: Network) => void
   updateNetwork: (network: Network) => void
@@ -41,6 +43,7 @@ export const NetworksProvider = ({
 }): JSX.Element => {
 
   const [networks, setNetworks] = useState<Network[]>(appConfig.defaultNetworks)
+  const [provider, setProvider] = useState<Provider>()
   const [selectedNetwork, setSelectedNetwork] = useState<Network>(appConfig.defaultNetworks[0])
 
   useEffect(() => {
@@ -64,7 +67,10 @@ export const NetworksProvider = ({
   }, [networks])
 
   useEffect(() => {
-    localStorage.setItem(SELECTED_NETWORK_KEY, JSON.stringify(selectedNetwork))
+    if (selectedNetwork) {
+      localStorage.setItem(SELECTED_NETWORK_KEY, JSON.stringify(selectedNetwork))
+      setProvider(new Provider(selectedNetwork.rpcUrl))
+    }
   }, [selectedNetwork])
 
 

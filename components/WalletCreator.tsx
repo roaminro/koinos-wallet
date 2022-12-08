@@ -1,9 +1,10 @@
-import { useToast, Textarea, Button, Card, CardBody, Divider, Heading, Stack, FormControl, FormHelperText, FormLabel, Input, FormErrorMessage, Checkbox, Tag, TagLabel, TagLeftIcon, CardHeader, Center } from '@chakra-ui/react'
+import { useToast, Textarea, Button, Card, CardBody, Divider, Heading, Stack, FormControl, FormHelperText, FormLabel, Input, FormErrorMessage, Checkbox, Tag, TagLabel, TagLeftIcon, CardHeader, Center, IconButton, useClipboard, Tooltip } from '@chakra-ui/react'
 import { useRouter } from 'next/router'
 import { ChangeEvent, useEffect, useState } from 'react'
 import {
   FiPlus,
   FiMinus,
+  FiClipboard,
 } from 'react-icons/fi'
 
 import { HDKoinos } from '../util/HDKoinos'
@@ -18,6 +19,7 @@ interface WalletCreateProps {
 export default function WalletCreator({ importingSecretRecoveryPhrase = false }: WalletCreateProps) {
   const router = useRouter()
   const toast = useToast()
+  const { onCopy, setValue } = useClipboard('')
   const { addWallet } = useWallets()
 
   const [walletName, setWalletName] = useState('')
@@ -35,9 +37,10 @@ export default function WalletCreator({ importingSecretRecoveryPhrase = false }:
       setSecretRecoveryPhraseWords(secretRecoveryPhrase.split(' '))
       setRandomizedSecretRecoveryPhraseWords(secretRecoveryPhrase.split(' ').sort(() => Math.random() - 0.5))
       setSecretRecoveryPhraseConfirmation([])
+      setValue(secretRecoveryPhrase)
     }
 
-  }, [importingSecretRecoveryPhrase])
+  }, [importingSecretRecoveryPhrase, setValue])
 
   const handleSecretRecoveryPhraseChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
     setSecretRecoveryPhrase(e.target.value)
@@ -61,6 +64,17 @@ export default function WalletCreator({ importingSecretRecoveryPhrase = false }:
   const onSecretWordConfirmationClick = (wordIndex: number) => {
     setRandomizedSecretRecoveryPhraseWords([...randomizedSecretRecoveryPhraseWords, secretRecoveryPhraseConfirmation[wordIndex]])
     setSecretRecoveryPhraseConfirmation(secretRecoveryPhraseConfirmation.filter((_, index) => index !== wordIndex))
+  }
+
+  const onCopySecretRecoveryPhrase = () => {
+    onCopy()
+
+    toast({
+      title: 'Secret Recovery Phrase successfully copied',
+      description: 'The Secret Recovery Phrase was successfully copied!',
+      status: 'success',
+      isClosable: true,
+    })
   }
 
   const createWallet = async () => {
@@ -137,15 +151,24 @@ export default function WalletCreator({ importingSecretRecoveryPhrase = false }:
                 !importingSecretRecoveryPhrase &&
                 <>
                   <FormControl hidden={isSecretRecoveryPhraseSaved}>
-                    <FormLabel>Secret Phrase</FormLabel>
+                    <FormLabel>
+                      Secret Recovery Phrase { ' ' }
+                      <Tooltip
+                        label="copy Secret Recovery Phrase to clipboard"
+                        placement="bottom"
+                        hasArrow
+                      >
+                        <IconButton aria-label='Copy address' icon={<FiClipboard />} onClick={onCopySecretRecoveryPhrase} />
+                      </Tooltip>
+                    </FormLabel>
                     <Textarea value={secretRecoveryPhrase} readOnly={true} />
-                    <FormHelperText>The &quot;Secret Phrase&quot; is the &quot;Master Key&quot; that allows you to recover your accounts. You MUST keep it in a safe place as losing it will result in a loss of the funds.</FormHelperText>
+                    <FormHelperText>The &quot;Secret Recovery Phrase&quot; is the &quot;Master Key&quot; that allows you to recover your accounts. You MUST keep it in a safe place as losing it will result in a loss of the funds.</FormHelperText>
                   </FormControl>
                   <FormControl isRequired>
                     <Checkbox isChecked={isSecretRecoveryPhraseSaved} onChange={handleSavedSecretRecoveryPhraseChange}>I confirm that I saved the &quot;Secret Phrase&quot; in a safe place.</Checkbox>
                   </FormControl>
                   <FormControl isRequired hidden={!isSecretRecoveryPhraseSaved} isInvalid={!isSecretRecoveryPhraseConfirmed}>
-                    <FormLabel>Secret Phrase Confirmation</FormLabel>
+                    <FormLabel>Secret Recovery Phrase Confirmation</FormLabel>
                     {
                       secretRecoveryPhraseConfirmation.map((word, index) => {
                         if (index === secretRecoveryPhraseConfirmation.length - 1) {
