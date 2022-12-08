@@ -1,4 +1,4 @@
-import { Contract, Provider, utils } from 'koilib'
+import { Provider, utils } from 'koilib'
 import { TransactionJson, TransactionReceipt } from 'koilib/lib/interface'
 import useSWR from 'swr'
 import { useNetworks } from '../context/NetworksProvider'
@@ -41,8 +41,6 @@ const getAccountHistory =
         irreversible: false,
         ...(seqNum && { seq_num: seqNum })
       })
-
-      console.log('values', values)
 
       if (!values) {
         return []

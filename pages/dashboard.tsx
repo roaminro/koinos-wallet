@@ -1,7 +1,6 @@
 import { FiClipboard } from 'react-icons/fi'
-import { Box, Button, Card, CardBody, CardHeader, Center, Divider, Flex, Heading, IconButton, Link, Menu, MenuButton, MenuDivider, MenuItem, MenuItemOption, MenuList, MenuOptionGroup, Skeleton, Stack, Stat, StatHelpText, StatLabel, StatNumber, Table, TableCaption, TableContainer, Tbody, Td, Tfoot, Th, Thead, Tooltip, Tr, useClipboard, useToast, VStack } from '@chakra-ui/react'
-import router from 'next/router'
-import { useCallback, useEffect, useState } from 'react'
+import { Box, Button, Card, CardBody, CardHeader, Center, Divider, Heading, IconButton, Link, Menu, MenuButton, MenuItemOption, MenuList, MenuOptionGroup, Skeleton, Stack, Stat, StatHelpText, StatNumber, Table, TableContainer, Tbody, Td, Th, Thead, Tooltip, Tr, useClipboard, useToast, VStack } from '@chakra-ui/react'
+import { useEffect } from 'react'
 import { FiChevronDown } from 'react-icons/fi'
 import SimpleSidebar from '../components/Sidebar'
 import { useWallets } from '../context/WalletsProvider'
@@ -42,7 +41,7 @@ export default function Dashboard() {
   return (
     <SimpleSidebar>
       <Center>
-        <Card maxW='sm'>
+        <Card width='100%'>
           <CardHeader>
             <VStack alignItems='center'>
               <Menu>
@@ -131,7 +130,12 @@ export default function Dashboard() {
               <Skeleton isLoaded={!isLoadingAccountHistory}>
 
                 <TableContainer>
-                  <Table variant='simple'>
+                  <Table variant='striped'  colorScheme='purple'>
+                    <Thead>
+                      <Tr>
+                        <Th>Transaction Id</Th>
+                      </Tr>
+                    </Thead>
                     <Tbody>
                       {
                         transactions?.map(historyx =>
