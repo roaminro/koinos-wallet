@@ -21,6 +21,8 @@ import {
   MenuList,
   Button,
   useColorMode,
+  MenuOptionGroup,
+  MenuItemOption,
 } from '@chakra-ui/react'
 import {
   FiHome,
@@ -71,7 +73,7 @@ export default function SidebarWithHeader({
         onClose={onClose}
         returnFocusOnClose={false}
         onOverlayClick={onClose}
-        >
+      >
         <DrawerContent>
           <SidebarContent onClose={onClose} />
         </DrawerContent>
@@ -109,7 +111,7 @@ const SidebarContent = ({ onClose, ...rest }: SidebarProps) => {
         <CloseButton display={{ base: 'flex', md: 'none' }} onClick={onClose} />
       </Flex>
       {LinkItems.map((link) => (
-        ((!isVaultSetup && !link.hideWhenVaultNotSetup) || isVaultSetup) && 
+        ((!isVaultSetup && !link.hideWhenVaultNotSetup) || isVaultSetup) &&
         <NavItem key={link.name} href={link.href} icon={link.icon}>
           {link.name}
         </NavItem>
@@ -193,18 +195,25 @@ const MobileNav = ({ onOpen, ...rest }: MobileProps) => {
             {selectedNetwork.name}
           </MenuButton>
           <MenuList>
-            {
-              networks.map((network) => (
-                <MenuItem
-                  key={network.chainId}
-                  onClick={() => selectNetwork(network)}
-                >
-                  {network.name}
-                </MenuItem>
-              ))
-            }
-            <MenuDivider />
-            <MenuItem onClick={() => router.push('/networks')}>Add new network...</MenuItem>
+            <MenuOptionGroup 
+            title='Networks' 
+            type='radio' 
+            value={selectedNetwork.chainId}
+            >
+              {
+                networks.map((network) => (
+                  <MenuItemOption
+                    key={network.chainId}
+                    onClick={() => selectNetwork(network)}
+                    value={network.chainId}
+                  >
+                    {network.name}
+                  </MenuItemOption>
+                ))
+              }
+              <MenuDivider />
+              <MenuItem onClick={() => router.push('/networks')}>Add new network...</MenuItem>
+            </MenuOptionGroup>
           </MenuList>
         </Menu>
         {
