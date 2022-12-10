@@ -109,7 +109,7 @@ export default function SendTokensModal({ isOpen, onClose }: SendTokensModalProp
     } catch (error) {
       console.error(error)
       toast({
-        title: 'An error occured while seding the tokens',
+        title: 'An error occured while sending the tokens',
         description: String(error),
         status: 'error',
         isClosable: true,

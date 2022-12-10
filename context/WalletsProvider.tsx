@@ -6,7 +6,7 @@ import { Wallet, Account } from '../util/Vault'
 import { getSetting, setSetting } from '../util/Settings'
 import { debounce, debug } from '../util/Utils'
 import { Messenger } from '../util/Messenger'
-import { AddAccountArguments, AddAccountResult, AddWalletArguments, AddWalletResult, GetAccountsResult, ImportAccountArguments, ImportAccountResult, IncomingMessage, IsLockedResult, OutgoingMessage, SerializeResult, SignHashArguments, SignTransactionArguments, TryDecryptArguments, UnlockArguments, UnlockResult } from '../workers/Vault-Worker-Interfaces'
+import { AddAccountArguments, AddAccountResult, AddWalletArguments, AddWalletResult, GetAccountPrivateKeyArguments, GetAccountsResult, GetWalletSecretRecoveryPhraseArguments, ImportAccountArguments, ImportAccountResult, IncomingMessage, IsLockedResult, OutgoingMessage, SerializeResult, SignHashArguments, SignTransactionArguments, TryDecryptArguments, UnlockArguments, UnlockResult } from '../workers/Vault-Worker-Interfaces'
 import { TransactionJson } from 'koilib/lib/interface'
 
 
@@ -26,6 +26,8 @@ type WalletContextType = {
   signTransaction: (signerAddress: string, transaction: TransactionJson) => Promise<TransactionJson>
   signHash: (signerAddress: string, hash: Uint8Array) => Promise<Uint8Array>
   saveVault: () => Promise<void>
+  getWalletSecretRecoveryPhrase: (walletName: string, password: string) => Promise<string>
+  getAccountPrivateKey: (walletName: string, accountName: string, password: string) => Promise<string>
 }
 
 type SelectedAccount = {
@@ -48,6 +50,8 @@ export const WalletsContext = createContext<WalletContextType>({
   signTransaction: (signerAddress: string, transaction: TransactionJson) => new Promise((resolve) => resolve({})),
   signHash: (signerAddress: string, hash: Uint8Array) => new Promise((resolve) => resolve(new Uint8Array)),
   saveVault: () => new Promise((resolve) => resolve()),
+  getWalletSecretRecoveryPhrase: (walletName: string, password: string) => new Promise((resolve) => resolve('')),
+  getAccountPrivateKey: (walletName: string, accountName: string, password: string) => new Promise((resolve) => resolve('')),
 })
 
 export const useWallets = () => useContext(WalletsContext)
@@ -100,6 +104,12 @@ export const WalletsProvider = ({
     setIsLocked(false)
     setIsVaultSetup(encryptedVault !== null)
     setWallets(result as UnlockResult)
+
+    const walletNames = Object.keys(wallets)
+    const walletName = walletNames[0]
+    const accountNames = Object.keys(wallets[walletNames[0]].accounts)
+    const account = wallets[walletName].accounts[accountNames[0]]
+    selectAccount(walletName, account)
   }
 
   const lock = useCallback(async () => {
@@ -363,6 +373,31 @@ export const WalletsProvider = ({
     localStorage.setItem(VAULT_KEY, serializedVault as SerializeResult)
   }
 
+  const getWalletSecretRecoveryPhrase = async (walletName: string, password: string) => {
+    const { result: secretRecoveryPhrase } = await vaultMessenger.current!.sendRequest(VAULT_SERVICE_WORKER_ID, {
+      command: 'getWalletSecretRecoveryPhrase',
+      arguments: {
+        walletName,
+        password
+      } as GetWalletSecretRecoveryPhraseArguments
+    })
+
+    return secretRecoveryPhrase as string
+  }
+
+  const getAccountPrivateKey = async (walletName: string, accountName: string, password: string) => {
+    const { result: privateKey } = await vaultMessenger.current!.sendRequest(VAULT_SERVICE_WORKER_ID, {
+      command: 'getAccountPrivateKey',
+      arguments: {
+        walletName,
+        accountName,
+        password
+      } as GetAccountPrivateKeyArguments
+    })
+
+    return privateKey as string
+  }
+
   const selectAccount = (walletName: string, account: Account) => {
     setSelectedAccount({
       walletName,
@@ -386,7 +421,9 @@ export const WalletsProvider = ({
       tryDecrypt,
       selectAccount,
       signTransaction,
-      signHash
+      signHash,
+      getWalletSecretRecoveryPhrase,
+      getAccountPrivateKey
     }}>
       {children}
     </WalletsContext.Provider>

@@ -110,12 +110,11 @@ export class Vault {
     return this.locked
   }
 
-  async checkPassword(password: string) {
+  checkPassword(password: string) {
     this.checkVaultUnlocked()
 
     if (password !== this.password) {
       throw new Error('invalid password')
-
     }
   }
 
