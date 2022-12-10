@@ -1,3 +1,4 @@
+import { TransactionJson } from 'koilib/lib/interface'
 import { Wallet, Account, Signer } from '../util/Vault'
 
 export interface IncomingMessage {
@@ -16,6 +17,8 @@ export interface IncomingMessage {
   | RemoveAccountArguments
   | AddAccountSignersArguments
   | RemoveAccountSignerArguments
+  | SignTransactionArguments
+  | SignHashArguments
 }
 
 export interface OutgoingMessage {
@@ -36,6 +39,8 @@ export interface OutgoingMessage {
   | RemoveAccountResult
   | AddAccountSignersResult
   | RemoveAccountSignerResult
+  | SignTransactionResult
+  | SignHashResult
 }
 
 export type UnlockArguments = {
@@ -89,6 +94,7 @@ export type GetAccountsResult = Record<string, Wallet>
 
 export type GetWalletSecretRecoveryPhraseArguments = {
   walletName: string
+  password: string
 }
 
 export type GetWalletSecretRecoveryPhraseResult = string
@@ -96,6 +102,7 @@ export type GetWalletSecretRecoveryPhraseResult = string
 export type GetAccountPrivateKeyArguments = {
   walletName: string
   accountName: string
+  password: string
 }
 
 export type GetAccountPrivateKeyResult = string
@@ -144,3 +151,17 @@ export type RemoveAccountSignerArguments = {
 }
 
 export type RemoveAccountSignerResult = Account
+
+export type SignTransactionArguments = {
+  signerAddress: string
+  transaction: TransactionJson
+}
+
+export type SignTransactionResult = TransactionJson
+
+export type SignHashArguments = {
+  signerAddress: string
+  hash: Uint8Array
+}
+
+export type SignHashResult = Uint8Array

@@ -129,7 +129,7 @@ export default function Dashboard() {
                 placement="bottom"
                 hasArrow
               >
-                <IconButton aria-label='send tokens' icon={<FiSend />} onClick={() => setIsSendTokensModalOpen(true)} />
+                <IconButton colorScheme='blue' aria-label='send tokens' icon={<FiSend />} onClick={() => setIsSendTokensModalOpen(true)} />
               </Tooltip>
             </VStack>
           </CardHeader>
@@ -140,7 +140,7 @@ export default function Dashboard() {
               <Skeleton isLoaded={!isLoadingAccountHistory}>
 
                 <TableContainer>
-                  <Table variant='striped' colorScheme='purple'>
+                  <Table variant='striped' colorScheme='blue'>
                     <Thead>
                       <Tr>
                         <Th>Transaction Id</Th>

@@ -1,7 +1,7 @@
 import { Messenger } from '../util/Messenger'
 import { Vault } from '../util/Vault'
 import { vaultWorkerLogLevel } from '../app.config'
-import { IncomingMessage, OutgoingMessage, UnlockArguments, AddWalletArguments, AddAccountArguments, ImportAccountArguments, CheckPasswordArguments, GetWalletSecretRecoveryPhraseArguments, GetAccountPrivateKeyArguments, UpdateWalletNameArguments, RemoveWalletArguments, UpdateAccountNameArguments, RemoveAccountArguments, AddAccountSignersArguments, RemoveAccountSignerArguments, TryDecryptArguments } from './Vault-Worker-Interfaces'
+import { IncomingMessage, OutgoingMessage, UnlockArguments, AddWalletArguments, AddAccountArguments, ImportAccountArguments, CheckPasswordArguments, GetWalletSecretRecoveryPhraseArguments, GetAccountPrivateKeyArguments, UpdateWalletNameArguments, RemoveWalletArguments, UpdateAccountNameArguments, RemoveAccountArguments, AddAccountSignersArguments, RemoveAccountSignerArguments, TryDecryptArguments, SignTransactionArguments, SignHashArguments } from './Vault-Worker-Interfaces'
 
 const debug = (...args: any) => {
   if (vaultWorkerLogLevel === 'debug') {
@@ -91,14 +91,14 @@ messenger.onRequest(async ({ data, sender, sendData, sendError }) => {
       }
 
       case 'getWalletSecretRecoveryPhrase': {
-        const { walletName } = data.arguments as GetWalletSecretRecoveryPhraseArguments
-        sendData({ result: vault.getWalletSecretRecoveryPhrase(walletName) })
+        const { walletName, password } = data.arguments as GetWalletSecretRecoveryPhraseArguments
+        sendData({ result: vault.getWalletSecretRecoveryPhrase(walletName, password) })
         break
       }
 
       case 'getAccountPrivateKey': {
-        const { walletName, accountName } = data.arguments as GetAccountPrivateKeyArguments
-        sendData({ result: vault.getAccountPrivateKey(walletName, accountName) })
+        const { walletName, accountName, password } = data.arguments as GetAccountPrivateKeyArguments
+        sendData({ result: vault.getAccountPrivateKey(walletName, accountName, password) })
         break
       }
 
@@ -135,6 +135,18 @@ messenger.onRequest(async ({ data, sender, sendData, sendError }) => {
       case 'removeAccountSigner': {
         const { walletName, accountName, signerName } = data.arguments as RemoveAccountSignerArguments
         sendData({ result: vault.removeAccountSigner(walletName, accountName, signerName) })
+        break
+      }
+
+      case 'signTransaction': {
+        const { signerAddress, transaction } = data.arguments as SignTransactionArguments
+        sendData({ result: await vault.signTransaction(signerAddress, transaction) })
+        break
+      }
+
+      case 'signHash': {
+        const { signerAddress, hash } = data.arguments as SignHashArguments
+        sendData({ result: await vault.signHash(signerAddress, hash) })
         break
       }
 

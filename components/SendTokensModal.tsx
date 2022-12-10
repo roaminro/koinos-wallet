@@ -4,6 +4,7 @@ import { getSigner } from '../util/Signer'
 import { ChangeEvent, useEffect, useState } from 'react'
 import { useNetworks } from '../context/NetworksProvider'
 import { useWallets } from '../context/WalletsProvider'
+import { TransactionJson } from 'koilib/lib/interface'
 
 interface SendTokensModalProps {
   isOpen: boolean
@@ -20,13 +21,14 @@ type Token = {
 export default function SendTokensModal({ isOpen, onClose }: SendTokensModalProps) {
   const toast = useToast()
 
-  const { selectedAccount } = useWallets()
+  const { selectedAccount, signTransaction } = useWallets()
   const { selectedNetwork, provider } = useNetworks()
 
   const [amount, setAmount] = useState(0)
   const [recipientAddress, setRecipientAddress] = useState('')
   const [tokens, setTokens] = useState<Record<string, Token>>()
   const [selectedToken, setSelectedToken] = useState<Token>()
+  const [isSending, setIsSending] = useState(false)
 
   const handleRecipientAddressChange = (e: ChangeEvent<HTMLInputElement>) => {
     setRecipientAddress(e.target.value)
@@ -60,6 +62,7 @@ export default function SendTokensModal({ isOpen, onClose }: SendTokensModalProp
   }, [selectedNetwork])
 
   const sendTokens = async () => {
+    setIsSending(true)
     try {
       if (selectedToken) {
         const formattedAmount = utils.parseUnits(amount.toString(), selectedToken.decimals)
@@ -74,7 +77,8 @@ export default function SendTokensModal({ isOpen, onClose }: SendTokensModalProp
           signer: dummySigner
         })
 
-        const result = await tokenContract.functions.transfer({
+        // generate transaction
+        const { transaction } = await tokenContract.functions.transfer({
           from: selectedAccount?.account.public.address,
           to: recipientAddress,
           value: formattedAmount,
@@ -87,12 +91,30 @@ export default function SendTokensModal({ isOpen, onClose }: SendTokensModalProp
           sendAbis: false,
         })
 
-        console.log(result)
+        // sign transaction
+        const signedTx = await signTransaction(selectedAccount?.account.public.address!, transaction as TransactionJson)
 
+
+        // send transaction
+        await provider?.sendTransaction(signedTx)
+
+        toast({
+          title: 'Tokens successfully sent',
+          description: 'The tokens were successfully sent!',
+          status: 'success',
+          isClosable: true,
+        })
       }
     } catch (error) {
       console.error(error)
+      toast({
+        title: 'An error occured while seding the tokkens',
+        description: error as string,
+        status: 'error',
+        isClosable: true,
+      })
     }
+    setIsSending(false)
   }
 
   let isRecipientAddressInvalid = false
@@ -160,7 +182,7 @@ export default function SendTokensModal({ isOpen, onClose }: SendTokensModalProp
           <Button mr={3} onClick={onClose}>
             Close
           </Button>
-          <Button isDisabled={!canSendTokens} colorScheme='blue' onClick={sendTokens}>Send</Button>
+          <Button isDisabled={!canSendTokens} isLoading={isSending} colorScheme='blue' onClick={sendTokens}>Send</Button>
         </ModalFooter>
       </ModalContent>
     </Modal>

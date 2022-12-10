@@ -87,7 +87,7 @@ export default function ImportAccount() {
   let isAccountPrivateKeyInvalid = false
 
   try {
-    isAccountPrivateKeyInvalid = !watchMode && !utils.isChecksumAddress(accountPrivateKey)
+    isAccountPrivateKeyInvalid = !watchMode && !utils.isChecksumWif(accountPrivateKey)
   } catch (error) {
     isAccountPrivateKeyInvalid = true
   }

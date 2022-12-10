@@ -1,4 +1,6 @@
 import { decrypt, encrypt } from '@metamask/browser-passworder'
+import { Signer as KoilibSigner } from 'koilib'
+import { TransactionJson } from 'koilib/lib/interface'
 import HDKoinos from './HDKoinos'
 
 export interface Signer {
@@ -137,8 +139,25 @@ export class Vault {
     return 0
   }
 
-  getWalletSecretRecoveryPhrase(walletName: string) {
+  private findAccountByAddress(address: string) {
+    // a given address can be used by several wallets and accounts
+    // so return the first one found 
+    // (this is a trade-off as the same address could be using different settings (i.e. multi-signature), 
+    // but it allows for more wallet management flexibility)
+    for (const walletName in this.vault) {
+      const wallet = this.vault[walletName]
+
+      for (const accountName in wallet.accounts) {
+        if (wallet.accounts[accountName].public.address === address) {
+          return wallet.accounts[accountName]
+        }
+      }
+    }
+  }
+
+  getWalletSecretRecoveryPhrase(walletName: string, password: string) {
     this.checkVaultUnlocked()
+    this.checkPassword(password)
 
     if (!this.vault[walletName]) {
       throw new Error(`no wallet named ${walletName}`)
@@ -147,8 +166,9 @@ export class Vault {
     return this.vault[walletName].secretRecoveryPhrase
   }
 
-  getAccountPrivateKey(walletName: string, accountName: string) {
+  getAccountPrivateKey(walletName: string, accountName: string, password: string) {
     this.checkVaultUnlocked()
+    this.checkPassword(password)
 
     if (!this.vault[walletName]) {
       throw new Error(`no wallet named ${walletName}`)
@@ -382,5 +402,47 @@ export class Vault {
 
   getAccounts() {
     return this.publicVault
+  }
+
+  async signTransaction(signerAddress: string, transaction: TransactionJson) {
+    const account = this.findAccountByAddress(signerAddress)
+
+    if (!account) {
+      throw new Error(`no account found for signer address ${signerAddress}`)
+    }
+
+    if (!account.private || !account.private.privateKey) {
+      throw new Error(`no private key found for signer address ${signerAddress}`)
+    }
+
+    let signer = KoilibSigner.fromWif(account.private.privateKey)
+
+    let signedTransaction = await signer.signTransaction(transaction)
+
+    for (const signerName in account.signers) {
+      const signerInfo = account.signers[signerName]
+      if (signerInfo.private && signerInfo.private.privateKey) {
+        signer = KoilibSigner.fromWif(signerInfo.private.privateKey)
+        signedTransaction = await signer.signTransaction(signedTransaction)
+      }
+    }
+
+    return signedTransaction
+  }
+
+  async signHash(signerAddress: string, hash: Uint8Array) {
+    const account = this.findAccountByAddress(signerAddress)
+
+    if (!account) {
+      throw new Error(`no account found for signer address ${signerAddress}`)
+    }
+
+    if (!account.private || !account.private.privateKey) {
+      throw new Error(`no private key found for signer address ${signerAddress}`)
+    }
+
+    const signer = KoilibSigner.fromWif(account.private.privateKey)
+
+    return await signer.signHash(hash)
   }
 }
