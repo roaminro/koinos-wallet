@@ -17,12 +17,26 @@ export default function Dashboard() {
   const { onCopy, setValue: setClipoard } = useClipboard('')
   const toast = useToast()
 
-  const { balance: koinBalance, isLoading: isLoadingKoinBalance } = useTokenBalance(selectedAccount?.account.public.address, selectedNetwork?.tokenAddress)
-  const { mana, isLoading: isLoadingManaBalance } = useManaBalance(selectedAccount?.account.public.address)
+  const { balance: koinBalance, isLoading: isLoadingKoinBalance } = useTokenBalance(selectedAccount?.account?.public.address, selectedNetwork?.tokenAddress)
+  const { mana, isLoading: isLoadingManaBalance } = useManaBalance(selectedAccount?.account?.public.address)
 
-  const { transactions, isLoading: isLoadingAccountHistory } = useAccountHistory(selectedAccount?.account.public.address)
+  const { transactions, isLoading: isLoadingAccountHistory } = useAccountHistory(selectedAccount?.account?.public.address)
 
   const [isSendTokensModalOpen, setIsSendTokensModalOpen] = useState(false)
+
+  useEffect(() => {
+    if (!selectedAccount) {
+      const walletNames = Object.keys(wallets)
+
+      if (walletNames.length) {
+        const walletName = walletNames[0]
+        const accountNames = Object.keys(wallets[walletNames[0]].accounts)
+        const account = wallets[walletName].accounts[accountNames[0]]
+        selectAccount(walletName, account)
+      }
+    }
+  }, [wallets, selectedAccount, selectAccount])
+
 
   useEffect(() => {
     if (selectedAccount) {

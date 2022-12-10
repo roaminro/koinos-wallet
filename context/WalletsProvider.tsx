@@ -102,14 +102,9 @@ export const WalletsProvider = ({
     })
 
     setIsLocked(false)
-    setIsVaultSetup(encryptedVault !== null)
+    setIsVaultSetup(true)
     setWallets(result as UnlockResult)
-
-    const walletNames = Object.keys(wallets)
-    const walletName = walletNames[0]
-    const accountNames = Object.keys(wallets[walletNames[0]].accounts)
-    const account = wallets[walletName].accounts[accountNames[0]]
-    selectAccount(walletName, account)
+    console.log('unlocked', result)
   }
 
   const lock = useCallback(async () => {
