@@ -1,17 +1,14 @@
-import { Link, Button, Card, CardBody, CardHeader, Center, Divider, Stack, Table, TableContainer, Tbody, Td, Th, Thead, Tr, useClipboard, useToast } from '@chakra-ui/react'
+import { Button, Card, CardBody, CardHeader, Center, Divider, Stack, Table, TableContainer, Tbody, Td, Th, Thead, Tr, useClipboard, useToast, Skeleton } from '@chakra-ui/react'
 import SimpleSidebar from '../../components/Sidebar'
 import { useWallets } from '../../context/WalletsProvider'
-import { truncateTransactionId } from '../../util/Utils'
-import { ExternalLinkIcon } from '@chakra-ui/icons'
 import { useRouter } from 'next/router'
-import NextLink from 'next/link'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import RevealPrivateKeyModal from '../../components/RevealPrivateKeyModal'
 
 
 export default function Wallets() {
   const router = useRouter()
-  const { wallets } = useWallets()
+  const { wallets, isLoading } = useWallets()
 
   const [isRevealPrivateKeyModalOpen, setIsRevealPrivateKeyModalOpen] = useState(false)
   const [accountNameToReveal, setAccountNameToReveal] = useState('')
@@ -39,7 +36,7 @@ export default function Wallets() {
           </CardHeader>
           <Divider />
           <CardBody>
-            <TableContainer>
+            <TableContainer overflowX='auto'>
               <Table variant='striped' colorScheme='blue'>
                 <Thead>
                   <Tr>
@@ -49,7 +46,7 @@ export default function Wallets() {
                 </Thead>
                 <Tbody>
                   {
-                    Object.keys(wallets[walletName as string].accounts).map((accountName, accountIndex) => {
+                    walletName && Object.keys(wallets[walletName as string].accounts).map((accountName, accountIndex) => {
                       return (
                         <Tr key={accountIndex}>
                           <Td>
@@ -57,7 +54,7 @@ export default function Wallets() {
                           </Td>
                           <Td>
                             <Stack spacing={4} direction='row'>
-                            <Button variant='solid' onClick={() => revealPrivateKey(accountName)}>
+                              <Button variant='solid' onClick={() => revealPrivateKey(accountName)}>
                                 Reveal Private Key
                               </Button>
                             </Stack>
@@ -69,7 +66,7 @@ export default function Wallets() {
                 </Tbody>
               </Table>
             </TableContainer>
-            <RevealPrivateKeyModal 
+            <RevealPrivateKeyModal
               isOpen={isRevealPrivateKeyModalOpen}
               onClose={() => setIsRevealPrivateKeyModalOpen(false)}
               walletName={walletName as string}

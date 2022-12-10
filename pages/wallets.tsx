@@ -1,8 +1,6 @@
-import { Link, Button, Card, CardBody, CardHeader, Center, Divider, Stack, Table, TableContainer, Tbody, Td, Th, Thead, Tr, useClipboard, useToast } from '@chakra-ui/react'
+import { Button, Card, CardBody, CardHeader, Center, Divider, Stack, Table, TableContainer, Tbody, Td, Th, Thead, Tr, useClipboard, useToast, Skeleton } from '@chakra-ui/react'
 import SimpleSidebar from '../components/Sidebar'
 import { useWallets } from '../context/WalletsProvider'
-import { truncateTransactionId } from '../util/Utils'
-import { ExternalLinkIcon } from '@chakra-ui/icons'
 import { useRouter } from 'next/router'
 import NextLink from 'next/link'
 import RevealSecretRecoveryPhraseModal from '../components/RevealSecretRecoveryPhraseModal'
@@ -12,7 +10,6 @@ import { useState } from 'react'
 export default function Wallets() {
   const router = useRouter()
   const { wallets } = useWallets()
-  const toast = useToast()
   const [isRevealSecretRecoveryPhraseModalOpen, setIsRevealSecretRecoveryPhraseModalOpen] = useState(false)
   const [walletNameToReveal, setWalletNameToReveal] = useState('')
 
@@ -37,7 +34,7 @@ export default function Wallets() {
           </CardHeader>
           <Divider />
           <CardBody>
-            <TableContainer>
+            <TableContainer overflowX='auto'>
               <Table variant='striped' colorScheme='blue'>
                 <Thead>
                   <Tr>
@@ -70,7 +67,7 @@ export default function Wallets() {
                 </Tbody>
               </Table>
             </TableContainer>
-            <RevealSecretRecoveryPhraseModal 
+            <RevealSecretRecoveryPhraseModal
               isOpen={isRevealSecretRecoveryPhraseModalOpen}
               onClose={() => setIsRevealSecretRecoveryPhraseModalOpen(false)}
               walletName={walletNameToReveal}

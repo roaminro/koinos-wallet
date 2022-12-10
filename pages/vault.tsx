@@ -1,4 +1,4 @@
-import { Stack, Card, CardHeader, Heading, Divider, CardBody, FormControl, FormLabel, Input, FormHelperText, FormErrorMessage, Button, useToast, useDisclosure } from '@chakra-ui/react'
+import { Stack, Card, CardHeader, Heading, Divider, CardBody, FormControl, FormLabel, Input, FormHelperText, FormErrorMessage, Button, useToast, useDisclosure, Text } from '@chakra-ui/react'
 import { useRouter } from 'next/router'
 import { ChangeEvent, useRef, useState } from 'react'
 import { useWallets } from '../context/WalletsProvider'
@@ -106,6 +106,7 @@ export default function Vault() {
             </CardHeader>
             <Divider />
             <CardBody>
+              <Text marginBottom={2}>The Vault contains all the wallets and accounts you have setup. Is it encrypted with the password you have setup.</Text>
               <Button
                 disabled={!isVaultSetup}
                 isLoading={isLoading}
