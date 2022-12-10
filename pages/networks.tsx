@@ -31,7 +31,7 @@ export default function Networks() {
   const [tokenDecimals, setTokenDecimals] = useState(0)
   const [rpcUrl, setRpcUrl] = useState('')
   const [explorerUrl, setExplorerUrl] = useState('')
-  const [networkChainIdToDelete, setChainIdToDelete] = useState<string | null>(null)
+  const [networkRpcUrloDelete, setNetworkRpcUrloDelete] = useState<string | null>(null)
 
   const handleNameChange = (e: ChangeEvent<HTMLInputElement>) => {
     setName(e.target.value)
@@ -83,8 +83,8 @@ export default function Networks() {
     setExplorerUrl(network.explorerUrl)
   }
 
-  const handleDeleteClick = (networkChainId: string) => {
-    setChainIdToDelete(networkChainId)
+  const handleDeleteClick = (networkRpcUrl: string) => {
+    setNetworkRpcUrloDelete(networkRpcUrl)
     onOpen()
   }
 
@@ -174,7 +174,7 @@ export default function Networks() {
     }
   }
 
-  const isEditing = networks.some(network => network.chainId === chainId)
+  const isEditing = networks.some(network => network.rpcUrl === rpcUrl)
 
   const handleBtnClick = async () => {
     setIsLoading(true)
@@ -264,7 +264,7 @@ export default function Networks() {
                             aria-label='Delete Network'
                             colorScheme='red'
                             icon={<FiTrash2 />}
-                            onClick={() => handleDeleteClick(network.chainId)} />
+                            onClick={() => handleDeleteClick(network.rpcUrl)} />
                         </Td>
                       </Tr>
                     ))
@@ -277,8 +277,8 @@ export default function Networks() {
               onClose={onClose}
               body='Are you sure you want to delete this network?'
               onAccept={() => {
-                removeNetwork(networkChainIdToDelete!)
-                setChainIdToDelete(null)
+                removeNetwork(networkRpcUrloDelete!)
+                setNetworkRpcUrloDelete(null)
                 toast({
                   title: 'Network successfully removed',
                   description: 'The network was successfully removed!',

@@ -1,6 +1,6 @@
-import { FiClipboard } from 'react-icons/fi'
+import { FiClipboard, FiSend } from 'react-icons/fi'
 import { Box, Button, Card, CardBody, CardHeader, Center, Divider, Heading, IconButton, Link, Menu, MenuButton, MenuItemOption, MenuList, MenuOptionGroup, Skeleton, Stack, Stat, StatHelpText, StatNumber, Table, TableContainer, Tbody, Td, Th, Thead, Tooltip, Tr, useClipboard, useToast, VStack } from '@chakra-ui/react'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { FiChevronDown } from 'react-icons/fi'
 import SimpleSidebar from '../components/Sidebar'
 import { useWallets } from '../context/WalletsProvider'
@@ -9,6 +9,7 @@ import { asFloat, useManaBalance, useTokenBalance } from '../components/BalanceU
 import { useNetworks } from '../context/NetworksProvider'
 import { useAccountHistory } from '../components/AccountHistoryUtils'
 import { ExternalLinkIcon } from '@chakra-ui/icons'
+import SendTokensModal from '../components/SendTokensModal'
 
 export default function Dashboard() {
   const { wallets, selectedAccount, selectAccount } = useWallets()
@@ -20,6 +21,8 @@ export default function Dashboard() {
   const { mana, isLoading: isLoadingManaBalance } = useManaBalance(selectedAccount?.account.public.address)
 
   const { transactions, isLoading: isLoadingAccountHistory } = useAccountHistory(selectedAccount?.account.public.address)
+
+  const [isSendTokensModalOpen, setIsSendTokensModalOpen] = useState(false)
 
   useEffect(() => {
     if (selectedAccount) {
@@ -121,6 +124,13 @@ export default function Dashboard() {
 
                 </Stat>
               }
+              <Tooltip
+                label="send tokens"
+                placement="bottom"
+                hasArrow
+              >
+                <IconButton aria-label='send tokens' icon={<FiSend />} onClick={() => setIsSendTokensModalOpen(true)} />
+              </Tooltip>
             </VStack>
           </CardHeader>
           <Divider />
@@ -130,7 +140,7 @@ export default function Dashboard() {
               <Skeleton isLoaded={!isLoadingAccountHistory}>
 
                 <TableContainer>
-                  <Table variant='striped'  colorScheme='purple'>
+                  <Table variant='striped' colorScheme='purple'>
                     <Thead>
                       <Tr>
                         <Th>Transaction Id</Th>
@@ -152,10 +162,13 @@ export default function Dashboard() {
                   </Table>
                 </TableContainer>
               </Skeleton>
-
             </Stack>
           </CardBody>
         </Card>
+        <SendTokensModal
+          isOpen={isSendTokensModalOpen}
+          onClose={() => { setIsSendTokensModalOpen(false) }}
+        />
       </Center>
     </SimpleSidebar>
   )

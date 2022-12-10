@@ -75,8 +75,22 @@ export default function ImportAccount() {
   }
 
   const isAccountNameInvalid = accountName.length < 1 || !isAlphanumeric(accountName)
-  const isAccountAddressInvalid = watchMode && !utils.isChecksumAddress(accountAddress)
-  const isAccountPrivateKeyInvalid = !watchMode && !utils.isChecksumWif(accountPrivateKey)
+
+  let isAccountAddressInvalid = false
+
+  try {
+    isAccountAddressInvalid = watchMode && !utils.isChecksumAddress(accountAddress)
+  } catch (error) {
+    isAccountAddressInvalid = true
+  }
+
+  let isAccountPrivateKeyInvalid = false
+
+  try {
+    isAccountPrivateKeyInvalid = !watchMode && !utils.isChecksumAddress(accountPrivateKey)
+  } catch (error) {
+    isAccountPrivateKeyInvalid = true
+  }
 
   return (
     <SidebarWithHeader>

@@ -86,13 +86,13 @@ export const NetworksProvider = ({
     setNetworks([...networks, network])
   }
 
-  const removeNetwork = (networkchainId: string) => {
-    setNetworks([...networks.filter((network) => network.chainId !== networkchainId)])
+  const removeNetwork = (networkRpcUrl: string) => {
+    setNetworks([...networks.filter((network) => network.rpcUrl !== networkRpcUrl)])
   }
 
   const updateNetwork = (network: Network) => {
     for (let index = 0; index < networks.length; index++) {
-      if (networks[index].chainId === network.chainId) {
+      if (networks[index].rpcUrl === network.rpcUrl) {
         networks[index] = network
         break
       }
