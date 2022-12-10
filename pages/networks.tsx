@@ -104,7 +104,7 @@ export default function Networks() {
       console.error(error)
       toast({
         title: 'An error occured while fetching the chain id',
-        description: (error as Error).message,
+        description: String(error),
         status: 'error',
         isClosable: true,
       })
@@ -167,7 +167,7 @@ export default function Networks() {
       console.error(error)
       toast({
         title: 'An error occured while fetching the token information',
-        description: (error as Error).message,
+        description: String(error),
         status: 'error',
         isClosable: true,
       })
@@ -224,7 +224,7 @@ export default function Networks() {
       console.error(error)
       toast({
         title: 'An error occured while updating the network',
-        description: (error as Error).message,
+        description: String(error),
         status: 'error',
         isClosable: true,
       })

@@ -44,7 +44,7 @@ export default function CreatePassword() {
       console.error(error)
       toast({
         title: 'An error occured while setting up the password',
-        description: error as string,
+        description: String(error),
         status: 'error',
         isClosable: true,
       })

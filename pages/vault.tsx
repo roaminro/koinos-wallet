@@ -44,7 +44,7 @@ export default function Vault() {
       console.error(error)
       toast({
         title: 'An error occured while exporting the vault',
-        description: (error as Error).message,
+        description: String(error),
         status: 'error',
         isClosable: true,
       })
@@ -71,7 +71,7 @@ export default function Vault() {
       console.error(error)
       toast({
         title: 'An error occured while importing the vault',
-        description: error as string,
+        description: String(error),
         status: 'error',
         isClosable: true,
       })

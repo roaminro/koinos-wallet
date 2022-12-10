@@ -1,6 +1,6 @@
 const appConfig = {
   logLevel: 'debug',
-  vaultWorkerLogLevel: 'debug',
+  vaultWorkerLogLevel: 'info',
   defaultNetworks: [{
     name: 'Mainnet',
     chainId: 'EiBZK_GGVP0H_fXVAM3j6EAuz3-B-l3ejxRSewi7qIBfSA==',

@@ -96,7 +96,8 @@ export default function SendTokensModal({ isOpen, onClose }: SendTokensModalProp
 
 
         // send transaction
-        await provider?.sendTransaction(signedTx)
+        const sendResult = await provider?.sendTransaction(signedTx)
+        await sendResult?.transaction.wait()
 
         toast({
           title: 'Tokens successfully sent',
@@ -108,8 +109,8 @@ export default function SendTokensModal({ isOpen, onClose }: SendTokensModalProp
     } catch (error) {
       console.error(error)
       toast({
-        title: 'An error occured while seding the tokkens',
-        description: error as string,
+        title: 'An error occured while seding the tokens',
+        description: String(error),
         status: 'error',
         isClosable: true,
       })

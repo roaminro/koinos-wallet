@@ -42,7 +42,7 @@ export default function AddAccount() {
       console.error(error)
       toast({
         title: 'An error occured while adding the account',
-        description: error as string,
+        description: String(error),
         status: 'error',
         isClosable: true,
       })

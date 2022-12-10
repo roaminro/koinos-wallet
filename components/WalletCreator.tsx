@@ -99,7 +99,7 @@ export default function WalletCreator({ importingSecretRecoveryPhrase = false }:
       console.error(error)
       toast({
         title: 'An error occured while creating the wallet',
-        description: error as string,
+        description: String(error),
         status: 'error',
         isClosable: true,
       })

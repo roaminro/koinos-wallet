@@ -65,7 +65,7 @@ export default function ImportAccount() {
       console.error(error)
       toast({
         title: 'An error occured while importing the account',
-        description: error as string,
+        description: String(error),
         status: 'error',
         isClosable: true,
       })
