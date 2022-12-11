@@ -3,30 +3,27 @@ import { useEffect, useState } from 'react'
 import { Messenger } from '../../util/Messenger'
 import { useWallets } from '../../context/WalletsProvider'
 import { truncateAccount } from '../../util/Utils'
-import { IAccount } from '../../wallet_connector_handlers/accountsHandler'
+import { GetAccountsArguments, GetAccountsResult, IAccount } from '../../wallet_connector_handlers/accountsHandler'
 
-export default function Accounts() {
+export default function GetAccounts() {
   const { wallets } = useWallets()
 
-  const [sender, setSender] = useState('')
+  const [requester, setRequester] = useState('')
   const [selectedAccounts, setSelectedAccounts] = useState<Record<string, Record<string, boolean>>>({})
-  const [messenger, setMessenger] = useState<Messenger<string, IAccount[] | null>>()
+  const [messenger, setMessenger] = useState<Messenger<GetAccountsArguments, GetAccountsResult | null>>()
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    const msgr = new Messenger<string, IAccount[] | null>(window.opener, 'accounts-popup-child', true, window.location.origin)
+    const msgr = new Messenger<GetAccountsArguments, GetAccountsResult | null>(window.opener, 'accounts-popup-child', true, window.location.origin)
     setMessenger(msgr)
 
     const setupMessenger = async () => {
-      msgr.onMessage(({ data }) => {
-
-      })
 
       await msgr.ping('accounts-popup-parent')
       console.log('connected to parent iframe')
-      const sender = await msgr.sendRequest('accounts-popup-parent', null)
 
-      setSender(sender)
+      const { requester } = await msgr.sendRequest('accounts-popup-parent', null)
+      setRequester(requester)
       setIsLoading(false)
     }
 
@@ -35,7 +32,6 @@ export default function Accounts() {
 
     return () => {
       msgr.removeListener()
-      console.log('removed')
     }
   }, [])
 
@@ -80,18 +76,9 @@ export default function Accounts() {
         if (selectedAccounts[walletId][accountId] === true) {
           const account = wallet.accounts[accountId]
 
-          const acct: IAccount = {
-            address: account.public.address,
-            signers: []
-          }
-
-          for (const signerName in account.signers) {
-            acct.signers.push({
-              address: account.signers[signerName].public.address
-            })
-          }
-
-          accounts.push(acct)
+          accounts.push({
+            address: account.public.address
+          })
         }
       }
     }
@@ -130,7 +117,7 @@ export default function Accounts() {
         <CardBody>
           <Skeleton isLoaded={hasLoadedAccounts && !isLoading}>
             <Text>
-              Select the accounts you would like to share with the website &quot;{sender}&quot;:
+              Select the accounts you would like to share with the website &quot;{requester}&quot;:
             </Text>
             <Divider marginTop={4} marginBottom={4} />
             {

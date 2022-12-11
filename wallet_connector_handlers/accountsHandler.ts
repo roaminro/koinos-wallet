@@ -3,10 +3,16 @@ import { Messenger, SendDataFn, SendErrorFn } from '../util/Messenger'
 
 export interface IAccount {
   address: string
-  signers: {
+  signers?: {
     address: string,
   }[]
 }
+
+export interface GetAccountsArguments {
+  requester: string
+}
+
+export type GetAccountsResult = IAccount[]
 
 export const handler = (sender: string, data: IncomingMessage, sendData: SendDataFn<OutgoingMessage>, sendError: SendErrorFn) => {
   switch (data.command) {
@@ -20,15 +26,15 @@ export const handler = (sender: string, data: IncomingMessage, sendData: SendDat
   }
 }
 
-const getAccounts = (sender: string, _: IncomingMessage, sendData: SendDataFn<OutgoingMessage>, sendError: SendErrorFn) => {
+const getAccounts = (requester: string, _: IncomingMessage, sendData: SendDataFn<OutgoingMessage>, sendError: SendErrorFn) => {
   return new Promise<void>((resolve) => {
     const params = 'popup=yes,scrollbars=no,resizable=yes,status=no,location=no,toolbar=no,menubar=no,width=400,height=500'
-    const newWindow = window.open('/embed/accounts', 'Accounts', params)!
+    const newWindow = window.open('/embed/getAccounts', 'Accounts', params)!
     newWindow.resizeTo(400, 500)
 
-    newWindow.onload = async () => {  //wait til load to add onunload event
+    newWindow.onload = async () => {
       try {
-        const popupMsgr = new Messenger<IAccount[], string>(newWindow, 'accounts-popup-parent', true, window.location.origin)
+        const popupMsgr = new Messenger<GetAccountsResult, GetAccountsArguments>(newWindow, 'accounts-popup-parent', true, window.location.origin)
         newWindow.onunload = () => {
           popupMsgr.removeListener()
           sendError('request was cancelled')
@@ -43,7 +49,7 @@ const getAccounts = (sender: string, _: IncomingMessage, sendData: SendDataFn<Ou
         })
 
         popupMsgr.onRequest(({ sendData }) => {
-          sendData(sender)
+          sendData({ requester })
         })
       } catch (error) {
         sendError('request was cancelled')

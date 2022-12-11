@@ -105,7 +105,6 @@ export const WalletsProvider = ({
     setIsLocked(false)
     setIsVaultSetup(true)
     setWallets(result as UnlockResult)
-    console.log('unlocked', result)
   }
 
   const lock = useCallback(async () => {

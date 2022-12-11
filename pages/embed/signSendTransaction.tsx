@@ -1,0 +1,234 @@
+import { Text, Button, ButtonGroup, Card, CardBody, CardFooter, CardHeader, Divider, Heading, Skeleton, Center, useToast, Alert, AlertIcon, FormControl, FormLabel, Textarea, FormHelperText, Input, NumberDecrementStepper, NumberIncrementStepper, NumberInput, NumberInputField, NumberInputStepper } from '@chakra-ui/react'
+import { useEffect, useState } from 'react'
+import { Messenger } from '../../util/Messenger'
+import { useWallets } from '../../context/WalletsProvider'
+import { Contract, Serializer, Signer, utils } from 'koilib'
+import { OperationJson, SendTransactionOptions, TransactionJson } from 'koilib/lib/interface'
+import { useNetworks } from '../../context/NetworksProvider'
+import { SignSendTransactionArguments, SignSendTransactionResult } from '../../wallet_connector_handlers/signerHandler'
+
+export default function SignSendTransaction() {
+  const toast = useToast()
+
+  const { wallets, signTransaction } = useWallets()
+  const { provider, selectedNetwork } = useNetworks()
+
+  const [requester, setRequester] = useState('')
+  const [signerAddress, setSignerAddress] = useState('')
+  const [rcLimit, setRcLimit] = useState(0)
+  const [send, setSend] = useState(false)
+  const [transaction, setTransaction] = useState<TransactionJson>()
+  const [transactionData, setTransactionData] = useState('')
+  const [options, setOptions] = useState<SendTransactionOptions>()
+
+  const [messenger, setMessenger] = useState<Messenger<SignSendTransactionArguments, SignSendTransactionResult | null>>()
+  const [isLoading, setIsLoading] = useState(true)
+  const [isSigning, setIsSigning] = useState(false)
+  const [decodingErroredOut, setDecodingErroredOut] = useState(false)
+
+  useEffect(() => {
+    const msgr = new Messenger<SignSendTransactionArguments, SignSendTransactionResult | null>(window.opener, 'sign-send-transaction-popup-child', true, window.location.origin)
+    setMessenger(msgr)
+
+    const setupMessenger = async () => {
+      await msgr.ping('sign-send-transaction-popup-parent')
+      console.log('connected to parent iframe')
+      const { requester, send, signerAddress, transaction, options } = await msgr.sendRequest('sign-send-transaction-popup-parent', null)
+
+      setRequester(requester)
+      setSend(send)
+      setSignerAddress(signerAddress)
+      setOptions(options)
+
+      const { operations } = transaction
+
+      if (operations) {
+        if (!options.abis) {
+          setTransactionData(JSON.stringify(operations, null, 2))
+        } else {
+          const decOperations: OperationJson[] = []
+
+          for (let index = 0; index < operations.length; index++) {
+            const operation = operations[index]
+
+            if (!operation.call_contract || !operation.call_contract.contract_id) {
+              decOperations.push(operation)
+              continue
+            }
+
+            try {
+              const contractId = operation.call_contract.contract_id
+              const abi = options.abis[contractId]
+
+              if (!abi || !abi.koilib_types) {
+                throw new Error(`missing abi or koilib_types for contract ${contractId}`)
+              }
+
+              const contract = new Contract({
+                id: contractId,
+                abi,
+                serializer: new Serializer(abi.koilib_types),
+              })
+              const { name, args } = await contract.decodeOperation(operation)
+
+              if (!args) {
+                throw new Error(`could not decode operation for contract ${contractId}`)
+              }
+
+              decOperations.push({
+                //@ts-ignore we change the args in-place here
+                call_contract: { contractId, name, args },
+              })
+            } catch (error) {
+              console.error(error)
+              decOperations.push(operation)
+              setDecodingErroredOut(true)
+            }
+          }
+
+          setTransactionData(JSON.stringify(decOperations, null, 2))
+        }
+      }
+
+      // check if we need to prepare the transaction
+      const tempTransaction = { ...transaction }
+      if (!tempTransaction!.header) {
+        tempTransaction!.header = {}
+      }
+
+      if (!tempTransaction!.header.payer) {
+        tempTransaction!.header.payer = signerAddress
+      }
+
+      if (!tempTransaction!.header.chain_id) {
+        tempTransaction!.header.chain_id = selectedNetwork?.chainId
+      }
+
+      let rcLimit = tempTransaction!.header.rc_limit
+      if (!rcLimit) {
+        rcLimit = await provider?.getAccountRc(signerAddress)
+      }
+      if (rcLimit) {
+        setRcLimit(parseFloat(utils.formatUnits(rcLimit!, selectedNetwork?.tokenDecimals!)))
+      }
+      setTransaction(tempTransaction)
+
+      setIsLoading(false)
+    }
+
+    setupMessenger()
+
+
+    return () => {
+      msgr.removeListener()
+    }
+  }, [selectedNetwork?.chainId])
+
+
+  const handleRcLimitChange = (_: string, rcLimit: number) => {
+    setRcLimit(rcLimit)
+  }
+
+  const onClickConfirm = async () => {
+    setIsSigning(true)
+    try {
+      let tempTransaction = { ...transaction }
+      tempTransaction.header!.rc_limit = utils.parseUnits(rcLimit.toString(), selectedNetwork?.tokenDecimals!)
+      
+      if (!tempTransaction?.header?.nonce
+        || !tempTransaction?.header?.operation_merkle_root
+        || !tempTransaction?.id
+      ) {
+        const dummySigner = Signer.fromSeed('dummy_signer')
+        dummySigner.provider = provider
+
+        tempTransaction = await dummySigner.prepareTransaction(tempTransaction)
+      }
+
+      const signedTransaction = await signTransaction(signerAddress, tempTransaction)
+
+      if (!send) {
+        messenger!.sendMessage('sign-send-transaction-popup-parent', {
+          transaction: signedTransaction
+        })
+      } else {
+
+        const { receipt } = await provider!.sendTransaction(signedTransaction)
+        messenger!.sendMessage('sign-send-transaction-popup-parent', {
+          transaction: signedTransaction,
+          receipt
+        })
+      }
+    } catch (error) {
+      console.error(error)
+      toast({
+        title: 'An error occured while sending the tokens',
+        description: String(error),
+        status: 'error',
+        isClosable: true,
+      })
+    }
+    setIsSigning(false)
+  }
+
+  const close = () => {
+    self.close()
+  }
+
+
+  return (
+    <Center>
+      <Card>
+        <CardHeader>
+          <Heading size='md'>Signature request</Heading>
+        </CardHeader>
+        <Divider />
+        <CardBody>
+          <Skeleton isLoaded={!isLoading}>
+            {
+              decodingErroredOut && <Alert status='error'>
+                <AlertIcon />
+                Some of the operations could not be decoded, proceed with caution.
+              </Alert>
+            }
+            <Text>
+              The website &quot;{requester}&quot; is requesting a signature.
+            </Text>
+            <Divider marginTop={4} marginBottom={4} />
+            <FormControl>
+              <FormLabel>Signer address</FormLabel>
+              <Input value={signerAddress} isReadOnly={true} isDisabled={true} />
+              <FormHelperText>The address of the account being requested to sign the transaction.</FormHelperText>
+            </FormControl>
+            <FormControl>
+              <FormLabel>Mana limit</FormLabel>
+              <NumberInput min={0} value={rcLimit} onChange={handleRcLimitChange}>
+                <NumberInputField />
+                <NumberInputStepper>
+                  <NumberIncrementStepper />
+                  <NumberDecrementStepper />
+                </NumberInputStepper>
+              </NumberInput>
+              <FormHelperText>Mana limit for the transaction.</FormHelperText>
+            </FormControl>
+            <FormControl isReadOnly={true}>
+              <FormLabel>Transaction data</FormLabel>
+              <Textarea value={transactionData} readOnly={true} />
+            </FormControl>
+          </Skeleton>
+        </CardBody>
+        <Divider />
+        <CardFooter>
+          <ButtonGroup spacing='6' width='100%'>
+            <Button onClick={close} colorScheme='red'>Cancel</Button>
+            <Button width='100%' disabled={isLoading || !transaction} isLoading={isSigning} onClick={onClickConfirm} colorScheme='green'>
+              {
+                send ? 'Send' : 'Sign'
+              }
+            </Button>
+          </ButtonGroup>
+        </CardFooter>
+      </Card>
+    </Center>
+  )
+}
