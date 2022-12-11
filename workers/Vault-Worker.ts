@@ -58,14 +58,14 @@ messenger.onRequest(async ({ data, sender, sendData, sendError }) => {
       }
 
       case 'addAccount': {
-        const { walletName, accountName } = data.arguments as AddAccountArguments
-        sendData({ result: vault.addAccount(walletName, accountName) })
+        const { walletId, accountName } = data.arguments as AddAccountArguments
+        sendData({ result: vault.addAccount(walletId, accountName) })
         break
       }
 
       case 'importAccount': {
-        const { walletName, accountName, accountAddress, accountPrivateKey } = data.arguments as ImportAccountArguments
-        sendData({ result: vault.importAccount(walletName, accountName, accountAddress, accountPrivateKey) })
+        const { walletId, accountName, accountAddress, accountPrivateKey } = data.arguments as ImportAccountArguments
+        sendData({ result: vault.importAccount(walletId, accountName, accountAddress, accountPrivateKey) })
         break
       }
 
@@ -91,50 +91,50 @@ messenger.onRequest(async ({ data, sender, sendData, sendError }) => {
       }
 
       case 'getWalletSecretRecoveryPhrase': {
-        const { walletName, password } = data.arguments as GetWalletSecretRecoveryPhraseArguments
-        sendData({ result: vault.getWalletSecretRecoveryPhrase(walletName, password) })
+        const { walletId, password } = data.arguments as GetWalletSecretRecoveryPhraseArguments
+        sendData({ result: vault.getWalletSecretRecoveryPhrase(walletId, password) })
         break
       }
 
       case 'getAccountPrivateKey': {
-        const { walletName, accountName, password } = data.arguments as GetAccountPrivateKeyArguments
-        sendData({ result: vault.getAccountPrivateKey(walletName, accountName, password) })
+        const { walletId, accountId, password } = data.arguments as GetAccountPrivateKeyArguments
+        sendData({ result: vault.getAccountPrivateKey(walletId, accountId, password) })
         break
       }
 
       case 'updateWalletName': {
-        const { newWalletName, oldWalletName } = data.arguments as UpdateWalletNameArguments
-        sendData({ result: vault.updateWalletName(oldWalletName, newWalletName) })
+        const { newWalletName, walletId } = data.arguments as UpdateWalletNameArguments
+        sendData({ result: vault.updateWalletName(walletId, newWalletName) })
         break
       }
 
       case 'removeWallet': {
-        const { walletName } = data.arguments as RemoveWalletArguments
-        sendData({ result: vault.removeWallet(walletName) })
+        const { walletId } = data.arguments as RemoveWalletArguments
+        sendData({ result: vault.removeWallet(walletId) })
         break
       }
 
-      case 'updateAccounttName': {
-        const { walletName, oldAccountName, newAccountName } = data.arguments as UpdateAccountNameArguments
-        sendData({ result: vault.updateAccountName(walletName, oldAccountName, newAccountName) })
+      case 'updateAccountName': {
+        const { walletId, accountId, newAccountName } = data.arguments as UpdateAccountNameArguments
+        sendData({ result: vault.updateAccountName(walletId, accountId, newAccountName) })
         break
       }
 
       case 'removeAccount': {
-        const { walletName, accountName } = data.arguments as RemoveAccountArguments
-        sendData({ result: vault.removeAccount(walletName, accountName) })
+        const { walletId, accountId } = data.arguments as RemoveAccountArguments
+        sendData({ result: vault.removeAccount(walletId, accountId) })
         break
       }
 
       case 'addAccountSigners': {
-        const { walletName, accountName, signers } = data.arguments as AddAccountSignersArguments
-        sendData({ result: vault.addAccountSigners(walletName, accountName, signers) })
+        const { walletId, accountId, signers } = data.arguments as AddAccountSignersArguments
+        sendData({ result: vault.addAccountSigners(walletId, accountId, signers) })
         break
       }
 
       case 'removeAccountSigner': {
-        const { walletName, accountName, signerName } = data.arguments as RemoveAccountSignerArguments
-        sendData({ result: vault.removeAccountSigner(walletName, accountName, signerName) })
+        const { walletId, accountId, signerId } = data.arguments as RemoveAccountSignerArguments
+        sendData({ result: vault.removeAccountSigner(walletId, accountId, signerId) })
         break
       }
 

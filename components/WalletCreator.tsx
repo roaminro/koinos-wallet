@@ -88,9 +88,9 @@ export default function WalletCreator({ importingSecretRecoveryPhrase = false }:
       setRandomizedSecretRecoveryPhraseWords([])
 
       if (importingSecretRecoveryPhrase) {
-        router.push(`/accounts/${newWallet.name}`)
+        router.push(`/accounts/${newWallet.id}`)
       } else {
-        router.push(`/add-account/${newWallet.name}`)
+        router.push(`/add-account/${newWallet.id}`)
       }
 
       toast({

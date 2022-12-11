@@ -12,12 +12,12 @@ export default function Wallets() {
   const { wallets } = useWallets()
 
   const [isRevealPrivateKeyModalOpen, setIsRevealPrivateKeyModalOpen] = useState(false)
-  const [accountNameToReveal, setAccountNameToReveal] = useState('')
+  const [accountIdToReveal, setAccountIdToReveal] = useState('')
 
-  const { walletName } = router.query
+  const { walletId } = router.query
 
-  const revealPrivateKey = (accountName: string) => {
-    setAccountNameToReveal(accountName)
+  const revealPrivateKey = (accountId: string) => {
+    setAccountIdToReveal(accountId)
     setIsRevealPrivateKeyModalOpen(true)
   }
 
@@ -27,10 +27,10 @@ export default function Wallets() {
         <Card width='100%'>
           <CardHeader>
             <Stack spacing={8} direction='row'>
-              <Button variant='solid' onClick={() => router.push(`/add-account/${walletName}`)}>
+              <Button variant='solid' onClick={() => router.push(`/add-account/${walletId}`)}>
                 Add account
               </Button>
-              <Button variant='solid' onClick={() => router.push(`/import-account/${walletName}`)}>
+              <Button variant='solid' onClick={() => router.push(`/import-account/${walletId}`)}>
                 Import account
               </Button>
             </Stack>
@@ -47,11 +47,12 @@ export default function Wallets() {
                 </Thead>
                 <Tbody>
                   {
-                    walletName && Object.keys(wallets[walletName as string].accounts).map((accountName, accountIndex) => {
+                    walletId && Object.keys(wallets[walletId as string].accounts).map((accountId) => {
+                      const account = wallets[walletId as string].accounts[accountId]
                       return (
-                        <Tr key={accountIndex}>
+                        <Tr key={accountId}>
                           <Td>
-                            {accountName}
+                            {account.public.name}
                           </Td>
                           <Td>
                             <Stack spacing={4} direction='row'>
@@ -60,7 +61,7 @@ export default function Wallets() {
                                 placement="top"
                                 hasArrow
                               >
-                                <IconButton aria-label='reveal Private Key' icon={<FiEye />} onClick={() => revealPrivateKey(accountName)} />
+                                <IconButton aria-label='reveal Private Key' icon={<FiEye />} onClick={() => revealPrivateKey(account.public.id)} />
                               </Tooltip>
                             </Stack>
                           </Td>
@@ -74,8 +75,8 @@ export default function Wallets() {
             <RevealPrivateKeyModal
               isOpen={isRevealPrivateKeyModalOpen}
               onClose={() => setIsRevealPrivateKeyModalOpen(false)}
-              walletName={walletName as string}
-              accountName={accountNameToReveal}
+              walletId={walletId as string}
+              accountId={accountIdToReveal}
             />
           </CardBody>
         </Card>

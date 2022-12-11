@@ -12,10 +12,10 @@ export default function Wallets() {
   const router = useRouter()
   const { wallets } = useWallets()
   const [isRevealSecretRecoveryPhraseModalOpen, setIsRevealSecretRecoveryPhraseModalOpen] = useState(false)
-  const [walletNameToReveal, setWalletNameToReveal] = useState('')
+  const [walletIdToReveal, setWalletIdToReveal] = useState('')
 
-  const revealSecretRecoveryPhrase = (walletName: string) => {
-    setWalletNameToReveal(walletName)
+  const revealSecretRecoveryPhrase = (walletId: string) => {
+    setWalletIdToReveal(walletId)
     setIsRevealSecretRecoveryPhraseModalOpen(true)
   }
 
@@ -45,11 +45,12 @@ export default function Wallets() {
                 </Thead>
                 <Tbody>
                   {
-                    Object.keys(wallets).map((walletName, walletIndex) => {
+                    Object.keys(wallets).map((walletId) => {
+                      const wallet = wallets[walletId]
                       return (
-                        <Tr key={walletIndex}>
+                        <Tr key={walletId}>
                           <Td>
-                            <NextLink href={`/accounts/${walletName}`}>{walletName}</NextLink>
+                            <NextLink href={`/accounts/${walletId}`}>{wallet.name}</NextLink>
                           </Td>
                           <Td>
                             <Stack spacing={4} direction='row'>
@@ -58,14 +59,14 @@ export default function Wallets() {
                                 placement="top"
                                 hasArrow
                               >
-                                <IconButton aria-label='manage accounts' icon={<FiUsers />} onClick={() => router.push(`/accounts/${walletName}`)} />
+                                <IconButton aria-label='manage accounts' icon={<FiUsers />} onClick={() => router.push(`/accounts/${wallet.id}`)} />
                               </Tooltip>
                               <Tooltip
                                 label="reveal Secret Recovery Phrase"
                                 placement="top"
                                 hasArrow
                               >
-                                <IconButton aria-label='reveal Secret Recovery Phrase' icon={<FiEye />} onClick={() => revealSecretRecoveryPhrase(walletName)} />
+                                <IconButton aria-label='reveal Secret Recovery Phrase' icon={<FiEye />} onClick={() => revealSecretRecoveryPhrase(wallet.id)} />
                               </Tooltip>
                             </Stack>
                           </Td>
@@ -79,7 +80,7 @@ export default function Wallets() {
             <RevealSecretRecoveryPhraseModal
               isOpen={isRevealSecretRecoveryPhraseModalOpen}
               onClose={() => setIsRevealSecretRecoveryPhraseModalOpen(false)}
-              walletName={walletNameToReveal}
+              walletId={walletIdToReveal}
             />
           </CardBody>
         </Card>

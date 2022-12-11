@@ -10,9 +10,9 @@ export default function ImportAccount() {
   const router = useRouter()
   const toast = useToast()
 
-  const { importAccount, wallets, isLocked } = useWallets()
+  const { importAccount, wallets } = useWallets()
 
-  const { walletName } = router.query
+  const { walletId } = router.query
 
   const [accountName, setAccountName] = useState('')
   const [accountPrivateKey, setAccountPrivateKey] = useState('')
@@ -46,11 +46,11 @@ export default function ImportAccount() {
     setIsLoading(true)
 
     try {
-      if (!walletName) {
-        throw new Error('missing walletName')
+      if (!walletId) {
+        throw new Error('missing walletId')
       }
 
-      await importAccount(walletName as string, accountName, accountAddress, accountPrivateKey)
+      await importAccount(walletId as string, accountName, accountAddress, accountPrivateKey)
       setAccountPrivateKey('')
 
       router.push('/dashboard')
@@ -98,7 +98,7 @@ export default function ImportAccount() {
         <Card maxW='sm'>
           <CardHeader>
             <Heading size='md'>
-              Import account to wallet &quot;{walletName}&quot;
+              Import account to wallet &quot;{walletId && wallets[walletId as string].name}&quot;
             </Heading>
           </CardHeader>
           <Divider />
@@ -145,7 +145,7 @@ export default function ImportAccount() {
                 </>
               }
               <Button
-                disabled={isAccountNameInvalid || !walletName || isAccountPrivateKeyInvalid || isAccountAddressInvalid}
+                disabled={isAccountNameInvalid || !walletId || isAccountPrivateKeyInvalid || isAccountAddressInvalid}
                 isLoading={isLoading}
                 variant='solid'
                 colorScheme='green'

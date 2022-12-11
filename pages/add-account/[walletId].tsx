@@ -11,7 +11,7 @@ export default function AddAccount() {
 
   const { addAccount, wallets, isLocked } = useWallets()
 
-  const { walletName } = router.query
+  const { walletId } = router.query
 
   const [accountName, setAccountName] = useState('')
   const [isLoading, setIsLoading] = useState(false)
@@ -24,11 +24,11 @@ export default function AddAccount() {
     setIsLoading(true)
 
     try {
-      if (!walletName) {
-        throw new Error('missing walletName')
+      if (!walletId) {
+        throw new Error('missing walletId')
       }
 
-      await addAccount(walletName as string, accountName)
+      await addAccount(walletId as string, accountName)
 
       router.push('/dashboard')
 
@@ -59,7 +59,7 @@ export default function AddAccount() {
         <Card maxW='sm'>
           <CardHeader>
             <Heading size='md'>
-              Add account to wallet &quot;{walletName}&quot;
+              Add account to wallet &quot;{walletId && wallets[walletId as string].name}&quot;
             </Heading>
           </CardHeader>
           <Divider />
@@ -74,7 +74,7 @@ export default function AddAccount() {
                 }
               </FormControl>
               <Button
-                disabled={isAccountNameInvalid || !walletName}
+                disabled={isAccountNameInvalid || !walletId}
                 isLoading={isLoading}
                 variant='solid'
                 colorScheme='green'
