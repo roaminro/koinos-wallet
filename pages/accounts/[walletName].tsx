@@ -1,14 +1,15 @@
-import { Button, Card, CardBody, CardHeader, Center, Divider, Stack, Table, TableContainer, Tbody, Td, Th, Thead, Tr, useClipboard, useToast, Skeleton } from '@chakra-ui/react'
+import { Button, Card, CardBody, CardHeader, Center, Divider, Stack, Table, TableContainer, Tbody, Td, Th, Thead, Tr, useClipboard, useToast, Skeleton, IconButton, Tooltip } from '@chakra-ui/react'
 import SimpleSidebar from '../../components/Sidebar'
 import { useWallets } from '../../context/WalletsProvider'
 import { useRouter } from 'next/router'
 import { useState } from 'react'
 import RevealPrivateKeyModal from '../../components/RevealPrivateKeyModal'
+import { FiEye } from 'react-icons/fi'
 
 
 export default function Wallets() {
   const router = useRouter()
-  const { wallets, isLoading } = useWallets()
+  const { wallets } = useWallets()
 
   const [isRevealPrivateKeyModalOpen, setIsRevealPrivateKeyModalOpen] = useState(false)
   const [accountNameToReveal, setAccountNameToReveal] = useState('')
@@ -54,9 +55,13 @@ export default function Wallets() {
                           </Td>
                           <Td>
                             <Stack spacing={4} direction='row'>
-                              <Button variant='solid' onClick={() => revealPrivateKey(accountName)}>
-                                Reveal Private Key
-                              </Button>
+                              <Tooltip
+                                label="reveal Private Key"
+                                placement="top"
+                                hasArrow
+                              >
+                                <IconButton aria-label='reveal Private Key' icon={<FiEye />} onClick={() => revealPrivateKey(accountName)} />
+                              </Tooltip>
                             </Stack>
                           </Td>
                         </Tr>

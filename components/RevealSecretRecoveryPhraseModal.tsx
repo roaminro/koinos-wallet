@@ -65,7 +65,7 @@ export default function RevealSecretRecoveryPhraseModal({ isOpen, onClose, walle
     <Modal isOpen={isOpen} onClose={onCloseClick}>
       <ModalOverlay />
       <ModalContent>
-        <ModalHeader>Send tokens</ModalHeader>
+        <ModalHeader>Reveal Secret Recovery Phrase</ModalHeader>
         <ModalCloseButton />
         <ModalBody>
 

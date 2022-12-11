@@ -66,7 +66,7 @@ export default function RevealPrivateKeyModal({ isOpen, onClose, walletName, acc
     <Modal isOpen={isOpen} onClose={onCloseClick}>
       <ModalOverlay />
       <ModalContent>
-        <ModalHeader>Send tokens</ModalHeader>
+        <ModalHeader>Reveal Private Key</ModalHeader>
         <ModalCloseButton />
         <ModalBody>
 

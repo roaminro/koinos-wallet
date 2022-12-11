@@ -1,10 +1,11 @@
-import { Button, Card, CardBody, CardHeader, Center, Divider, Stack, Table, TableContainer, Tbody, Td, Th, Thead, Tr, useClipboard, useToast, Skeleton } from '@chakra-ui/react'
+import { Button, Card, CardBody, CardHeader, Center, Divider, Stack, Table, TableContainer, Tbody, Td, Th, Thead, Tr, useClipboard, useToast, Skeleton, IconButton, Tooltip } from '@chakra-ui/react'
 import SimpleSidebar from '../components/Sidebar'
 import { useWallets } from '../context/WalletsProvider'
 import { useRouter } from 'next/router'
 import NextLink from 'next/link'
 import RevealSecretRecoveryPhraseModal from '../components/RevealSecretRecoveryPhraseModal'
 import { useState } from 'react'
+import { FiClipboard, FiEye, FiUsers } from 'react-icons/fi'
 
 
 export default function Wallets() {
@@ -52,12 +53,20 @@ export default function Wallets() {
                           </Td>
                           <Td>
                             <Stack spacing={4} direction='row'>
-                              <Button variant='solid' onClick={() => router.push(`/accounts/${walletName}`)}>
-                                Manage accounts
-                              </Button>
-                              <Button variant='solid' onClick={() => revealSecretRecoveryPhrase(walletName)}>
-                                Reveal Secret Recovery Phrase
-                              </Button>
+                              <Tooltip
+                                label="manage accounts"
+                                placement="top"
+                                hasArrow
+                              >
+                                <IconButton aria-label='manage accounts' icon={<FiUsers />} onClick={() => router.push(`/accounts/${walletName}`)} />
+                              </Tooltip>
+                              <Tooltip
+                                label="reveal Secret Recovery Phrase"
+                                placement="top"
+                                hasArrow
+                              >
+                                <IconButton aria-label='reveal Secret Recovery Phrase' icon={<FiEye />} onClick={() => revealSecretRecoveryPhrase(walletName)} />
+                              </Tooltip>
                             </Stack>
                           </Td>
                         </Tr>
