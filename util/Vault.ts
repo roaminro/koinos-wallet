@@ -5,6 +5,7 @@ import HDKoinos from './HDKoinos'
 
 export interface Signer {
   public: {
+    id: string
     name: string;
     address: string;
   }
@@ -16,6 +17,7 @@ export interface Signer {
 
 export interface Account {
   public: {
+    id: string
     name: string
     keyPath?: string
     address: string
@@ -29,6 +31,7 @@ export interface Account {
 }
 
 export type Wallet = {
+  id: string
   name: string
   secretRecoveryPhrase?: string
   lastAccountKeyPath?: string
@@ -54,17 +57,19 @@ export class Vault {
     if (encryptedVault) {
       this.vault = await decrypt(password, encryptedVault) as Record<string, Wallet>
 
-      for (const walletName in this.vault) {
-        const wallet = this.vault[walletName]
+      for (const walletId in this.vault) {
+        const wallet = this.vault[walletId]
         const publicWallet: Wallet = {
+          id: wallet.id,
           name: wallet.name,
           accounts: {}
         }
 
-        for (const accountName in wallet.accounts) {
-          const account = wallet.accounts[accountName]
+        for (const accountId in wallet.accounts) {
+          const account = wallet.accounts[accountId]
           const publicAccount: Account = {
             public: {
+              id: account.public.id,
               name: account.public.name,
               address: account.public.address,
               keyPath: account.public.keyPath
@@ -72,20 +77,21 @@ export class Vault {
             signers: {}
           }
 
-          for (const signerName in account.signers) {
-            const signer = account.signers[signerName]
-            publicAccount.signers[signerName] = {
+          for (const signerId in account.signers) {
+            const signer = account.signers[signerId]
+            publicAccount.signers[signerId] = {
               public: {
+                id: signer.public.id,
                 name: signer.public.name,
                 address: signer.public.address
               }
             }
           }
 
-          publicWallet.accounts[accountName] = publicAccount
+          publicWallet.accounts[accountId] = publicAccount
         }
 
-        this.publicVault[walletName] = publicWallet
+        this.publicVault[walletId] = publicWallet
       }
     }
 
@@ -130,9 +136,9 @@ export class Vault {
     }
   }
 
-  private getNextAccountIndex(walletName: string) {
-    if (this.vault[walletName] && this.vault[walletName].lastAccountKeyPath) {
-      return parseInt(HDKoinos.parsePath(this.vault[walletName].lastAccountKeyPath!).accountIndex) + 1
+  private getNextAccountIndex(walletId: string) {
+    if (this.vault[walletId] && this.vault[walletId].lastAccountKeyPath) {
+      return parseInt(HDKoinos.parsePath(this.vault[walletId].lastAccountKeyPath!).accountIndex) + 1
     }
 
     return 0
@@ -143,200 +149,179 @@ export class Vault {
     // so return the first one found 
     // (this is a trade-off as the same address could be using different settings (i.e. multi-signature), 
     // but it allows for more wallet management flexibility)
-    for (const walletName in this.vault) {
-      const wallet = this.vault[walletName]
+    for (const walletId in this.vault) {
+      const wallet = this.vault[walletId]
 
-      for (const accountName in wallet.accounts) {
-        if (wallet.accounts[accountName].public.address === address) {
-          return wallet.accounts[accountName]
+      for (const accountId in wallet.accounts) {
+        if (wallet.accounts[accountId].public.address === address) {
+          return wallet.accounts[accountId]
         }
       }
     }
   }
 
-  getWalletSecretRecoveryPhrase(walletName: string, password: string) {
+  getWalletSecretRecoveryPhrase(walletId: string, password: string) {
     this.checkVaultUnlocked()
     this.checkPassword(password)
 
-    if (!this.vault[walletName]) {
-      throw new Error(`no wallet named ${walletName}`)
+    if (!this.vault[walletId]) {
+      throw new Error(`no wallet with id ${walletId}`)
     }
 
-    return this.vault[walletName].secretRecoveryPhrase
+    return this.vault[walletId].secretRecoveryPhrase
   }
 
-  getAccountPrivateKey(walletName: string, accountName: string, password: string) {
+  getAccountPrivateKey(walletId: string, accountId: string, password: string) {
     this.checkVaultUnlocked()
     this.checkPassword(password)
 
-    if (!this.vault[walletName]) {
-      throw new Error(`no wallet named ${walletName}`)
+    if (!this.vault[walletId]) {
+      throw new Error(`no wallet with id ${walletId}`)
     }
 
-    if (!this.vault[walletName].accounts[accountName]) {
-      throw new Error(`no account named ${accountName}`)
+    if (!this.vault[walletId].accounts[accountId]) {
+      throw new Error(`no account with id ${accountId}`)
     }
 
-    return this.vault[walletName].accounts[accountName].private?.privateKey
+    return this.vault[walletId].accounts[accountId].private?.privateKey
   }
 
   addWallet(walletName: string, secretRecoveryPhrase?: string) {
     this.checkVaultUnlocked()
 
-    if (this.vault[walletName]) {
-      throw new Error(`a wallet is already named ${walletName}`)
-    }
+    const walletId = crypto.randomUUID()
 
-    this.vault[walletName] = {
+    this.vault[walletId] = {
+      id: walletId,
       name: walletName,
       secretRecoveryPhrase: secretRecoveryPhrase,
       accounts: {}
     }
 
     const publicWallet: Wallet = {
+      id: walletId,
       name: walletName,
       accounts: {}
     }
 
-    this.publicVault[walletName] = publicWallet
+    this.publicVault[walletId] = publicWallet
 
     return publicWallet
   }
 
-  updateWalletName(oldWalletName: string, newWalletName: string) {
+  updateWalletName(walletId: string, newWalletName: string) {
     this.checkVaultUnlocked()
 
-    if (!this.vault[oldWalletName]) {
-      throw new Error(`no wallet named ${oldWalletName}`)
+    if (!this.vault[walletId]) {
+      throw new Error(`no wallet with id ${walletId}`)
     }
 
-    if (this.vault[newWalletName]) {
-      throw new Error(`a wallet is already named ${newWalletName}`)
-    }
+    this.vault[walletId].name = newWalletName
+    this.publicVault[walletId].name = newWalletName
 
-    this.vault[oldWalletName].name = newWalletName
-    this.publicVault[oldWalletName].name = newWalletName
-
-    this.vault[newWalletName] = { ...this.vault[oldWalletName] }
-    delete this.vault[oldWalletName]
-
-    this.publicVault[newWalletName] = { ...this.publicVault[oldWalletName] }
-    delete this.publicVault[oldWalletName]
-
-    return this.publicVault[newWalletName]
+    return this.publicVault[walletId]
   }
 
-  removeWallet(walletName: string) {
+  removeWallet(walletId: string) {
     this.checkVaultUnlocked()
 
-    if (!this.vault[walletName]) {
-      throw new Error(`no wallet named ${walletName}`)
+    if (!this.vault[walletId]) {
+      throw new Error(`no wallet with id ${walletId}`)
     }
 
-    delete this.vault[walletName]
-    delete this.publicVault[walletName]
+    delete this.vault[walletId]
+    delete this.publicVault[walletId]
 
     return this.publicVault
   }
 
-  addAccount(walletName: string, accountName: string) {
+  addAccount(walletId: string, accountName: string) {
     this.checkVaultUnlocked()
 
-    if (!this.vault[walletName]) {
-      throw new Error(`no wallet named ${walletName}`)
+    if (!this.vault[walletId]) {
+      throw new Error(`no wallet with id ${walletId}`)
     }
 
-    if (this.vault[walletName].accounts[accountName]) {
-      throw new Error(`an account is already named ${accountName}`)
-    }
-
-    if (!this.vault[walletName].secretRecoveryPhrase) {
+    if (!this.vault[walletId].secretRecoveryPhrase) {
       throw new Error('wallet does not have a secret recovery phrase')
     }
 
-    const accountKeyIndex = this.getNextAccountIndex(walletName)
+    const accountKeyIndex = this.getNextAccountIndex(walletId)
 
-    const hdKoinos = new HDKoinos(this.vault[walletName].secretRecoveryPhrase!)
+    const hdKoinos = new HDKoinos(this.vault[walletId].secretRecoveryPhrase!)
     const account = hdKoinos.deriveKeyAccount(accountKeyIndex, accountName)
+    const accountId = crypto.randomUUID()
 
-    this.vault[walletName].accounts[accountName] = {
-      public: account.public,
+    this.vault[walletId].accounts[accountId] = {
+      public: {
+        id: accountId,
+        ...account.public
+      },
       private: account.private,
       signers: {}
     }
 
-    this.vault[walletName].lastAccountKeyPath = account.public.keyPath
+    this.vault[walletId].lastAccountKeyPath = account.public.keyPath
 
     const publicAccount: Account = {
       public: {
-        name: account.public.name,
-        address: account.public.address,
+        id: accountId,
+        ...account.public
       },
       signers: {}
     }
 
-    this.publicVault[walletName].accounts[accountName] = publicAccount
+    this.publicVault[walletId].accounts[accountId] = publicAccount
 
     return publicAccount
   }
 
-  updateAccountName(walletName: string, oldAccountName: string, newAccountName: string) {
+  updateAccountName(walletId: string, accountId: string, newAccountName: string) {
     this.checkVaultUnlocked()
 
-    if (!this.vault[walletName]) {
-      throw new Error(`no wallet named ${walletName}`)
+    if (!this.vault[walletId]) {
+      throw new Error(`no wallet with id ${walletId}`)
     }
 
-    if (!this.vault[walletName].accounts[oldAccountName]) {
-      throw new Error(`no account named ${oldAccountName}`)
+    if (!this.vault[walletId].accounts[accountId]) {
+      throw new Error(`no account with id ${accountId}`)
     }
 
-    if (this.vault[walletName].accounts[newAccountName]) {
-      throw new Error(`an account is already named ${newAccountName}`)
-    }
+    this.vault[walletId].accounts[accountId].public.name = newAccountName
+    this.publicVault[walletId].accounts[accountId].public.name = newAccountName
 
-    this.vault[walletName].accounts[oldAccountName].public.name = newAccountName
-    this.publicVault[walletName].accounts[oldAccountName].public.name = newAccountName
-
-    this.vault[walletName].accounts[newAccountName] = { ...this.vault[walletName].accounts[oldAccountName] }
-    delete this.vault[walletName].accounts[oldAccountName]
-
-    this.publicVault[walletName].accounts[newAccountName] = { ...this.publicVault[walletName].accounts[oldAccountName] }
-    delete this.publicVault[walletName].accounts[oldAccountName]
-
-    return this.publicVault[walletName].accounts[newAccountName]
+    return this.publicVault[walletId].accounts[accountId]
   }
 
-  removeAccount(walletName: string, accountName: string) {
+  removeAccount(walletId: string, accountId: string) {
     this.checkVaultUnlocked()
 
-    if (!this.vault[walletName]) {
-      throw new Error(`no wallet named ${walletName}`)
+    if (!this.vault[walletId]) {
+      throw new Error(`no wallet with id ${walletId}`)
     }
 
-    if (!this.vault[walletName].accounts[accountName]) {
-      throw new Error(`no account named ${accountName}`)
+    if (!this.vault[walletId].accounts[accountId]) {
+      throw new Error(`no account with id ${accountId}`)
     }
 
-    delete this.vault[walletName].accounts[accountName]
-    delete this.publicVault[walletName].accounts[accountName]
+    delete this.vault[walletId].accounts[accountId]
+    delete this.publicVault[walletId].accounts[accountId]
 
-    return this.publicVault[walletName]
+    return this.publicVault[walletId]
   }
 
-  importAccount(walletName: string, accountName: string, accountAddress: string, accountPrivateKey?: string) {
+  importAccount(walletId: string, accountName: string, accountAddress: string, accountPrivateKey?: string) {
     this.checkVaultUnlocked()
 
-    if (!this.vault[walletName]) {
-      throw new Error(`no wallet named ${walletName}`)
+    if (!this.vault[walletId]) {
+      throw new Error(`no wallet with id ${walletId}`)
     }
 
-    if (this.vault[walletName].accounts[accountName]) {
-      throw new Error(`an account is already named ${accountName}`)
-    }
+    const accountId = crypto.randomUUID()
 
-    this.vault[walletName].accounts[accountName] = {
+    this.vault[walletId].accounts[accountId] = {
       public: {
+        id: accountId,
         name: accountName,
         address: accountAddress
       },
@@ -348,55 +333,56 @@ export class Vault {
 
     const publicAccount: Account = {
       public: {
+        id: accountId,
         name: accountName,
         address: accountAddress
       },
       signers: {}
     }
 
-    this.publicVault[walletName].accounts[accountName] = publicAccount
+    this.publicVault[walletId].accounts[accountId] = publicAccount
 
     return publicAccount
   }
 
-  addAccountSigners(walletName: string, accountName: string, signers: Record<string, Signer>) {
+  addAccountSigners(walletId: string, accountId: string, signers: Record<string, Signer>) {
     this.checkVaultUnlocked()
 
-    if (!this.vault[walletName]) {
-      throw new Error(`no wallet named ${walletName}`)
+    if (!this.vault[walletId]) {
+      throw new Error(`no wallet with id ${walletId}`)
     }
 
-    if (!this.vault[walletName].accounts[accountName]) {
-      throw new Error(`no account named ${accountName}`)
+    if (!this.vault[walletId].accounts[accountId]) {
+      throw new Error(`no account with id ${accountId}`)
     }
 
-    const existingSigners = this.vault[walletName].accounts[accountName].signers
+    const existingSigners = this.vault[walletId].accounts[accountId].signers
 
-    this.vault[walletName].accounts[accountName].signers = { ...existingSigners, ...signers }
-    this.publicVault[walletName].accounts[accountName].signers = { ...signers }
+    this.vault[walletId].accounts[accountId].signers = { ...existingSigners, ...signers }
+    this.publicVault[walletId].accounts[accountId].signers = { ...signers }
 
-    return this.publicVault[walletName].accounts[accountName]
+    return this.publicVault[walletId].accounts[accountId]
   }
 
-  removeAccountSigner(walletName: string, accountName: string, signerName: string) {
+  removeAccountSigner(walletId: string, accountId: string, signerId: string) {
     this.checkVaultUnlocked()
 
-    if (!this.vault[walletName]) {
-      throw new Error(`no wallet named ${walletName}`)
+    if (!this.vault[walletId]) {
+      throw new Error(`no wallet with id ${walletId}`)
     }
 
-    if (!this.vault[walletName].accounts[accountName]) {
-      throw new Error(`no account named ${accountName}`)
+    if (!this.vault[walletId].accounts[accountId]) {
+      throw new Error(`no account with id ${accountId}`)
     }
 
-    if (!this.vault[walletName].accounts[accountName].signers[signerName]) {
-      throw new Error(`no signer named ${signerName}`)
+    if (!this.vault[walletId].accounts[accountId].signers[signerId]) {
+      throw new Error(`no signer with id ${signerId}`)
     }
 
-    delete this.vault[walletName].accounts[accountName].signers[signerName]
-    delete this.publicVault[walletName].accounts[accountName].signers[signerName]
+    delete this.vault[walletId].accounts[accountId].signers[signerId]
+    delete this.publicVault[walletId].accounts[accountId].signers[signerId]
 
-    return this.publicVault[walletName].accounts[accountName]
+    return this.publicVault[walletId].accounts[accountId]
   }
 
   getAccounts() {

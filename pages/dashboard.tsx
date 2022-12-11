@@ -26,13 +26,13 @@ export default function Dashboard() {
 
   useEffect(() => {
     if (!selectedAccount) {
-      const walletNames = Object.keys(wallets)
+      const walletIds = Object.keys(wallets)
 
-      if (walletNames.length) {
-        const walletName = walletNames[0]
-        const accountNames = Object.keys(wallets[walletNames[0]].accounts)
-        const account = wallets[walletName].accounts[accountNames[0]]
-        selectAccount(walletName, account)
+      if (walletIds.length) {
+        const walletId = walletIds[0]
+        const accountIds = Object.keys(wallets[walletId].accounts)
+        const account = wallets[walletId].accounts[accountIds[0]]
+        selectAccount(walletId, wallets[walletId].name, account)
       }
     }
   }, [wallets, selectedAccount, selectAccount])
@@ -72,24 +72,24 @@ export default function Dashboard() {
                 </MenuButton>
                 <MenuList>
                   {
-                    Object.keys(wallets).map((walletName, walletIndex) => {
-                      const wallet = wallets[walletName]
+                    Object.keys(wallets).map((walletId) => {
+                      const wallet = wallets[walletId]
 
                       return (
-                        <Box key={walletIndex}>
+                        <Box key={walletId}>
                           <MenuOptionGroup
                             title={wallet.name}
                             type='radio'
-                            value={`${selectedAccount?.walletName}-${selectedAccount?.account.public.name}`}
+                            value={`${selectedAccount?.walletId}-${selectedAccount?.account.public.id}`}
                           >
                             {
-                              Object.keys(wallet.accounts).map((accountName, accountIndex) => {
-                                const account = wallet.accounts[accountName]
+                              Object.keys(wallet.accounts).map((accountId) => {
+                                const account = wallet.accounts[accountId]
                                 return (
                                   <MenuItemOption
-                                    key={`${walletIndex}-${accountIndex}`}
-                                    onClick={() => selectAccount(walletName, account)}
-                                    value={`${walletName}-${accountName}`}
+                                    key={`${wallet.id}-${accountId}`}
+                                    onClick={() => selectAccount(wallet.id, wallet.name, account)}
+                                    value={`${wallet.name}-${accountId}`}
                                   >
                                     {account.public.name} ({truncateAccount(account.public.address)})
                                   </MenuItemOption>

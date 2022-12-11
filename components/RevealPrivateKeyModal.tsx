@@ -6,11 +6,11 @@ import { useWallets } from '../context/WalletsProvider'
 interface RevealPrivateKeyModalProps {
   isOpen: boolean
   onClose: () => void
-  walletName: string
-  accountName: string
+  walletId: string
+  accountId: string
 }
 
-export default function RevealPrivateKeyModal({ isOpen, onClose, walletName, accountName }: RevealPrivateKeyModalProps) {
+export default function RevealPrivateKeyModal({ isOpen, onClose, walletId, accountId }: RevealPrivateKeyModalProps) {
   const toast = useToast()
   const { onCopy, setValue } = useClipboard('')
 
@@ -38,7 +38,7 @@ export default function RevealPrivateKeyModal({ isOpen, onClose, walletName, acc
   const onRevealClick = async () => {
     setIsLoading(true)
     try {
-      const privateKey = await getAccountPrivateKey(walletName!, accountName!, password)
+      const privateKey = await getAccountPrivateKey(walletId!, accountId!, password)
       setPrivateKey(privateKey)
       setValue(privateKey)
 

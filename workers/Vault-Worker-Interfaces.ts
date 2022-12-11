@@ -65,14 +65,14 @@ export type AddWalletArguments = {
 export type AddWalletResult = Wallet
 
 export type AddAccountArguments = {
-  walletName: string
+  walletId: string
   accountName: string
 }
 
 export type AddAccountResult = Account
 
 export type ImportAccountArguments = {
-  walletName: string
+  walletId: string
   accountName: string
   accountAddress: string
   accountPrivateKey?: string
@@ -93,61 +93,61 @@ export type IsLockedResult = boolean
 export type GetAccountsResult = Record<string, Wallet>
 
 export type GetWalletSecretRecoveryPhraseArguments = {
-  walletName: string
+  walletId: string
   password: string
 }
 
 export type GetWalletSecretRecoveryPhraseResult = string
 
 export type GetAccountPrivateKeyArguments = {
-  walletName: string
-  accountName: string
+  walletId: string
+  accountId: string
   password: string
 }
 
 export type GetAccountPrivateKeyResult = string
 
 export type UpdateWalletNameArguments = {
-  oldWalletName: string
+  walletId: string
   newWalletName: string
 }
 
 export type UpdateWalletNameResult = Wallet
 
 export type RemoveWalletArguments = {
-  walletName: string
+  walletId: string
 }
 
 export type RemoveWalletResult = Record<string, Wallet>
 
 
 export type UpdateAccountNameArguments = {
-  walletName: string
-  oldAccountName: string
+  walletId: string
+  accountId: string
   newAccountName: string
 }
 
 export type UpdateAccountNameResult = Account
 
 export type RemoveAccountArguments = {
-  walletName: string
-  accountName: string
+  walletId: string
+  accountId: string
 }
 
 export type RemoveAccountResult = Wallet
 
 export type AddAccountSignersArguments = {
-  walletName: string
-  accountName: string
+  walletId: string
+  accountId: string
   signers: Record<string, Signer>
 }
 
 export type AddAccountSignersResult = Account
 
 export type RemoveAccountSignerArguments = {
-  walletName: string
-  accountName: string
-  signerName: string
+  walletId: string
+  accountId: string
+  signerId: string
 }
 
 export type RemoveAccountSignerResult = Account

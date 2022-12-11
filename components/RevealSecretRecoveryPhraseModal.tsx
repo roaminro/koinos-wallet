@@ -6,10 +6,10 @@ import { useWallets } from '../context/WalletsProvider'
 interface RevealSecretRecoveryPhraseModalProps {
   isOpen: boolean
   onClose: () => void
-  walletName: string
+  walletId: string
 }
 
-export default function RevealSecretRecoveryPhraseModal({ isOpen, onClose, walletName }: RevealSecretRecoveryPhraseModalProps) {
+export default function RevealSecretRecoveryPhraseModal({ isOpen, onClose, walletId }: RevealSecretRecoveryPhraseModalProps) {
   const toast = useToast()
   const { onCopy, setValue } = useClipboard('')
 
@@ -37,7 +37,7 @@ export default function RevealSecretRecoveryPhraseModal({ isOpen, onClose, walle
   const onRevealClick = async () => {
     setIsLoading(true)
     try {
-      const secret = await getWalletSecretRecoveryPhrase(walletName!, password)
+      const secret = await getWalletSecretRecoveryPhrase(walletId!, password)
       setSecretRecoveryPhrase(secret)
       setValue(secret)
 

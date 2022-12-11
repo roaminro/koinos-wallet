@@ -19,18 +19,19 @@ type WalletContextType = {
   unlock: (password: string) => Promise<void>
   lock: () => Promise<void>
   addWallet: (walletName: string, secretRecoveryPhrase?: string) => Promise<Wallet>
-  tryDecrypt: (walletName: string, encryptedVault: string) => Promise<void>
-  addAccount: (walletName: string, accountName: string) => Promise<Account>
-  importAccount: (walletName: string, accountName: string, accountAddress: string, accountPrivateKey?: string) => Promise<Account>
-  selectAccount: (walletName: string, account: Account) => void
+  tryDecrypt: (password: string, encryptedVault: string) => Promise<void>
+  addAccount: (walletId: string, accountName: string) => Promise<Account>
+  importAccount: (walletId: string, accountName: string, accountAddress: string, accountPrivateKey?: string) => Promise<Account>
+  selectAccount: (walletId: string, walletName: string, account: Account) => void
   signTransaction: (signerAddress: string, transaction: TransactionJson) => Promise<TransactionJson>
   signHash: (signerAddress: string, hash: Uint8Array) => Promise<Uint8Array>
   saveVault: () => Promise<void>
-  getWalletSecretRecoveryPhrase: (walletName: string, password: string) => Promise<string>
-  getAccountPrivateKey: (walletName: string, accountName: string, password: string) => Promise<string>
+  getWalletSecretRecoveryPhrase: (walletId: string, password: string) => Promise<string>
+  getAccountPrivateKey: (walletId: string, accountId: string, password: string) => Promise<string>
 }
 
 type SelectedAccount = {
+  walletId: string
   walletName: string
   account: Account
 }
@@ -42,16 +43,16 @@ export const WalletsContext = createContext<WalletContextType>({
   isVaultSetup: false,
   unlock: (password: string) => new Promise((resolve) => resolve()),
   lock: () => new Promise((resolve) => resolve()),
-  addWallet: (walletName: string, secretRecoveryPhrase?: string) => new Promise((resolve) => resolve({ name: '', accounts: {} })),
+  addWallet: (walletName: string, secretRecoveryPhrase?: string) => new Promise((resolve) => resolve({ id: '', name: '', accounts: {} })),
   tryDecrypt: (password: string, encryptedVault: string) => new Promise((resolve) => resolve()),
-  addAccount: (walletName: string, accountName: string) => new Promise((resolve) => resolve({ public: { name: '', address: '' }, signers: {} })),
-  importAccount: (walletName: string, accountName: string, accountAddress: string, accountPrivateKey?: string) => new Promise((resolve) => resolve({ public: { name: '', address: '' }, signers: {} })),
-  selectAccount: (walletName: string, account: Account) => { },
+  addAccount: (walletId: string, accountName: string) => new Promise((resolve) => resolve({ public: { id: '', name: '', address: '' }, signers: {} })),
+  importAccount: (walletId: string, accountName: string, accountAddress: string, accountPrivateKey?: string) => new Promise((resolve) => resolve({ public: { id: '', name: '', address: '' }, signers: {} })),
+  selectAccount: (walletId: string, walletName: string, account: Account) => { },
   signTransaction: (signerAddress: string, transaction: TransactionJson) => new Promise((resolve) => resolve({})),
   signHash: (signerAddress: string, hash: Uint8Array) => new Promise((resolve) => resolve(new Uint8Array)),
   saveVault: () => new Promise((resolve) => resolve()),
-  getWalletSecretRecoveryPhrase: (walletName: string, password: string) => new Promise((resolve) => resolve('')),
-  getAccountPrivateKey: (walletName: string, accountName: string, password: string) => new Promise((resolve) => resolve('')),
+  getWalletSecretRecoveryPhrase: (walletId: string, password: string) => new Promise((resolve) => resolve('')),
+  getAccountPrivateKey: (walletId: string, accountId: string, password: string) => new Promise((resolve) => resolve('')),
 })
 
 export const useWallets = () => useContext(WalletsContext)
@@ -293,19 +294,19 @@ export const WalletsProvider = ({
     return newWallet
   }
 
-  const addAccount = async (walletName: string, accountName: string) => {
+  const addAccount = async (walletId: string, accountName: string) => {
     // add account to wallet
     const { result: addAccountResult } = await vaultMessenger.current!.sendRequest(VAULT_SERVICE_WORKER_ID, {
       command: 'addAccount',
       arguments: {
-        walletName,
+        walletId,
         accountName
       } as AddAccountArguments
     })
 
     const newAccount = addAccountResult as AddAccountResult
 
-    wallets[walletName].accounts[accountName] = newAccount
+    wallets[walletId].accounts[newAccount.public.id] = newAccount
 
     // update state
     setWallets({ ...wallets })
@@ -313,12 +314,12 @@ export const WalletsProvider = ({
     return newAccount
   }
 
-  const importAccount = async (walletName: string, accountName: string, accountAddress: string, accountPrivateKey?: string) => {
+  const importAccount = async (walletId: string, accountName: string, accountAddress: string, accountPrivateKey?: string) => {
     // add account to wallet
     const { result: importAccountResult } = await vaultMessenger.current!.sendRequest(VAULT_SERVICE_WORKER_ID, {
       command: 'importAccount',
       arguments: {
-        walletName,
+        walletId,
         accountName,
         accountAddress,
         accountPrivateKey
@@ -327,7 +328,7 @@ export const WalletsProvider = ({
 
     const newAccount = importAccountResult as ImportAccountResult
 
-    wallets[walletName].accounts[accountName] = newAccount
+    wallets[walletId].accounts[newAccount.public.id] = newAccount
 
     // update state
     setWallets({ ...wallets })
@@ -368,11 +369,11 @@ export const WalletsProvider = ({
     localStorage.setItem(VAULT_KEY, serializedVault as SerializeResult)
   }
 
-  const getWalletSecretRecoveryPhrase = async (walletName: string, password: string) => {
+  const getWalletSecretRecoveryPhrase = async (walletId: string, password: string) => {
     const { result: secretRecoveryPhrase } = await vaultMessenger.current!.sendRequest(VAULT_SERVICE_WORKER_ID, {
       command: 'getWalletSecretRecoveryPhrase',
       arguments: {
-        walletName,
+        walletId,
         password
       } as GetWalletSecretRecoveryPhraseArguments
     })
@@ -380,12 +381,12 @@ export const WalletsProvider = ({
     return secretRecoveryPhrase as string
   }
 
-  const getAccountPrivateKey = async (walletName: string, accountName: string, password: string) => {
+  const getAccountPrivateKey = async (walletId: string, accountId: string, password: string) => {
     const { result: privateKey } = await vaultMessenger.current!.sendRequest(VAULT_SERVICE_WORKER_ID, {
       command: 'getAccountPrivateKey',
       arguments: {
-        walletName,
-        accountName,
+        walletId,
+        accountId,
         password
       } as GetAccountPrivateKeyArguments
     })
@@ -393,8 +394,9 @@ export const WalletsProvider = ({
     return privateKey as string
   }
 
-  const selectAccount = (walletName: string, account: Account) => {
+  const selectAccount = (walletId: string, walletName: string, account: Account) => {
     setSelectedAccount({
+      walletId,
       walletName,
       account
     })

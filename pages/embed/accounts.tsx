@@ -42,27 +42,27 @@ export default function Accounts() {
   useEffect(() => {
     const accounts: Record<string, Record<string, boolean>> = {}
 
-    for (const walletName in wallets) {
-      const wallet = wallets[walletName]
-      accounts[walletName] = {}
+    for (const walletId in wallets) {
+      const wallet = wallets[walletId]
+      accounts[walletId] = {}
 
-      for (const accountName in wallet.accounts) {
-        accounts[walletName][accountName] = false
+      for (const accountId in wallet.accounts) {
+        accounts[walletId][accountId] = false
       }
     }
 
     setSelectedAccounts({ ...accounts })
   }, [wallets])
 
-  const updateSelectedAccounts = (walletName: string, accountName: string, checked: boolean) => {
-    selectedAccounts[walletName][accountName] = checked
+  const updateSelectedAccounts = (walletId: string, accountId: string, checked: boolean) => {
+    selectedAccounts[walletId][accountId] = checked
 
     setSelectedAccounts({ ...selectedAccounts })
   }
 
-  const updateAllSelectedAccounts = (walletName: string, checked: boolean) => {
-    for (const accountName in selectedAccounts[walletName]) {
-      selectedAccounts[walletName][accountName] = checked
+  const updateAllSelectedAccounts = (walletId: string, checked: boolean) => {
+    for (const accountId in selectedAccounts[walletId]) {
+      selectedAccounts[walletId][accountId] = checked
     }
 
     setSelectedAccounts({ ...selectedAccounts })
@@ -73,12 +73,12 @@ export default function Accounts() {
   const onClickConfirm = () => {
     const accounts: IAccount[] = []
 
-    for (const walletName in wallets) {
-      const wallet = wallets[walletName]
+    for (const walletId in wallets) {
+      const wallet = wallets[walletId]
 
-      for (const accountName in wallet.accounts) {
-        if (selectedAccounts[walletName][accountName] === true) {
-          const account = wallet.accounts[accountName]
+      for (const accountId in wallet.accounts) {
+        if (selectedAccounts[walletId][accountId] === true) {
+          const account = wallet.accounts[accountId]
 
           const acct: IAccount = {
             address: account.public.address,
@@ -105,11 +105,11 @@ export default function Accounts() {
 
   let hasSelectedOneAccount = false
 
-  for (const walletName in selectedAccounts) {
-    const wallet = selectedAccounts[walletName]
+  for (const walletId in selectedAccounts) {
+    const wallet = selectedAccounts[walletId]
 
-    for (const accountName in wallet) {
-      if (selectedAccounts[walletName][accountName] === true) {
+    for (const accountId in wallet) {
+      if (selectedAccounts[walletId][accountId] === true) {
         hasSelectedOneAccount = true
         break
       }
@@ -134,13 +134,13 @@ export default function Accounts() {
             </Text>
             <Divider marginTop={4} marginBottom={4} />
             {
-              hasLoadedAccounts && Object.keys(wallets).map((walletName, walletIndex) => {
-                const wallet = wallets[walletName]
+              hasLoadedAccounts && Object.keys(wallets).map((walletId) => {
+                const wallet = wallets[walletId]
                 let allChecked = true
 
                 let oneAccountIsSelected = false
-                for (const accountName in wallet.accounts) {
-                  if (selectedAccounts[walletName][accountName] === true) {
+                for (const accountId in wallet.accounts) {
+                  if (selectedAccounts[walletId][accountId] === true) {
                     oneAccountIsSelected = true
                   } else {
                     allChecked = false
@@ -150,23 +150,23 @@ export default function Accounts() {
                 const isIndeterminate = oneAccountIsSelected && !allChecked
 
                 return (
-                  <Box key={walletIndex}>
+                  <Box key={walletId}>
                     <Checkbox
                       isChecked={allChecked}
                       isIndeterminate={isIndeterminate}
-                      onChange={(e) => updateAllSelectedAccounts(walletName, e.target.checked)}
+                      onChange={(e) => updateAllSelectedAccounts(walletId, e.target.checked)}
                     >
                       <Heading size='sm'>{wallet.name}</Heading>
                     </Checkbox>
                     <Stack pl={6} mt={1} spacing={1}>
                       {
-                        Object.keys(wallet.accounts).map((accountName, accountIndex) => {
-                          const account = wallet.accounts[accountName]
+                        Object.keys(wallet.accounts).map((accountId) => {
+                          const account = wallet.accounts[accountId]
                           return (
                             <Checkbox
-                              key={`${walletIndex}-${accountIndex}`}
-                              isChecked={selectedAccounts[walletName][accountName]}
-                              onChange={(e) => updateSelectedAccounts(walletName, accountName, e.target.checked)}
+                              key={`${walletId}-${accountId}`}
+                              isChecked={selectedAccounts[walletId][accountId]}
+                              onChange={(e) => updateSelectedAccounts(walletId, accountId, e.target.checked)}
                             >
                               {account.public.name} ({truncateAccount(account.public.address)})
                             </Checkbox>
