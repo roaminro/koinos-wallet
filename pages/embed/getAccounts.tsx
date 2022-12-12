@@ -1,4 +1,4 @@
-import { Text, Box, Button, ButtonGroup, Card, CardBody, CardFooter, CardHeader, Checkbox, Divider, Heading, Input, Skeleton, Spinner, Stack, Center } from '@chakra-ui/react'
+import { useColorModeValue, Text, Box, Button, ButtonGroup, Card, CardBody, CardFooter, CardHeader, Checkbox, Divider, Heading, Input, Skeleton, Spinner, Stack, Center } from '@chakra-ui/react'
 import { useEffect, useState } from 'react'
 import { Messenger } from '../../util/Messenger'
 import { useWallets } from '../../context/WalletsProvider'
@@ -109,73 +109,81 @@ export default function GetAccounts() {
 
   return (
     <Center>
-      <Card>
-        <CardHeader>
-          <Heading size='md'>Accounts request</Heading>
-        </CardHeader>
-        <Divider />
-        <CardBody>
-          <Skeleton isLoaded={hasLoadedAccounts && !isLoading}>
-            <Text>
-              Select the accounts you would like to share with the website &quot;{requester}&quot;:
-            </Text>
-            <Divider marginTop={4} marginBottom={4} />
-            {
-              hasLoadedAccounts && Object.keys(wallets).map((walletId) => {
-                const wallet = wallets[walletId]
-                let allChecked = true
+      <Stack>
+        <Card>
+          <CardHeader>
+            <Heading size='md'>Accounts request</Heading>
+          </CardHeader>
+          <Divider />
+          <CardBody>
+            <Skeleton isLoaded={hasLoadedAccounts && !isLoading}>
+              <Text>
+                Select the accounts you would like to share with the website &quot;{requester}&quot;:
+              </Text>
+              <Divider marginTop={4} marginBottom={4} />
+              {
+                hasLoadedAccounts && Object.keys(wallets).map((walletId) => {
+                  const wallet = wallets[walletId]
+                  let allChecked = true
 
-                let oneAccountIsSelected = false
-                for (const accountId in wallet.accounts) {
-                  if (selectedAccounts[walletId][accountId] === true) {
-                    oneAccountIsSelected = true
-                  } else {
-                    allChecked = false
+                  let oneAccountIsSelected = false
+                  for (const accountId in wallet.accounts) {
+                    if (selectedAccounts[walletId][accountId] === true) {
+                      oneAccountIsSelected = true
+                    } else {
+                      allChecked = false
+                    }
                   }
-                }
 
-                const isIndeterminate = oneAccountIsSelected && !allChecked
+                  const isIndeterminate = oneAccountIsSelected && !allChecked
 
-                return (
-                  <Box key={walletId}>
-                    <Checkbox
-                      isChecked={allChecked}
-                      isIndeterminate={isIndeterminate}
-                      onChange={(e) => updateAllSelectedAccounts(walletId, e.target.checked)}
-                    >
-                      <Heading size='sm'>{wallet.name}</Heading>
-                    </Checkbox>
-                    <Stack pl={6} mt={1} spacing={1}>
-                      {
-                        Object.keys(wallet.accounts).map((accountId) => {
-                          const account = wallet.accounts[accountId]
-                          return (
-                            <Checkbox
-                              key={`${walletId}-${accountId}`}
-                              isChecked={selectedAccounts[walletId][accountId]}
-                              onChange={(e) => updateSelectedAccounts(walletId, accountId, e.target.checked)}
-                            >
-                              {account.public.name} ({truncateAccount(account.public.address)})
-                            </Checkbox>
-                          )
-                        })
-                      }
-                    </Stack>
-                    <Divider marginTop={4} marginBottom={4} />
-                  </Box>
-                )
-              })
-            }
-          </Skeleton>
-        </CardBody>
-        <Divider />
-        <CardFooter>
-          <ButtonGroup spacing='6' width='100%'>
-            <Button onClick={close} colorScheme='red'>Cancel</Button>
-            <Button width='100%' disabled={isLoading || !hasSelectedOneAccount} onClick={onClickConfirm} colorScheme='green'>Confirm</Button>
-          </ButtonGroup>
-        </CardFooter>
-      </Card>
+                  return (
+                    <Box key={walletId}>
+                      <Checkbox
+                        isChecked={allChecked}
+                        isIndeterminate={isIndeterminate}
+                        onChange={(e) => updateAllSelectedAccounts(walletId, e.target.checked)}
+                      >
+                        <Heading size='sm'>{wallet.name}</Heading>
+                      </Checkbox>
+                      <Stack pl={6} mt={1} spacing={1}>
+                        {
+                          Object.keys(wallet.accounts).map((accountId) => {
+                            const account = wallet.accounts[accountId]
+                            return (
+                              <Checkbox
+                                key={`${walletId}-${accountId}`}
+                                isChecked={selectedAccounts[walletId][accountId]}
+                                onChange={(e) => updateSelectedAccounts(walletId, accountId, e.target.checked)}
+                              >
+                                {account.public.name} ({truncateAccount(account.public.address)})
+                              </Checkbox>
+                            )
+                          })
+                        }
+                      </Stack>
+                      <Divider marginTop={4} marginBottom={4} />
+                    </Box>
+                  )
+                })
+              }
+            </Skeleton>
+          </CardBody>
+        </Card>
+        <Box
+          style={{ position: 'sticky', bottom: 0, WebkitMaskPosition: 'sticky' }}
+          bg={useColorModeValue('gray.100', 'gray.900')}
+        >
+          <Card>
+            <CardBody>
+              <ButtonGroup spacing='6' width='100%'>
+                <Button onClick={close} colorScheme='red'>Cancel</Button>
+                <Button width='100%' disabled={isLoading || !hasSelectedOneAccount} onClick={onClickConfirm} colorScheme='green'>Confirm</Button>
+              </ButtonGroup>
+            </CardBody>
+          </Card>
+        </Box>
+      </Stack>
     </Center>
   )
 }

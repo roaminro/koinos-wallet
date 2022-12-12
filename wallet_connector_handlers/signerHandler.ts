@@ -21,7 +21,7 @@ export const handler = (sender: string, data: IncomingMessage, sendData: SendDat
       return signSendTransaction(false, sender, data, sendData, sendError)
     }
 
-    case 'sendTransaction': {
+    case 'signAndSendTransaction': {
       return signSendTransaction(true, sender, data, sendData, sendError)
     }
 
@@ -33,9 +33,9 @@ export const handler = (sender: string, data: IncomingMessage, sendData: SendDat
 
 const signSendTransaction = (send: boolean, requester: string, data: IncomingMessage, sendData: SendDataFn<OutgoingMessage>, sendError: SendErrorFn) => {
   return new Promise<void>((resolve) => {
-    const params = 'popup=yes,scrollbars=no,resizable=yes,status=no,location=no,toolbar=no,menubar=no,width=400,height=550'
+    const params = 'popup=yes,scrollbars=no,resizable=yes,status=no,location=no,toolbar=no,menubar=no,width=450,height=550'
     const newWindow = window.open('/embed/signSendTransaction', 'Transaction', params)!
-    newWindow.resizeTo(400, 550)
+    newWindow.resizeTo(450, 550)
 
     newWindow.onload = async () => {
       try {

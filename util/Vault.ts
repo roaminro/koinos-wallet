@@ -146,18 +146,27 @@ export class Vault {
 
   private findAccountByAddress(address: string) {
     // a given address can be used by several wallets and accounts
-    // so return the first one found 
-    // (this is a trade-off as the same address could be using different settings (i.e. multi-signature), 
-    // but it allows for more wallet management flexibility)
+    // so return:
+    //  - the first account found that has a private key
+    //  - or, an account that matches address
+    let foundAccount: Account|null = null
     for (const walletId in this.vault) {
       const wallet = this.vault[walletId]
 
       for (const accountId in wallet.accounts) {
+        // found an account that matches address
         if (wallet.accounts[accountId].public.address === address) {
-          return wallet.accounts[accountId]
+          // does it have a private key?
+          if (wallet.accounts[accountId].private?.privateKey) {
+            return wallet.accounts[accountId]
+          }
+
+          foundAccount = wallet.accounts[accountId]
         }
       }
     }
+
+    return foundAccount
   }
 
   getWalletSecretRecoveryPhrase(walletId: string, password: string) {

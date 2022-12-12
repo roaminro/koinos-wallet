@@ -1,4 +1,4 @@
-import { Text, Button, ButtonGroup, Card, CardBody, CardFooter, CardHeader, Divider, Heading, Skeleton, Center, useToast, Alert, AlertIcon, FormControl, FormLabel, Textarea, FormHelperText, Input, NumberDecrementStepper, NumberIncrementStepper, NumberInput, NumberInputField, NumberInputStepper } from '@chakra-ui/react'
+import { Text, Button, ButtonGroup, Card, CardBody, useColorModeValue, CardHeader, Divider, Heading, Skeleton, Center, useToast, Alert, AlertIcon, FormControl, FormLabel, Textarea, FormHelperText, Input, NumberDecrementStepper, NumberIncrementStepper, NumberInput, NumberInputField, NumberInputStepper, Stack, Box } from '@chakra-ui/react'
 import { useEffect, useState } from 'react'
 import { Messenger } from '../../util/Messenger'
 import { useWallets } from '../../context/WalletsProvider'
@@ -11,10 +11,11 @@ export default function SignSendTransaction() {
   const toast = useToast()
 
   const { wallets, signTransaction } = useWallets()
-  const { provider, selectedNetwork } = useNetworks()
+  const { provider, selectedNetwork, networks } = useNetworks()
 
   const [requester, setRequester] = useState('')
   const [signerAddress, setSignerAddress] = useState('')
+  const [networkName, setNetworkName] = useState('')
   const [rcLimit, setRcLimit] = useState(0)
   const [send, setSend] = useState(false)
   const [transaction, setTransaction] = useState<TransactionJson>()
@@ -24,7 +25,7 @@ export default function SignSendTransaction() {
   const [messenger, setMessenger] = useState<Messenger<SignSendTransactionArguments, SignSendTransactionResult | null>>()
   const [isLoading, setIsLoading] = useState(true)
   const [isSigning, setIsSigning] = useState(false)
-  const [decodingErroredOut, setDecodingErroredOut] = useState(false)
+  const [hasDecodingError, setHasDecodingError] = useState(false)
 
   useEffect(() => {
     const msgr = new Messenger<SignSendTransactionArguments, SignSendTransactionResult | null>(window.opener, 'sign-send-transaction-popup-child', true, window.location.origin)
@@ -82,7 +83,7 @@ export default function SignSendTransaction() {
             } catch (error) {
               console.error(error)
               decOperations.push(operation)
-              setDecodingErroredOut(true)
+              setHasDecodingError(true)
             }
           }
 
@@ -100,10 +101,23 @@ export default function SignSendTransaction() {
         tempTransaction!.header.payer = signerAddress
       }
 
-      if (!tempTransaction!.header.chain_id) {
+      // check network
+      if (selectedNetwork && !tempTransaction!.header.chain_id) {
         tempTransaction!.header.chain_id = selectedNetwork?.chainId
+        setNetworkName(selectedNetwork.name)
+      } else if (selectedNetwork && tempTransaction!.header.chain_id === selectedNetwork?.chainId) {
+        setNetworkName(selectedNetwork.name)
+      } else {
+        for (let index = 0; index < networks.length; index++) {
+          const network = networks[index]
+          if (network.chainId === tempTransaction!.header.chain_id) {
+            setNetworkName(network.name)
+            break
+          }
+        }
       }
 
+      // check rcLimit
       let rcLimit = tempTransaction!.header.rc_limit
       if (!rcLimit) {
         rcLimit = await provider?.getAccountRc(signerAddress)
@@ -111,6 +125,7 @@ export default function SignSendTransaction() {
       if (rcLimit) {
         setRcLimit(parseFloat(utils.formatUnits(rcLimit!, selectedNetwork?.tokenDecimals!)))
       }
+
       setTransaction(tempTransaction)
 
       setIsLoading(false)
@@ -122,7 +137,7 @@ export default function SignSendTransaction() {
     return () => {
       msgr.removeListener()
     }
-  }, [selectedNetwork?.chainId])
+  }, [networks, provider, selectedNetwork])
 
 
   const handleRcLimitChange = (_: string, rcLimit: number) => {
@@ -134,7 +149,7 @@ export default function SignSendTransaction() {
     try {
       let tempTransaction = { ...transaction }
       tempTransaction.header!.rc_limit = utils.parseUnits(rcLimit.toString(), selectedNetwork?.tokenDecimals!)
-      
+
       if (!tempTransaction?.header?.nonce
         || !tempTransaction?.header?.operation_merkle_root
         || !tempTransaction?.id
@@ -178,57 +193,90 @@ export default function SignSendTransaction() {
 
   return (
     <Center>
-      <Card>
-        <CardHeader>
-          <Heading size='md'>Signature request</Heading>
-        </CardHeader>
-        <Divider />
-        <CardBody>
-          <Skeleton isLoaded={!isLoading}>
-            {
-              decodingErroredOut && <Alert status='error'>
-                <AlertIcon />
-                Some of the operations could not be decoded, proceed with caution.
-              </Alert>
-            }
-            <Text>
-              The website &quot;{requester}&quot; is requesting a signature.
-            </Text>
-            <Divider marginTop={4} marginBottom={4} />
-            <FormControl>
-              <FormLabel>Signer address</FormLabel>
-              <Input value={signerAddress} isReadOnly={true} isDisabled={true} />
-              <FormHelperText>The address of the account being requested to sign the transaction.</FormHelperText>
-            </FormControl>
-            <FormControl>
-              <FormLabel>Mana limit</FormLabel>
-              <NumberInput min={0} value={rcLimit} onChange={handleRcLimitChange}>
-                <NumberInputField />
-                <NumberInputStepper>
-                  <NumberIncrementStepper />
-                  <NumberDecrementStepper />
-                </NumberInputStepper>
-              </NumberInput>
-              <FormHelperText>Mana limit for the transaction.</FormHelperText>
-            </FormControl>
-            <FormControl isReadOnly={true}>
-              <FormLabel>Transaction data</FormLabel>
-              <Textarea value={transactionData} readOnly={true} />
-            </FormControl>
-          </Skeleton>
-        </CardBody>
-        <Divider />
-        <CardFooter>
-          <ButtonGroup spacing='6' width='100%'>
-            <Button onClick={close} colorScheme='red'>Cancel</Button>
-            <Button width='100%' disabled={isLoading || !transaction} isLoading={isSigning} onClick={onClickConfirm} colorScheme='green'>
-              {
-                send ? 'Send' : 'Sign'
-              }
-            </Button>
-          </ButtonGroup>
-        </CardFooter>
-      </Card>
+      <Stack>
+        <Card>
+          <CardHeader>
+            <Heading size='md'>Signature request</Heading>
+          </CardHeader>
+          <Divider />
+          <CardBody>
+            <Skeleton isLoaded={!isLoading}>
+              <Stack>
+                {
+                  hasDecodingError && <Alert status='error'>
+                    <AlertIcon />
+                    Some of the operations could not be decoded, proceed with caution.
+                  </Alert>
+                }
+                {
+                  !networkName && <Alert status='error'>
+                    <AlertIcon />
+                    This transaction is for an unknown network.
+                  </Alert>
+                }
+                <Text>
+                  The website &quot;{requester}&quot; is requesting a signature.
+                </Text>
+                <Divider marginTop={4} marginBottom={4} />
+                <FormControl>
+                  <FormLabel>Network</FormLabel>
+                  <Input value={networkName} isReadOnly={true} isDisabled={true} />
+                  {
+                    send
+                      ? <FormHelperText>The network the transaction will be sent to.</FormHelperText>
+                      : <FormHelperText>The network the transaction will be signed for.</FormHelperText>
+                  }
+                </FormControl>
+                <FormControl>
+                  <FormLabel>Signer address</FormLabel>
+                  <Input value={signerAddress} isReadOnly={true} isDisabled={true} />
+                  <FormHelperText>The address of the account being requested to sign the transaction.</FormHelperText>
+                </FormControl>
+                <FormControl>
+                  <FormLabel>Mana payer</FormLabel>
+                  <Input value={transaction?.header?.payer} isReadOnly={true} isDisabled={true} />
+                  <FormHelperText>The address of the account that will pay for the Mana.</FormHelperText>
+                </FormControl>
+                <FormControl>
+                  <FormLabel>Mana limit</FormLabel>
+                  <NumberInput min={0} value={rcLimit} onChange={handleRcLimitChange}>
+                    <NumberInputField />
+                    <NumberInputStepper>
+                      <NumberIncrementStepper />
+                      <NumberDecrementStepper />
+                    </NumberInputStepper>
+                  </NumberInput>
+                  <FormHelperText>Mana limit for the transaction.</FormHelperText>
+                </FormControl>
+                <FormControl isReadOnly={true}>
+                  <FormLabel>Transaction data</FormLabel>
+                  <Textarea value={transactionData} readOnly={true} />
+                </FormControl>
+              </Stack>
+            </Skeleton>
+          </CardBody>
+        </Card>
+        <Box
+          style={{ position: 'sticky', bottom: 0, WebkitMaskPosition: 'sticky' }}
+          bg={useColorModeValue('gray.100', 'gray.900')}
+        >
+          <Card>
+            <CardBody>
+              <ButtonGroup spacing='6' width='100%'>
+                <Button onClick={close} colorScheme='red'>Cancel</Button>
+                <Button width='40%' disabled={isLoading || !transaction} isLoading={isSigning} onClick={onClickConfirm} colorScheme='blue'>
+                  Check output
+                </Button>
+                <Button width='40%' disabled={isLoading || !transaction} isLoading={isSigning} onClick={onClickConfirm} colorScheme='green'>
+                  {
+                    send ? 'Send' : 'Sign'
+                  }
+                </Button>
+              </ButtonGroup>
+            </CardBody>
+          </Card>
+        </Box>
+      </Stack>
     </Center>
   )
 }
