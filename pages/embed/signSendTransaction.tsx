@@ -1,14 +1,15 @@
-import { Text, Button, ButtonGroup, Card, CardBody, useColorModeValue, CardHeader, Divider, Heading, Skeleton, Center, useToast, Alert, AlertIcon, FormControl, FormLabel, Textarea, FormHelperText, Input, NumberDecrementStepper, NumberIncrementStepper, NumberInput, NumberInputField, NumberInputStepper, Stack, Box } from '@chakra-ui/react'
+import { Text, Button, ButtonGroup, Card, CardBody, useColorModeValue, CardHeader, Divider, Heading, Skeleton, Center, useToast, Alert, AlertIcon, FormControl, FormLabel, Textarea, FormHelperText, Input, NumberDecrementStepper, NumberIncrementStepper, NumberInput, NumberInputField, NumberInputStepper, Stack, Box, useDisclosure, Modal, ModalBody, ModalCloseButton, ModalContent, ModalFooter, ModalHeader, ModalOverlay } from '@chakra-ui/react'
 import { useEffect, useState } from 'react'
 import { Messenger } from '../../util/Messenger'
 import { useWallets } from '../../context/WalletsProvider'
 import { Contract, Serializer, Signer, utils } from 'koilib'
-import { OperationJson, SendTransactionOptions, TransactionJson } from 'koilib/lib/interface'
+import { OperationJson, SendTransactionOptions, TransactionJson, TransactionReceipt } from 'koilib/lib/interface'
 import { useNetworks } from '../../context/NetworksProvider'
 import { SignSendTransactionArguments, SignSendTransactionResult } from '../../wallet_connector_handlers/signerHandler'
 
 export default function SignSendTransaction() {
   const toast = useToast()
+  const { isOpen, onOpen, onClose } = useDisclosure()
 
   const { wallets, signTransaction } = useWallets()
   const { provider, selectedNetwork, networks } = useNetworks()
@@ -21,6 +22,7 @@ export default function SignSendTransaction() {
   const [transaction, setTransaction] = useState<TransactionJson>()
   const [transactionData, setTransactionData] = useState('')
   const [options, setOptions] = useState<SendTransactionOptions>()
+  const [transactionReceipt, setTransactionReceipt] = useState<TransactionReceipt>()
 
   const [messenger, setMessenger] = useState<Messenger<SignSendTransactionArguments, SignSendTransactionResult | null>>()
   const [isLoading, setIsLoading] = useState(true)
@@ -177,7 +179,41 @@ export default function SignSendTransaction() {
     } catch (error) {
       console.error(error)
       toast({
-        title: 'An error occured while sending the tokens',
+        title: 'An error occured while processing the transaction',
+        description: String(error),
+        status: 'error',
+        isClosable: true,
+      })
+    }
+    setIsSigning(false)
+  }
+
+  const onClickCheck = async () => {
+    setIsSigning(true)
+    try {
+      let tempTransaction = { ...transaction }
+      tempTransaction.header!.rc_limit = utils.parseUnits(rcLimit.toString(), selectedNetwork?.tokenDecimals!)
+
+      if (!tempTransaction?.header?.nonce
+        || !tempTransaction?.header?.operation_merkle_root
+        || !tempTransaction?.id
+      ) {
+        const dummySigner = Signer.fromSeed('dummy_signer')
+        dummySigner.provider = provider
+
+        tempTransaction = await dummySigner.prepareTransaction(tempTransaction)
+      }
+
+      const signedTransaction = await signTransaction(signerAddress, tempTransaction)
+
+      const { receipt } = await provider!.sendTransaction(signedTransaction, false)
+
+      setTransactionReceipt(receipt)
+      onOpen()
+    } catch (error) {
+      console.error(error)
+      toast({
+        title: 'An error occured while checking the transaction output',
         description: String(error),
         status: 'error',
         isClosable: true,
@@ -264,7 +300,7 @@ export default function SignSendTransaction() {
             <CardBody>
               <ButtonGroup spacing='6' width='100%'>
                 <Button onClick={close} colorScheme='red'>Cancel</Button>
-                <Button width='40%' disabled={isLoading || !transaction} isLoading={isSigning} onClick={onClickConfirm} colorScheme='blue'>
+                <Button width='40%' disabled={isLoading || !transaction} isLoading={isSigning} onClick={onClickCheck} colorScheme='blue'>
                   Check output
                 </Button>
                 <Button width='40%' disabled={isLoading || !transaction} isLoading={isSigning} onClick={onClickConfirm} colorScheme='green'>
@@ -276,6 +312,55 @@ export default function SignSendTransaction() {
             </CardBody>
           </Card>
         </Box>
+        <Modal isOpen={isOpen} onClose={onClose}>
+          <ModalOverlay />
+          <ModalContent>
+            <ModalHeader>Transaction output</ModalHeader>
+            <ModalCloseButton />
+            <ModalBody>
+              {
+                transactionReceipt && (
+                  <Card>
+                    <CardBody>
+                      <Stack>
+                        <FormControl>
+                          <FormLabel>Estimated mana cost</FormLabel>
+                          <Input value={utils.formatUnits(transactionReceipt.rc_used, selectedNetwork?.tokenDecimals!)} isReadOnly={true} isDisabled={true} />
+                        </FormControl>
+                        <FormControl>
+                          <FormLabel>Estimated compute bandwidth RC cost</FormLabel>
+                          <Input value={transactionReceipt.compute_bandwidth_used} isReadOnly={true} isDisabled={true} />
+                        </FormControl>
+                        <FormControl>
+                          <FormLabel>Estimated disk storage RC cost</FormLabel>
+                          <Input value={transactionReceipt.disk_storage_used} isReadOnly={true} isDisabled={true} />
+                        </FormControl>
+                        <FormControl>
+                          <FormLabel>Estimated network bandwidth RC cost</FormLabel>
+                          <Input value={transactionReceipt.network_bandwidth_used} isReadOnly={true} isDisabled={true} />
+                        </FormControl>
+                        <FormControl isReadOnly={true}>
+                          <FormLabel>TransactionLogs</FormLabel>
+                          <Textarea value={JSON.stringify(transactionReceipt.logs, null, 2)} readOnly={true} />
+                        </FormControl>
+                        <FormControl isReadOnly={true}>
+                          <FormLabel>Transaction events</FormLabel>
+                          <Textarea value={JSON.stringify(transactionReceipt.events, null, 2)} readOnly={true} />
+                        </FormControl>
+                      </Stack>
+                    </CardBody>
+                  </Card>
+                )
+              }
+            </ModalBody>
+
+            <ModalFooter>
+              <Button colorScheme='blue' mr={3} onClick={onClose}>
+                Close
+              </Button>
+            </ModalFooter>
+          </ModalContent>
+        </Modal>
       </Stack>
     </Center>
   )
