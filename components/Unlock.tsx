@@ -24,9 +24,7 @@ export default function Unlock() {
         pathname: '/create-password',
         query: { returnUrl: router.query.returnUrl }
       })
-    }
-
-    if (!isLocked) {
+    } else if (!isLocked) {
       const returnUrl = router.query.returnUrl || '/dashboard'
       router.push(returnUrl as string)
     }
