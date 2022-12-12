@@ -6,6 +6,7 @@ import { Contract, Serializer, Signer, utils } from 'koilib'
 import { OperationJson, SendTransactionOptions, TransactionJson, TransactionReceipt } from 'koilib/lib/interface'
 import { useNetworks } from '../../context/NetworksProvider'
 import { SignSendTransactionArguments, SignSendTransactionResult } from '../../wallet_connector_handlers/signerHandler'
+import { getErrorMessage } from '../../util/Utils'
 
 export default function SignSendTransaction() {
   const toast = useToast()
@@ -214,7 +215,7 @@ export default function SignSendTransaction() {
       console.error(error)
       toast({
         title: 'An error occured while checking the transaction output',
-        description: String(error),
+        description: getErrorMessage(error),
         status: 'error',
         isClosable: true,
       })
