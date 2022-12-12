@@ -1,8 +1,9 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef } from 'react'
 import { Messenger } from '../../util/Messenger'
 import { useWallets } from '../../context/WalletsProvider'
 import { debug } from '../../util/Utils'
-import { handler as accountsHandler, IAccount } from '../../wallet_connector_handlers/accountsHandler'
+import { handler as accountsHandler } from '../../wallet_connector_handlers/accountsHandler'
+import { handler as signerHandler } from '../../wallet_connector_handlers/signerHandler'
 
 export interface IncomingMessage {
   scope: string
@@ -11,7 +12,7 @@ export interface IncomingMessage {
 }
 
 export interface OutgoingMessage {
-  result: IAccount[]
+  result: any
 }
 
 export default function WalletConnector() {
@@ -32,6 +33,10 @@ export default function WalletConnector() {
           switch (data.scope) {
             case 'accounts': {
               await accountsHandler(sender, data, sendData, sendError)
+              break
+            }
+            case 'signer': {
+              await signerHandler(sender, data, sendData, sendError)
               break
             }
 

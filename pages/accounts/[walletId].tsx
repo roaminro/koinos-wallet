@@ -42,6 +42,8 @@ export default function Wallets() {
                 <Thead>
                   <Tr>
                     <Th>Account Name</Th>
+                    <Th>Address</Th>
+                    <Th>Key Path</Th>
                     <Th>Actions</Th>
                   </Tr>
                 </Thead>
@@ -53,6 +55,12 @@ export default function Wallets() {
                         <Tr key={accountId}>
                           <Td>
                             {account.public.name}
+                          </Td>
+                          <Td>
+                            {account.public.address}
+                          </Td>
+                          <Td>
+                            {account.public.keyPath}
                           </Td>
                           <Td>
                             <Stack spacing={4} direction='row'>
