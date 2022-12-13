@@ -63,7 +63,7 @@ const prepareTransaction = async (data: IncomingMessage, sendData: SendDataFn<Ou
  
     sendData({ result: await dummySigner.prepareTransaction(transaction) })
   } catch (error) {
-    sendError('request was cancelled')
+    sendError(getErrorMessage(error))
   }
 }
 
