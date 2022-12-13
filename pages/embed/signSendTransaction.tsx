@@ -48,6 +48,7 @@ export default function SignSendTransaction() {
 
       if (operations) {
         if (!options.abis) {
+          setHasDecodingError(true)
           setTransactionData(JSON.stringify(operations, null, 2))
         } else {
           const decOperations: OperationJson[] = []
@@ -208,6 +209,24 @@ export default function SignSendTransaction() {
       const signedTransaction = await signTransaction(signerAddress, tempTransaction)
 
       const { receipt } = await provider!.sendTransaction(signedTransaction, false)
+
+      if (options?.abis) {
+        for (let index = 0; index < receipt.events.length; index++) {
+          const event = receipt.events[index]
+          const abi = options.abis[event.source]
+          if (abi) {
+            try {
+              const serializer = new Serializer(abi.koilib_types)
+              const eventData = await serializer.deserialize(event.data, event.name)
+              //@ts-ignore we change the data in-place here
+              receipt.events[index].data = eventData
+            } catch (error) {
+              // ignore deserialization errors
+              console.log(error)
+            }
+          }
+        }
+      }
 
       setTransactionReceipt(receipt)
       onOpen()
