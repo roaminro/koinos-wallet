@@ -1,6 +1,8 @@
+import { Provider, Signer } from 'koilib'
 import { SendTransactionOptions, TransactionJson, TransactionReceipt } from 'koilib/lib/interface'
 import { IncomingMessage, OutgoingMessage } from '../pages/embed/wallet-connector'
 import { Messenger, SendDataFn, SendErrorFn } from '../util/Messenger'
+import { getErrorMessage } from '../util/Utils'
 
 export interface SignSendTransactionArguments {
   requester: string
@@ -15,7 +17,16 @@ export interface SignSendTransactionResult {
   transaction: TransactionJson
 }
 
-export const handler = (sender: string, data: IncomingMessage, sendData: SendDataFn<OutgoingMessage>, sendError: SendErrorFn) => {
+export interface PrepareTransactionArguments {
+  signerAddress: string
+  transaction: TransactionJson
+}
+
+export interface PrepareTransactionResult {
+  transaction: TransactionJson
+}
+
+export const handler = (sender: string, data: IncomingMessage, sendData: SendDataFn<OutgoingMessage>, sendError: SendErrorFn, provider: Provider) => {
   switch (data.command) {
     case 'signTransaction': {
       return signSendTransaction(false, sender, data, sendData, sendError)
@@ -25,9 +36,34 @@ export const handler = (sender: string, data: IncomingMessage, sendData: SendDat
       return signSendTransaction(true, sender, data, sendData, sendError)
     }
 
+    case 'prepareTransaction': {
+      return prepareTransaction(data, sendData, sendError, provider)
+    }
+
     default:
       sendError('command not supported')
       break
+  }
+}
+
+const prepareTransaction = async (data: IncomingMessage, sendData: SendDataFn<OutgoingMessage>, sendError: SendErrorFn, provider: Provider) => {
+  try {
+    const { signerAddress, transaction} = JSON.parse(data.arguments!) as PrepareTransactionArguments
+    
+    const dummySigner = Signer.fromSeed('dummy_signer')
+    dummySigner.provider = provider
+
+    if (!transaction.header) {
+      transaction.header = {}
+    }
+
+    if (!transaction.header?.payer) {
+      transaction.header.payer = signerAddress
+    }
+ 
+    sendData({ result: await dummySigner.prepareTransaction(transaction) })
+  } catch (error) {
+    sendError(getErrorMessage(error))
   }
 }
 
@@ -61,7 +97,7 @@ const signSendTransaction = (send: boolean, requester: string, data: IncomingMes
           sendData(args)
         })
       } catch (error) {
-        sendError('request was cancelled')
+        sendError(getErrorMessage(error))
         resolve()
       }
     }

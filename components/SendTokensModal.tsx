@@ -4,6 +4,7 @@ import { ChangeEvent, useEffect, useState } from 'react'
 import { useNetworks } from '../context/NetworksProvider'
 import { useWallets } from '../context/WalletsProvider'
 import { TransactionJson } from 'koilib/lib/interface'
+import { getErrorMessage } from '../util/Utils'
 
 interface SendTokensModalProps {
   isOpen: boolean
@@ -109,7 +110,7 @@ export default function SendTokensModal({ isOpen, onClose }: SendTokensModalProp
       console.error(error)
       toast({
         title: 'An error occured while sending the tokens',
-        description: String(error),
+        description: getErrorMessage(error),
         status: 'error',
         isClosable: true,
       })

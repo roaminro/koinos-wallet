@@ -6,6 +6,7 @@ import { Contract, Serializer, Signer, utils } from 'koilib'
 import { OperationJson, SendTransactionOptions, TransactionJson, TransactionReceipt } from 'koilib/lib/interface'
 import { useNetworks } from '../../context/NetworksProvider'
 import { SignSendTransactionArguments, SignSendTransactionResult } from '../../wallet_connector_handlers/signerHandler'
+import { getErrorMessage } from '../../util/Utils'
 
 export default function SignSendTransaction() {
   const toast = useToast()
@@ -47,6 +48,7 @@ export default function SignSendTransaction() {
 
       if (operations) {
         if (!options.abis) {
+          setHasDecodingError(true)
           setTransactionData(JSON.stringify(operations, null, 2))
         } else {
           const decOperations: OperationJson[] = []
@@ -208,13 +210,31 @@ export default function SignSendTransaction() {
 
       const { receipt } = await provider!.sendTransaction(signedTransaction, false)
 
+      if (options?.abis) {
+        for (let index = 0; index < receipt.events.length; index++) {
+          const event = receipt.events[index]
+          const abi = options.abis[event.source]
+          if (abi) {
+            try {
+              const serializer = new Serializer(abi.koilib_types)
+              const eventData = await serializer.deserialize(event.data, event.name)
+              //@ts-ignore we change the data in-place here
+              receipt.events[index].data = eventData
+            } catch (error) {
+              // ignore deserialization errors
+              console.log(error)
+            }
+          }
+        }
+      }
+
       setTransactionReceipt(receipt)
       onOpen()
     } catch (error) {
       console.error(error)
       toast({
         title: 'An error occured while checking the transaction output',
-        description: String(error),
+        description: getErrorMessage(error),
         status: 'error',
         isClosable: true,
       })

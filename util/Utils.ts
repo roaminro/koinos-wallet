@@ -15,7 +15,7 @@ export const isAlphanumeric = (str: string) => {
 export const generateString = (length: number) => {
   let result = ' '
   const charactersLength = CHARS.length
-  for ( let i = 0; i < length; i++ ) {
+  for (let i = 0; i < length; i++) {
     result += CHARS.charAt(Math.floor(Math.random() * charactersLength))
   }
 
@@ -65,4 +65,17 @@ export const saveFile = async (fileName: string, blob: Blob) => {
     setTimeout(() => URL.revokeObjectURL(a.href), 30 * 1000)
   })
   a.click()
+}
+
+export const getErrorMessage = (error: any) => {
+  if ((error as Error).message) {
+    let err = JSON.parse((error as Error).message)
+    if (err.error) {
+      return err.error
+    } else {
+      return (error as Error).message
+    }
+  }
+
+  return String(error)
 }

@@ -1,5 +1,6 @@
 import { IncomingMessage, OutgoingMessage } from '../pages/embed/wallet-connector'
 import { Messenger, SendDataFn, SendErrorFn } from '../util/Messenger'
+import { getErrorMessage } from '../util/Utils'
 
 export interface IAccount {
   address: string
@@ -52,7 +53,7 @@ const getAccounts = (requester: string, _: IncomingMessage, sendData: SendDataFn
           sendData({ requester })
         })
       } catch (error) {
-        sendError('request was cancelled')
+        sendError(getErrorMessage(error))
         resolve()
       }
     }
