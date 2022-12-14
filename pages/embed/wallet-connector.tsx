@@ -65,7 +65,7 @@ export default function WalletConnector() {
     return () => {
       msgr.removeListener()
     }
-  }, [isVaultSetup])
+  }, [isVaultSetup, provider])
 
   return (
     <></>
