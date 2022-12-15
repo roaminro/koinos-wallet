@@ -1,11 +1,11 @@
 import { useToast, Stack, Card, CardHeader, Heading, Divider, CardBody, FormControl, FormLabel, Input, FormHelperText, FormErrorMessage, Button, Center } from '@chakra-ui/react'
 import { useRouter } from 'next/router'
 import { useState, ChangeEvent } from 'react'
-import SidebarWithHeader from '../../components/Sidebar'
-import { useWallets } from '../../context/WalletsProvider'
-import { isAlphanumeric } from '../../util/Utils'
+import SidebarWithHeader from '../../../../components/Sidebar'
+import { useWallets } from '../../../../context/WalletsProvider'
+import { isAlphanumeric } from '../../../../util/Utils'
 
-export default function AddAccount() {
+export default function Add() {
   const router = useRouter()
   const toast = useToast()
 
@@ -30,7 +30,7 @@ export default function AddAccount() {
 
       await addAccount(walletId as string, accountName)
 
-      router.push('/dashboard')
+      router.push('/home')
 
       toast({
         title: 'Account successfully added',
@@ -52,6 +52,8 @@ export default function AddAccount() {
   }
 
   const isAccountNameInvalid = accountName.length < 1 || !isAlphanumeric(accountName)
+
+  if (isLocked) return <></>
 
   return (
     <SidebarWithHeader>

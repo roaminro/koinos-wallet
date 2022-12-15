@@ -71,7 +71,17 @@ export default function RevealSecretRecoveryPhraseModal({ isOpen, onClose, walle
 
           <FormControl isRequired>
             <FormLabel>Password</FormLabel>
-            <Input type='password' value={password} onChange={handlePasswordChange} />
+            <Input
+              type='password'
+              autoFocus={true}
+              value={password}
+              onChange={handlePasswordChange}
+              onKeyPress={e => {
+                if (e.key === 'Enter') {
+                  onRevealClick()
+                }
+              }}
+            />
             <FormHelperText>Enter your password to reveal the Secret Recovery Phrase.</FormHelperText>
           </FormControl>
 

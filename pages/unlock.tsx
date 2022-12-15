@@ -1,6 +1,6 @@
 import Unlock from '../components/Unlock'
 
-export default function ImportWallet() {
+export default function UnlockPage() {
 
 
   return (

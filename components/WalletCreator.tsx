@@ -88,9 +88,15 @@ export default function WalletCreator({ importingSecretRecoveryPhrase = false }:
       setRandomizedSecretRecoveryPhraseWords([])
 
       if (importingSecretRecoveryPhrase) {
-        router.push(`/accounts/${newWallet.id}`)
+        router.push({
+          pathname: '/wallets/[walletId]/accounts',
+          query: { walletId: newWallet.id },
+        })
       } else {
-        router.push(`/add-account/${newWallet.id}`)
+        router.push({
+          pathname: '/wallets/[walletId]/accounts/add/',
+          query: { walletId: newWallet.id },
+        })
       }
 
       toast({
@@ -156,7 +162,7 @@ export default function WalletCreator({ importingSecretRecoveryPhrase = false }:
                 <>
                   <FormControl hidden={isSecretRecoveryPhraseSaved}>
                     <FormLabel>
-                      Secret Recovery Phrase { ' ' }
+                      Secret Recovery Phrase {' '}
                       <Tooltip
                         label="copy Secret Recovery Phrase to clipboard"
                         placement="bottom"

@@ -11,7 +11,7 @@ import { useAccountHistory } from '../components/AccountHistoryUtils'
 import { ExternalLinkIcon } from '@chakra-ui/icons'
 import SendTokensModal from '../components/SendTokensModal'
 
-export default function Dashboard() {
+export default function Home() {
   const { wallets, selectedAccount, selectAccount } = useWallets()
   const { selectedNetwork } = useNetworks()
   const { onCopy, setValue: setClipoard } = useClipboard('')

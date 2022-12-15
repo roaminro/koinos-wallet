@@ -2,15 +2,15 @@ import { useToast, Stack, Card, CardHeader, Heading, Divider, CardBody, FormCont
 import { Signer, utils } from 'koilib'
 import { useRouter } from 'next/router'
 import { useState, ChangeEvent } from 'react'
-import SidebarWithHeader from '../../components/Sidebar'
-import { useWallets } from '../../context/WalletsProvider'
-import { isAlphanumeric } from '../../util/Utils'
+import SidebarWithHeader from '../../../../components/Sidebar'
+import { useWallets } from '../../../../context/WalletsProvider'
+import { isAlphanumeric } from '../../../../util/Utils'
 
-export default function ImportAccount() {
+export default function Import() {
   const router = useRouter()
   const toast = useToast()
 
-  const { importAccount, wallets } = useWallets()
+  const { importAccount, wallets, isLocked } = useWallets()
 
   const { walletId } = router.query
 
@@ -53,7 +53,7 @@ export default function ImportAccount() {
       await importAccount(walletId as string, accountName, accountAddress, accountPrivateKey)
       setAccountPrivateKey('')
 
-      router.push('/dashboard')
+      router.push('/home')
 
       toast({
         title: 'Account successfully imported',
@@ -91,6 +91,8 @@ export default function ImportAccount() {
   } catch (error) {
     isAccountPrivateKeyInvalid = true
   }
+
+  if (isLocked) return <></>
 
   return (
     <SidebarWithHeader>

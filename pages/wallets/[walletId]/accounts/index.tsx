@@ -1,15 +1,15 @@
 import { Button, Card, CardBody, CardHeader, Center, Divider, Stack, Table, TableContainer, Tbody, Td, Th, Thead, Tr, useClipboard, useToast, Skeleton, IconButton, Tooltip } from '@chakra-ui/react'
-import SimpleSidebar from '../../components/Sidebar'
-import { useWallets } from '../../context/WalletsProvider'
+import SimpleSidebar from '../../../../components/Sidebar'
+import { useWallets } from '../../../../context/WalletsProvider'
 import { useRouter } from 'next/router'
 import { useState } from 'react'
-import RevealPrivateKeyModal from '../../components/RevealPrivateKeyModal'
+import RevealPrivateKeyModal from '../../../../components/RevealPrivateKeyModal'
 import { FiEye } from 'react-icons/fi'
 
 
 export default function Wallets() {
   const router = useRouter()
-  const { wallets } = useWallets()
+  const { wallets, isLocked } = useWallets()
 
   const [isRevealPrivateKeyModalOpen, setIsRevealPrivateKeyModalOpen] = useState(false)
   const [accountIdToReveal, setAccountIdToReveal] = useState('')
@@ -21,16 +21,18 @@ export default function Wallets() {
     setIsRevealPrivateKeyModalOpen(true)
   }
 
+  if (isLocked) return <></>
+
   return (
     <SimpleSidebar>
       <Center>
         <Card width='100%'>
           <CardHeader>
             <Stack spacing={8} direction='row'>
-              <Button variant='solid' onClick={() => router.push(`/add-account/${walletId}`)}>
+              <Button colorScheme='blue' onClick={() => router.push({ pathname: '/wallets/[walletId]/accounts/add', query: { walletId}})}>
                 Add account
               </Button>
-              <Button variant='solid' onClick={() => router.push(`/import-account/${walletId}`)}>
+              <Button colorScheme='blue' onClick={() => router.push({ pathname: '/wallets/[walletId]/accounts/import', query: { walletId}})}>
                 Import account
               </Button>
             </Stack>

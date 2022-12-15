@@ -14,20 +14,12 @@ import {
   useDisclosure,
   BoxProps,
   FlexProps,
-  Menu,
-  MenuButton,
-  MenuDivider,
-  MenuItem,
-  MenuList,
   Button,
   useColorMode,
-  MenuOptionGroup,
-  MenuItemOption,
 } from '@chakra-ui/react'
 import {
   FiHome,
   FiMenu,
-  FiChevronDown,
   FiLock,
   FiMoon,
   FiSun,
@@ -36,9 +28,8 @@ import {
   FiHardDrive
 } from 'react-icons/fi'
 import { IconType } from 'react-icons'
-import { useRouter } from 'next/router'
-import { useNetworks } from '../context/NetworksProvider'
 import { useWallets } from '../context/WalletsProvider'
+import { NetworkSelector } from './NetworkSelector'
 
 interface LinkItemProps {
   name: string
@@ -47,7 +38,7 @@ interface LinkItemProps {
   hideWhenVaultNotSetup?: boolean
 }
 const LinkItems: Array<LinkItemProps> = [
-  { name: 'Dashboard', icon: FiHome, href: '/dashboard', hideWhenVaultNotSetup: true },
+  { name: 'Home', icon: FiHome, href: '/home', hideWhenVaultNotSetup: true },
   { name: 'Wallets', icon: FiCreditCard, href: '/wallets', hideWhenVaultNotSetup: true },
   { name: 'Networks', icon: FiGlobe, href: '/networks' },
   { name: 'Vault', icon: FiHardDrive, href: '/vault' },
@@ -157,11 +148,9 @@ interface MobileProps extends FlexProps {
 }
 
 const MobileNav = ({ onOpen, ...rest }: MobileProps) => {
-  const router = useRouter()
   const { colorMode, toggleColorMode } = useColorMode()
 
   const { lock, isLocked } = useWallets()
-  const { selectedNetwork, networks, selectNetwork } = useNetworks()
 
   return (
     <Flex
@@ -190,32 +179,7 @@ const MobileNav = ({ onOpen, ...rest }: MobileProps) => {
       </Text>
 
       <HStack spacing={{ base: '0', md: '6' }}>
-        <Menu>
-          <MenuButton as={Button} rightIcon={<FiChevronDown />}>
-            {selectedNetwork?.name}
-          </MenuButton>
-          <MenuList>
-            <MenuOptionGroup 
-            title='Networks' 
-            type='radio' 
-            value={selectedNetwork?.chainId}
-            >
-              {
-                networks.map((network) => (
-                  <MenuItemOption
-                    key={network.chainId}
-                    onClick={() => selectNetwork(network)}
-                    value={network.chainId}
-                  >
-                    {network.name}
-                  </MenuItemOption>
-                ))
-              }
-              <MenuDivider />
-              <MenuItem onClick={() => router.push('/networks')}>Add new network...</MenuItem>
-            </MenuOptionGroup>
-          </MenuList>
-        </Menu>
+        <NetworkSelector />
         {
           !isLocked &&
           <Button onClick={lock}>

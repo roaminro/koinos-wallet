@@ -25,7 +25,7 @@ export default function Unlock() {
         query: { returnUrl: router.query.returnUrl }
       })
     } else if (!isLocked) {
-      const returnUrl = router.query.returnUrl || '/dashboard'
+      const returnUrl = router.query.returnUrl || '/home'
       router.push(returnUrl as string)
     }
 
@@ -80,7 +80,17 @@ export default function Unlock() {
             >
               <FormControl isRequired isInvalid={!!unlockError}>
                 <FormLabel>Password</FormLabel>
-                <Input type='password' value={password} onChange={handlePasswordChange} />
+                <Input
+                  type='password'
+                  autoFocus={true}
+                  value={password}
+                  onChange={handlePasswordChange}
+                  onKeyPress={e => {
+                    if (e.key === 'Enter') {
+                      onUnlockClick()
+                    }
+                  }}
+                />
                 <FormHelperText>Enter your password to unlock the application.</FormHelperText>
                 {
                   !!unlockError && <FormErrorMessage>{unlockError}</FormErrorMessage>
