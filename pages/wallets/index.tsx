@@ -1,11 +1,11 @@
 import { Button, Card, CardBody, CardHeader, Center, Divider, Stack, Table, TableContainer, Tbody, Td, Th, Thead, Tr, useClipboard, useToast, Skeleton, IconButton, Tooltip } from '@chakra-ui/react'
-import SimpleSidebar from '../components/Sidebar'
-import { useWallets } from '../context/WalletsProvider'
+import SimpleSidebar from '../../components/Sidebar'
+import { useWallets } from '../../context/WalletsProvider'
 import { useRouter } from 'next/router'
 import NextLink from 'next/link'
-import RevealSecretRecoveryPhraseModal from '../components/RevealSecretRecoveryPhraseModal'
+import RevealSecretRecoveryPhraseModal from '../../components/RevealSecretRecoveryPhraseModal'
 import { useState } from 'react'
-import { FiClipboard, FiEye, FiUsers } from 'react-icons/fi'
+import { FiEye, FiUsers } from 'react-icons/fi'
 
 
 export default function Wallets() {
@@ -25,10 +25,10 @@ export default function Wallets() {
         <Card width='100%'>
           <CardHeader>
             <Stack spacing={8} direction='row'>
-              <Button variant='solid' onClick={() => router.push('/create-wallet')}>
+              <Button colorScheme='blue' onClick={() => router.push('/wallets/create')}>
                 Create wallet
               </Button>
-              <Button variant='solid' onClick={() => router.push('/import-wallet')}>
+              <Button colorScheme='blue' onClick={() => router.push('/wallets/import')}>
                 Import wallet
               </Button>
             </Stack>
@@ -50,7 +50,10 @@ export default function Wallets() {
                       return (
                         <Tr key={walletId}>
                           <Td>
-                            <NextLink href={`/accounts/${walletId}`}>{wallet.name}</NextLink>
+                            <NextLink href={{
+                              pathname: '/wallets/[walletId]/accounts',
+                              query: { walletId },
+                            }}>{wallet.name}</NextLink>
                           </Td>
                           <Td>
                             <Stack spacing={4} direction='row'>
@@ -59,7 +62,7 @@ export default function Wallets() {
                                 placement="top"
                                 hasArrow
                               >
-                                <IconButton aria-label='manage accounts' icon={<FiUsers />} onClick={() => router.push(`/accounts/${wallet.id}`)} />
+                                <IconButton aria-label='manage accounts' icon={<FiUsers />} onClick={() => router.push({ pathname: '/wallets/[walletId]/accounts', query: { walletId } })} />
                               </Tooltip>
                               <Tooltip
                                 label="reveal Secret Recovery Phrase"
@@ -85,6 +88,6 @@ export default function Wallets() {
           </CardBody>
         </Card>
       </Center>
-    </SimpleSidebar>
+    </SimpleSidebar >
   )
 }

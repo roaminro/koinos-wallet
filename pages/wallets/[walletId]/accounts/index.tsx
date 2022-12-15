@@ -1,9 +1,9 @@
 import { Button, Card, CardBody, CardHeader, Center, Divider, Stack, Table, TableContainer, Tbody, Td, Th, Thead, Tr, useClipboard, useToast, Skeleton, IconButton, Tooltip } from '@chakra-ui/react'
-import SimpleSidebar from '../../components/Sidebar'
-import { useWallets } from '../../context/WalletsProvider'
+import SimpleSidebar from '../../../../components/Sidebar'
+import { useWallets } from '../../../../context/WalletsProvider'
 import { useRouter } from 'next/router'
 import { useState } from 'react'
-import RevealPrivateKeyModal from '../../components/RevealPrivateKeyModal'
+import RevealPrivateKeyModal from '../../../../components/RevealPrivateKeyModal'
 import { FiEye } from 'react-icons/fi'
 
 
@@ -27,10 +27,10 @@ export default function Wallets() {
         <Card width='100%'>
           <CardHeader>
             <Stack spacing={8} direction='row'>
-              <Button variant='solid' onClick={() => router.push(`/add-account/${walletId}`)}>
+              <Button colorScheme='blue' onClick={() => router.push(`/wallets/${walletId}/accounts/add`)}>
                 Add account
               </Button>
-              <Button variant='solid' onClick={() => router.push(`/import-account/${walletId}`)}>
+              <Button colorScheme='blue' onClick={() => router.push(`/wallets/${walletId}/accounts/import`)}>
                 Import account
               </Button>
             </Stack>
