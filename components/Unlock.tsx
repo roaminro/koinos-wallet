@@ -48,9 +48,6 @@ export default function Unlock() {
 
       const unlockTimeDeadline = new Date().getTime() + (unlockTime * 60 * 1000)
       setSetting(AUTOLOCK_DEADLINE_KEY, unlockTimeDeadline)
-
-      const returnUrl = router.query.returnUrl || '/dashboard'
-      router.push(returnUrl as string)
     } catch (error) {
       console.error(error)
       setUnlockError(error as string)
