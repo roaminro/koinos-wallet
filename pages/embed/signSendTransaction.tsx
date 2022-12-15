@@ -171,12 +171,8 @@ export default function SignSendTransaction() {
           transaction: signedTransaction
         })
       } else {
-
-        const { receipt } = await provider!.sendTransaction(signedTransaction)
-        messenger!.sendMessage('sign-send-transaction-popup-parent', {
-          transaction: signedTransaction,
-          receipt
-        })
+        const sentTransaction = await provider!.sendTransaction(signedTransaction)
+        messenger!.sendMessage('sign-send-transaction-popup-parent', sentTransaction)
       }
     } catch (error) {
       console.error(error)
