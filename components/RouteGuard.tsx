@@ -10,41 +10,41 @@ export default function RouteGuard({
   children: ReactNode;
 }): JSX.Element {
   const router = useRouter()
-  const { isLocked } = useWallets()
-  const [authorized, setAuthorized] = useState(false)
+  const { isLocked, isLoading } = useWallets()
+  // const [authorized, setAuthorized] = useState(false)
 
-  const authCheck = useCallback((url: string) => {
-    const path = url.split('?')[0]
-    setAuthorized(!isLocked || PUBLIC_PATHS.includes(path))
-  }, [isLocked])
+  // const authCheck = useCallback((url: string) => {
+  //   const path = url.split('?')[0]
+  //   setAuthorized(!isLocked || PUBLIC_PATHS.includes(path))
+  // }, [isLocked])
 
-  useEffect(() => {
-    const hideContent = () => setAuthorized(false)
+  // useEffect(() => {
+  //   const hideContent = () => setAuthorized(false)
 
-    const setup = async () => {
-      // on route change start - hide page content by setting authorized to false  
-      router.events.on('routeChangeStart', hideContent)
+  //   const setup = async () => {
+  //     // on route change start - hide page content by setting authorized to false  
+  //     router.events.on('routeChangeStart', hideContent)
 
-      // on route change complete - run auth check 
-      router.events.on('routeChangeComplete', authCheck)
+  //     // on route change complete - run auth check 
+  //     router.events.on('routeChangeComplete', authCheck)
 
-      // on initial load - run auth check 
-      authCheck(router.asPath)
-    }
+  //     // on initial load - run auth check 
+  //     authCheck(router.asPath)
+  //   }
 
-    setup()
+  //   setup()
 
-    // unsubscribe from events in useEffect return function
-    return () => {
-      router.events.off('routeChangeStart', hideContent)
-      router.events.off('routeChangeComplete', authCheck)
-    }
-  }, [authCheck, router.asPath, router.events])
+  //   // unsubscribe from events in useEffect return function
+  //   return () => {
+  //     router.events.off('routeChangeStart', hideContent)
+  //     router.events.off('routeChangeComplete', authCheck)
+  //   }
+  // }, [authCheck, router.asPath, router.events])
 
   return (
     <>
       {/* {authorized && children} */}
-      {children}
+      {!isLoading && children}
     </>
   )
 }

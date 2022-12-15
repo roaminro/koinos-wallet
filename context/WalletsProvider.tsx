@@ -74,7 +74,7 @@ export const WalletsProvider = ({
   const vaultMessenger = useRef<Messenger<OutgoingMessage, IncomingMessage>>()
 
   useEffect(() => {
-    if (isVaultSetup && !isLocked && !isLoading) {
+    if (!isLoading && isVaultSetup && !isLocked) {
       console.log('saving vault')
       saveVault()
     }
@@ -182,7 +182,6 @@ export const WalletsProvider = ({
 
 
   useEffect(() => {
-
     setIsVaultSetup(localStorage.getItem(VAULT_KEY) !== null)
 
     const savedSelectedAccount = localStorage.getItem(SELECTED_ACCOUNT_KEY)
@@ -206,7 +205,6 @@ export const WalletsProvider = ({
     }, 20000)
 
     const setup = async () => {
-      setIsLoading(true)
       if ('serviceWorker' in navigator) {
         try {
           registration = await navigator.serviceWorker.register(new URL('../workers/Vault-Worker.ts', import.meta.url))
