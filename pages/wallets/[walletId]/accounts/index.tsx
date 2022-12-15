@@ -9,7 +9,7 @@ import { FiEye } from 'react-icons/fi'
 
 export default function Wallets() {
   const router = useRouter()
-  const { wallets } = useWallets()
+  const { wallets, isLocked } = useWallets()
 
   const [isRevealPrivateKeyModalOpen, setIsRevealPrivateKeyModalOpen] = useState(false)
   const [accountIdToReveal, setAccountIdToReveal] = useState('')
@@ -21,16 +21,18 @@ export default function Wallets() {
     setIsRevealPrivateKeyModalOpen(true)
   }
 
+  if (isLocked) return <></>
+
   return (
     <SimpleSidebar>
       <Center>
         <Card width='100%'>
           <CardHeader>
             <Stack spacing={8} direction='row'>
-              <Button colorScheme='blue' onClick={() => router.push(`/wallets/${walletId}/accounts/add`)}>
+              <Button colorScheme='blue' onClick={() => router.push({ pathname: '/wallets/[walletId]/accounts/add', query: { walletId}})}>
                 Add account
               </Button>
-              <Button colorScheme='blue' onClick={() => router.push(`/wallets/${walletId}/accounts/import`)}>
+              <Button colorScheme='blue' onClick={() => router.push({ pathname: '/wallets/[walletId]/accounts/import', query: { walletId}})}>
                 Import account
               </Button>
             </Stack>

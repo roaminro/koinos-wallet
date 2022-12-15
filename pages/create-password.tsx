@@ -15,7 +15,7 @@ export default function CreatePassword() {
   const [isLoading, setIsLoading] = useState(false)
 
   if (isVaultSetup) {
-    router.push('/dashboard')
+    router.push('/home')
   }
 
   const handlePasswordChange = (e: ChangeEvent<HTMLInputElement>) => {

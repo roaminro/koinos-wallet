@@ -10,7 +10,7 @@ export default function Import() {
   const router = useRouter()
   const toast = useToast()
 
-  const { importAccount, wallets } = useWallets()
+  const { importAccount, wallets, isLocked } = useWallets()
 
   const { walletId } = router.query
 
@@ -53,7 +53,7 @@ export default function Import() {
       await importAccount(walletId as string, accountName, accountAddress, accountPrivateKey)
       setAccountPrivateKey('')
 
-      router.push('/dashboard')
+      router.push('/home')
 
       toast({
         title: 'Account successfully imported',
@@ -91,6 +91,8 @@ export default function Import() {
   } catch (error) {
     isAccountPrivateKeyInvalid = true
   }
+
+  if (isLocked) return <></>
 
   return (
     <SidebarWithHeader>

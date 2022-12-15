@@ -38,7 +38,7 @@ interface LinkItemProps {
   hideWhenVaultNotSetup?: boolean
 }
 const LinkItems: Array<LinkItemProps> = [
-  { name: 'Dashboard', icon: FiHome, href: '/dashboard', hideWhenVaultNotSetup: true },
+  { name: 'Home', icon: FiHome, href: '/home', hideWhenVaultNotSetup: true },
   { name: 'Wallets', icon: FiCreditCard, href: '/wallets', hideWhenVaultNotSetup: true },
   { name: 'Networks', icon: FiGlobe, href: '/networks' },
   { name: 'Vault', icon: FiHardDrive, href: '/vault' },

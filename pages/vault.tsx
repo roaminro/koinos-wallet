@@ -61,7 +61,7 @@ export default function Vault() {
       localStorage.setItem(VAULT_KEY, encryptedVault!)
       await unlock(password)
 
-      router.push('/dashboard')
+      router.push('/home')
       toast({
         title: 'Vault successfully import',
         description: 'Your vault was successfully imported!',

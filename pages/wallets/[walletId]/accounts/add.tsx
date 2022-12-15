@@ -30,7 +30,7 @@ export default function Add() {
 
       await addAccount(walletId as string, accountName)
 
-      router.push('/dashboard')
+      router.push('/home')
 
       toast({
         title: 'Account successfully added',
@@ -52,6 +52,8 @@ export default function Add() {
   }
 
   const isAccountNameInvalid = accountName.length < 1 || !isAlphanumeric(accountName)
+
+  if (isLocked) return <></>
 
   return (
     <SidebarWithHeader>

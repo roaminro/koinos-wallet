@@ -11,7 +11,7 @@ export default function Home() {
       if (!isVaultSetup) {
         router.push('/welcome')
       } else {
-        router.push('/dashboard')
+        router.push('/home')
       }
     }
   }, [router, isVaultSetup, isLoading])
