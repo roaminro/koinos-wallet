@@ -6,6 +6,7 @@ import { handler as accountsHandler } from '../../wallet_connector_handlers/acco
 import { handler as signerHandler } from '../../wallet_connector_handlers/signerHandler'
 import { handler as providerHandler } from '../../wallet_connector_handlers/providerHandler'
 import { useNetworks } from '../../context/NetworksProvider'
+import { MY_KOINOS_WALLET_CONNECTOR_PARENT_MESSENGER_ID, MY_KOINOS_WALLET_CONNECTOR_CHILD_MESSENGER_ID } from '../../util/Constants'
 
 export interface IncomingMessage {
   scope: string
@@ -24,7 +25,7 @@ export default function WalletConnector() {
   const messenger = useRef<Messenger<IncomingMessage, OutgoingMessage>>()
 
   useEffect(() => {
-    const msgr = new Messenger<IncomingMessage, OutgoingMessage>(parent.window, 'wallet-connector-child')
+    const msgr = new Messenger<IncomingMessage, OutgoingMessage>(parent.window, MY_KOINOS_WALLET_CONNECTOR_CHILD_MESSENGER_ID)
     messenger.current = msgr
 
     const setupMessenger = async () => {
@@ -56,7 +57,7 @@ export default function WalletConnector() {
         }
       })
 
-      await msgr.ping('wallet-connector-parent')
+      await msgr.ping(MY_KOINOS_WALLET_CONNECTOR_PARENT_MESSENGER_ID)
       debug('connected to parent window')
     }
 
