@@ -1,5 +1,5 @@
 {
-  "name": "wallet",
+  "name": "my-koinos-wallet",
   "version": "0.1.0",
   "private": true,
   "scripts": {
