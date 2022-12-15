@@ -1,6 +1,7 @@
 import { useToast, Stack, Card, CardHeader, Heading, Divider, CardBody, FormControl, FormLabel, Input, FormHelperText, FormErrorMessage, Button, Center } from '@chakra-ui/react'
 import { useRouter } from 'next/router'
 import { useState, ChangeEvent } from 'react'
+import { BackButton } from '../../../../components/BackButton'
 import SidebarWithHeader from '../../../../components/Sidebar'
 import { useWallets } from '../../../../context/WalletsProvider'
 import { isAlphanumeric } from '../../../../util/Utils'
@@ -61,7 +62,7 @@ export default function Add() {
         <Card maxW='sm'>
           <CardHeader>
             <Heading size='md'>
-              Add account to wallet &quot;{walletId && wallets[walletId as string].name}&quot;
+            <BackButton /> Add account to wallet &quot;{walletId && wallets[walletId as string].name}&quot;
             </Heading>
           </CardHeader>
           <Divider />
