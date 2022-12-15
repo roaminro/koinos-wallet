@@ -5,6 +5,7 @@ import { useRouter } from 'next/router'
 import { useState } from 'react'
 import RevealPrivateKeyModal from '../../../../components/RevealPrivateKeyModal'
 import { FiEye } from 'react-icons/fi'
+import { BackButton } from '../../../../components/BackButton'
 
 
 export default function Wallets() {
@@ -29,10 +30,11 @@ export default function Wallets() {
         <Card width='100%'>
           <CardHeader>
             <Stack spacing={8} direction='row'>
-              <Button colorScheme='blue' onClick={() => router.push({ pathname: '/wallets/[walletId]/accounts/add', query: { walletId}})}>
+              <BackButton />
+              <Button colorScheme='blue' onClick={() => router.push({ pathname: '/wallets/[walletId]/accounts/add', query: { walletId } })}>
                 Add account
               </Button>
-              <Button colorScheme='blue' onClick={() => router.push({ pathname: '/wallets/[walletId]/accounts/import', query: { walletId}})}>
+              <Button colorScheme='blue' onClick={() => router.push({ pathname: '/wallets/[walletId]/accounts/import', query: { walletId } })}>
                 Import account
               </Button>
             </Stack>

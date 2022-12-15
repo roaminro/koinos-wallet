@@ -2,6 +2,7 @@ import { useToast, Stack, Card, CardHeader, Heading, Divider, CardBody, FormCont
 import { Signer, utils } from 'koilib'
 import { useRouter } from 'next/router'
 import { useState, ChangeEvent } from 'react'
+import { BackButton } from '../../../../components/BackButton'
 import SidebarWithHeader from '../../../../components/Sidebar'
 import { useWallets } from '../../../../context/WalletsProvider'
 import { isAlphanumeric } from '../../../../util/Utils'
@@ -100,7 +101,7 @@ export default function Import() {
         <Card maxW='sm'>
           <CardHeader>
             <Heading size='md'>
-              Import account to wallet &quot;{walletId && wallets[walletId as string].name}&quot;
+            <BackButton /> Import account to wallet &quot;{walletId && wallets[walletId as string].name}&quot;
             </Heading>
           </CardHeader>
           <Divider />
