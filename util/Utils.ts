@@ -69,10 +69,14 @@ export const saveFile = async (fileName: string, blob: Blob) => {
 
 export const getErrorMessage = (error: any) => {
   if ((error as Error).message) {
-    let err = JSON.parse((error as Error).message)
-    if (err.error) {
-      return err.error
-    } else {
+    try {
+      const err = JSON.parse((error as Error).message)
+      if (err.error) {
+        return err.error
+      } else {
+        return (error as Error).message
+      }
+    } catch (_) {
       return (error as Error).message
     }
   }

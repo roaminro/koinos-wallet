@@ -5,6 +5,7 @@ import { useNetworks } from '../context/NetworksProvider'
 import { useWallets } from '../context/WalletsProvider'
 import { TransactionJson } from 'koilib/lib/interface'
 import { getErrorMessage } from '../util/Utils'
+import { useSWRConfig } from 'swr'
 
 interface SendTokensModalProps {
   isOpen: boolean
@@ -20,11 +21,12 @@ type Token = {
 
 export default function SendTokensModal({ isOpen, onClose }: SendTokensModalProps) {
   const toast = useToast()
+  const { mutate } = useSWRConfig()
 
   const { selectedAccount, signTransaction } = useWallets()
   const { selectedNetwork, provider } = useNetworks()
 
-  const [amount, setAmount] = useState(0)
+  const [amount, setAmount] = useState('0')
   const [recipientAddress, setRecipientAddress] = useState('')
   const [tokens, setTokens] = useState<Record<string, Token>>()
   const [selectedToken, setSelectedToken] = useState<Token>()
@@ -34,7 +36,7 @@ export default function SendTokensModal({ isOpen, onClose }: SendTokensModalProp
     setRecipientAddress(e.target.value)
   }
 
-  const handleAmountChange = (_: string, amount: number) => {
+  const handleAmountChange = (amount: string, _: number) => {
     setAmount(amount)
   }
 
@@ -65,7 +67,7 @@ export default function SendTokensModal({ isOpen, onClose }: SendTokensModalProp
     setIsSending(true)
     try {
       if (selectedToken) {
-        const formattedAmount = utils.parseUnits(amount.toString(), selectedToken.decimals)
+        const formattedAmount = utils.parseUnits(amount, selectedToken.decimals)
 
         const dummySigner = Signer.fromSeed('dummy_signer')
         dummySigner.provider = provider
@@ -94,10 +96,13 @@ export default function SendTokensModal({ isOpen, onClose }: SendTokensModalProp
         // sign transaction
         const signedTx = await signTransaction(selectedAccount?.account.public.address!, transaction as TransactionJson)
 
-
         // send transaction
         const sendResult = await provider?.sendTransaction(signedTx)
-        await sendResult?.transaction.wait()
+
+        await sendResult?.transaction.wait('byTransactionId', 60000)
+
+        const cacheKey = `${selectedNetwork?.chainId}_${selectedAccount?.account.public.address!}_history_undefined_10`
+        mutate(cacheKey)
 
         toast({
           title: 'Tokens successfully sent',
@@ -126,7 +131,7 @@ export default function SendTokensModal({ isOpen, onClose }: SendTokensModalProp
     isRecipientAddressInvalid = true
   }
 
-  const canSendTokens = !isRecipientAddressInvalid && !!selectedToken && amount > 0
+  const canSendTokens = !isRecipientAddressInvalid && !!selectedToken && parseFloat(amount) > 0
 
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
@@ -168,7 +173,7 @@ export default function SendTokensModal({ isOpen, onClose }: SendTokensModalProp
 
           <FormControl>
             <FormLabel>Amount</FormLabel>
-            <NumberInput min={0} value={amount} onChange={handleAmountChange}>
+            <NumberInput min={0} precision={selectedToken?.decimals} value={amount} onChange={handleAmountChange}>
               <NumberInputField />
               <NumberInputStepper>
                 <NumberIncrementStepper />

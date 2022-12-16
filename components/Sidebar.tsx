@@ -97,7 +97,7 @@ const SidebarContent = ({ onClose, ...rest }: SidebarProps) => {
       {...rest}>
       <Flex h="20" alignItems="center" mx="8" justifyContent="space-between">
         <Text fontSize={['sm', 'md', 'lg', 'xl']} fontWeight="bold">
-          My Koinos Wallet
+          <Link href='/home'>My Koinos Wallet</Link>
         </Text>
         <CloseButton display={{ base: 'flex', md: 'none' }} onClick={onClose} />
       </Flex>
@@ -175,7 +175,7 @@ const MobileNav = ({ onOpen, ...rest }: MobileProps) => {
         display={{ base: 'flex', md: 'none' }}
         fontSize={['sm', 'md', 'lg', 'xl']}
         fontWeight="bold">
-        My Koinos Wallet
+        <Link href='/home'>My Koinos Wallet</Link>
       </Text>
 
       <HStack spacing={{ base: '0', md: '6' }}>
