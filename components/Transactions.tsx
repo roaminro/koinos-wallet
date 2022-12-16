@@ -1,4 +1,4 @@
-import { Link, Stack, Heading, Skeleton, TableContainer, Table, Thead, Tr, Th, Tbody, Td, Card, CardBody, VStack, CardHeader, CardFooter, Divider, Text } from '@chakra-ui/react'
+import { Link, Stack, Heading, Skeleton, Card, CardBody, VStack, Text } from '@chakra-ui/react'
 import { Serializer, utils } from 'koilib'
 import { useEffect, useRef, useState } from 'react'
 import { FiExternalLink } from 'react-icons/fi'
