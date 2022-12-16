@@ -11,6 +11,7 @@ import { Network, useNetworks } from '../context/NetworksProvider'
 
 import { koinos } from '@koinos/proto-js'
 import SidebarWithHeader from '../components/Sidebar'
+import { BackButton } from '../components/BackButton'
 
 export default function Networks() {
   const toast = useToast()
@@ -239,7 +240,7 @@ export default function Networks() {
         <Card maxW='sm'>
           <CardHeader>
             <Heading size='md'>
-              Networks
+            <BackButton /> Networks
             </Heading>
           </CardHeader>
           <Divider />
