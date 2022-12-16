@@ -51,7 +51,7 @@ export default function Wallets() {
                       const wallet = wallets[walletId]
                       return (
                         <Tr key={walletId}>
-                          <Td>
+                          <Td onClick={() => router.push({ pathname: '/wallets/[walletId]/accounts', query: { walletId } })}>
                             <NextLink href={{
                               pathname: '/wallets/[walletId]/accounts',
                               query: { walletId },

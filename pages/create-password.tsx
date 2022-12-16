@@ -8,15 +8,11 @@ export default function CreatePassword() {
   const router = useRouter()
   const toast = useToast()
 
-  const { unlock, isVaultSetup } = useWallets()
+  const { unlock } = useWallets()
 
   const [password, setPassword] = useState('')
   const [passwordConfirmation, setPasswordConfirmation] = useState('')
   const [isLoading, setIsLoading] = useState(false)
-
-  if (isVaultSetup) {
-    router.push('/home')
-  }
 
   const handlePasswordChange = (e: ChangeEvent<HTMLInputElement>) => {
     setPassword(e.target.value)

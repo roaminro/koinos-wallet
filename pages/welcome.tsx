@@ -11,7 +11,7 @@ export default function Welcome() {
       <Box padding={{ base: 4, md: 8 }} margin='auto' maxWidth='1024px'>
         <Stack mt='6' spacing='3' align='center'>
 
-          <Heading size='lg'>Welcome to Koinos</Heading>
+          <Heading size='lg'>Welcome to My Koinos Wallet</Heading>
 
           <Card maxW='sm'>
             <CardBody>

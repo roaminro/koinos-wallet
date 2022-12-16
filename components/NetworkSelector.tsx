@@ -1,6 +1,6 @@
-import { Menu, MenuButton, Button, MenuList, MenuOptionGroup, MenuItemOption, MenuDivider, MenuItem } from '@chakra-ui/react'
+import { Menu, MenuButton, Button, MenuList, MenuOptionGroup, MenuItemOption, MenuDivider, MenuItem, Show, Hide } from '@chakra-ui/react'
 import { useRouter } from 'next/router'
-import { FiChevronDown } from 'react-icons/fi'
+import { FiChevronDown, FiGlobe } from 'react-icons/fi'
 import { useNetworks } from '../context/NetworksProvider'
 
 export function NetworkSelector() {
@@ -11,7 +11,12 @@ export function NetworkSelector() {
   return (
     <Menu>
       <MenuButton as={Button} rightIcon={<FiChevronDown />}>
-        {selectedNetwork?.name}
+        <Hide below='md'>
+          {selectedNetwork?.name}
+        </Hide>
+        <Show below='md'>
+          <FiGlobe />
+        </Show>
       </MenuButton>
       <MenuList>
         <MenuOptionGroup

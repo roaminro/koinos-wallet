@@ -287,7 +287,7 @@ export const WalletsProvider = ({
     const newWallet = addWalletResult as AddWalletResult
 
     // update state
-    setWallets({ ...wallets, [walletName]: newWallet })
+    setWallets({ ...wallets, [newWallet.id]: newWallet })
 
     return newWallet
   }
