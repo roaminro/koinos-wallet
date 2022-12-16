@@ -25,7 +25,8 @@ import {
   FiSun,
   FiCreditCard,
   FiGlobe,
-  FiHardDrive
+  FiHardDrive,
+  FiDatabase
 } from 'react-icons/fi'
 import { IconType } from 'react-icons'
 import { useWallets } from '../context/WalletsProvider'
@@ -39,6 +40,7 @@ interface LinkItemProps {
 }
 const LinkItems: Array<LinkItemProps> = [
   { name: 'Home', icon: FiHome, href: '/home', hideWhenVaultNotSetup: true },
+  { name: 'Tokens', icon: FiDatabase, href: '/tokens', hideWhenVaultNotSetup: true },
   { name: 'Wallets', icon: FiCreditCard, href: '/wallets', hideWhenVaultNotSetup: true },
   { name: 'Networks', icon: FiGlobe, href: '/networks' },
   { name: 'Vault', icon: FiHardDrive, href: '/vault' },
