@@ -6,6 +6,7 @@ import NextLink from 'next/link'
 import RevealSecretRecoveryPhraseModal from '../../components/RevealSecretRecoveryPhraseModal'
 import { useState } from 'react'
 import { FiEye, FiUsers } from 'react-icons/fi'
+import { BackButton } from '../../components/BackButton'
 
 
 export default function Wallets() {
@@ -25,6 +26,7 @@ export default function Wallets() {
         <Card width='100%'>
           <CardHeader>
             <Stack spacing={8} direction='row'>
+              <BackButton />
               <Button colorScheme='blue' onClick={() => router.push('/wallets/create')}>
                 Create wallet
               </Button>

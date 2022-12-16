@@ -6,6 +6,7 @@ import { VAULT_KEY } from '../util/Constants'
 import { generateString, saveFile } from '../util/Utils'
 import SidebarWithHeader from '../components/Sidebar'
 import { ConfirmationDialog } from '../components/ConfirmationDialog'
+import { BackButton } from '../components/BackButton'
 
 
 export default function Vault() {
@@ -101,7 +102,7 @@ export default function Vault() {
           <Card maxW='sm' minWidth='350px'>
             <CardHeader>
               <Heading size='md'>
-                Export vault
+              <BackButton /> Export vault
               </Heading>
             </CardHeader>
             <Divider />
