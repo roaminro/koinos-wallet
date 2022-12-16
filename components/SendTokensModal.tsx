@@ -193,7 +193,7 @@ export default function SendTokensModal({ isOpen, onClose }: SendTokensModalProp
             </NumberInput>
             <FormHelperText>
               <Tooltip
-                label='use balance as amount'
+                label='set amount with balance'
                 placement="bottom"
                 hasArrow
               >

@@ -1,13 +1,25 @@
-import { Button, Card, CardBody, CardHeader, Center, Divider, Stack, Table, TableContainer, Tbody, Td, Th, Thead, Tr, useClipboard, useToast, Skeleton, IconButton, Tooltip, Hide } from '@chakra-ui/react'
+import { Button, Card, CardBody, CardHeader, Center, Divider, Stack, Table, TableContainer, Tbody, Td, Th, Thead, Tr, useClipboard, useToast, Skeleton, IconButton, Tooltip, Hide, useDisclosure } from '@chakra-ui/react'
 import SimpleSidebar from '../../components/Sidebar'
 import { useRouter } from 'next/router'
 import { FiEdit, FiTrash } from 'react-icons/fi'
 import { BackButton } from '../../components/BackButton'
-import { useTokens } from '../../context/TokensProvider'
+import { Token, useTokens } from '../../context/TokensProvider'
+import { ConfirmationDialog } from '../../components/ConfirmationDialog'
+import { useRef, useState } from 'react'
 
 export default function Tokens() {
+  const toast = useToast()
   const router = useRouter()
-  const { tokens } = useTokens()
+  const { isOpen, onOpen, onClose } = useDisclosure()
+
+  const { tokens, removeToken } = useTokens()
+  const confirmDialogRef = useRef(null)
+  const [tokenToDelete, setTokenToDelete] = useState<Token | null>(null)
+
+  const handleDeleteClick = (token: Token) => {
+    setTokenToDelete(token)
+    onOpen()
+  }
 
   return (
     <SimpleSidebar>
@@ -71,6 +83,7 @@ export default function Tokens() {
                                   aria-label='delete token'
                                   colorScheme='red'
                                   icon={<FiTrash />}
+                                  onClick={() => handleDeleteClick(token)}
                                 />
                               </Tooltip>
                             </Stack>
@@ -82,6 +95,22 @@ export default function Tokens() {
                 </Tbody>
               </Table>
             </TableContainer>
+            <ConfirmationDialog
+              modalRef={confirmDialogRef}
+              onClose={onClose}
+              body='Are you sure you want to delete this token?'
+              onAccept={() => {
+                removeToken(tokenToDelete!)
+                setTokenToDelete(null)
+                toast({
+                  title: 'Token successfully removed',
+                  description: 'The token was successfully removed!',
+                  status: 'success',
+                  isClosable: true,
+                })
+              }}
+              isOpen={isOpen}
+            />
           </CardBody>
         </Card>
       </Center>
