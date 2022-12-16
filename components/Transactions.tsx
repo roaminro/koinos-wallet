@@ -1,7 +1,7 @@
 import { Link, Stack, Heading, Skeleton, Card, CardBody, VStack, Text } from '@chakra-ui/react'
 import { Serializer, utils } from 'koilib'
 import { useEffect, useRef, useState } from 'react'
-import { FiExternalLink } from 'react-icons/fi'
+import { FiCpu, FiDownload, FiExternalLink, FiPlus, FiSend, FiTrash2, FiUpload } from 'react-icons/fi'
 import { useNetworks } from '../context/NetworksProvider'
 import { useWallets } from '../context/WalletsProvider'
 import { truncateAccount, truncateTransactionId } from '../util/Utils'
@@ -15,8 +15,7 @@ const TOKEN_ENTRY_POINTS: Record<number, string> = {
 
 interface ParsedTransaction {
   id: string
-  manaPayer: string
-  manaUsed: string
+  manaUsed?: string
   operations: {
     type: string
     contractId: string
@@ -44,74 +43,78 @@ export function Transactions() {
 
         for (let index = 0; index < transactions.length; index++) {
           const historyTx = transactions[index]
-          const parsedTx: ParsedTransaction = {
-            id: historyTx.trx.transaction.id!,
-            manaPayer: historyTx.trx.transaction.header?.payer!,
-            manaUsed: historyTx.trx.receipt.rc_used,
-            operations: []
-          }
 
-          if (historyTx.trx.transaction.operations) {
-            for (let opIdx = 0; opIdx < historyTx.trx.transaction.operations.length; opIdx++) {
-              const op = historyTx.trx.transaction.operations[opIdx]
+          if (historyTx.trx) {
+            const manaUsed = historyTx.trx.transaction.header?.payer === selectedAccount?.account.public.address ? historyTx.trx.receipt.rc_used : undefined
 
-              if (op.call_contract) {
-                const methodName = TOKEN_ENTRY_POINTS[op.call_contract.entry_point]
-                if (methodName) {
-                  const args = await serializer.current.deserialize(op.call_contract.args, `${methodName}_arguments`)
+            const parsedTx: ParsedTransaction = {
+              id: historyTx.trx.transaction.id!,
+              manaUsed,
+              operations: []
+            }
 
-                  switch (methodName) {
-                    case 'transfer': {
-                      let type = 'Received'
-                      if (selectedAccount?.account.public.address === args.from) {
-                        type = 'Sent'
+            if (historyTx.trx.transaction.operations) {
+              for (let opIdx = 0; opIdx < historyTx.trx.transaction.operations.length; opIdx++) {
+                const op = historyTx.trx.transaction.operations[opIdx]
+
+                if (op.call_contract) {
+                  const methodName = TOKEN_ENTRY_POINTS[op.call_contract.entry_point]
+                  if (methodName) {
+                    const args = await serializer.current.deserialize(op.call_contract.args, `${methodName}_arguments`)
+
+                    switch (methodName) {
+                      case 'transfer': {
+                        let type = 'Received'
+                        if (selectedAccount?.account.public.address === args.from) {
+                          type = 'Sent'
+                        }
+                        parsedTx.operations.push({
+                          type,
+                          contractId: op.call_contract.contract_id!,
+                          from: args.from as string,
+                          to: args.to as string,
+                          amount: args.value as string || '0'
+                        })
+                        break
                       }
-                      parsedTx.operations.push({
-                        type,
-                        contractId: op.call_contract.contract_id!,
-                        from: args.from as string,
-                        to: args.to as string,
-                        amount: args.value as string || '0'
-                      })
-                      break
+                      case 'burn': {
+                        let type = 'Burned'
+                        parsedTx.operations.push({
+                          type,
+                          contractId: op.call_contract.contract_id!,
+                          from: args.from as string,
+                          amount: args.value as string
+                        })
+                        break
+                      }
+                      case 'mint': {
+                        let type = 'Minted'
+                        parsedTx.operations.push({
+                          type,
+                          contractId: op.call_contract.contract_id!,
+                          to: args.to as string,
+                          amount: args.value as string
+                        })
+                        break
+                      }
                     }
-                    case 'burn': {
-                      let type = 'Burned'
-                      parsedTx.operations.push({
-                        type,
-                        contractId: op.call_contract.contract_id!,
-                        from: args.from as string,
-                        amount: args.value as string
-                      })
-                      break
-                    }
-                    case 'mint': {
-                      let type = 'Minted'
-                      parsedTx.operations.push({
-                        type,
-                        contractId: op.call_contract.contract_id!,
-                        to: args.to as string,
-                        amount: args.value as string
-                      })
-                      break
-                    }
+                  } else {
+                    parsedTx.operations.push({
+                      type: 'Contract interaction',
+                      contractId: op.call_contract.contract_id!
+                    })
                   }
-                } else {
+                } else if (op.upload_contract) {
                   parsedTx.operations.push({
-                    type: 'Contract interaction',
-                    contractId: op.call_contract.contract_id!
+                    type: 'Contract upload',
+                    contractId: op.upload_contract.contract_id!
                   })
                 }
-              } else if (op.upload_contract) {
-                parsedTx.operations.push({
-                  type: 'Contract upload',
-                  contractId: op.upload_contract.contract_id!
-                })
               }
             }
-          }
 
-          parsedTxs.push(parsedTx)
+            parsedTxs.push(parsedTx)
+          }
         }
 
         setParsedTransactions([...parsedTxs])
@@ -134,11 +137,11 @@ export function Transactions() {
                     <Link href={`${selectedNetwork?.explorerUrl}/tx/${parsedTx.id}`} isExternal>
                       {truncateTransactionId(parsedTx.id!)} <FiExternalLink style={{ display: 'inline-block' }} />
                     </Link>
-                    <Text fontSize='xs'>
-                      Mana payer: {truncateAccount(parsedTx.manaPayer)}
-                      {' '}
-                      Mana used: {utils.formatUnits(parsedTx.manaUsed, selectedNetwork?.tokenDecimals!)}
-                    </Text>
+                    {
+                      parsedTx.manaUsed && <Text fontSize='xs'>
+                        Mana used: {utils.formatUnits(parsedTx.manaUsed, selectedNetwork?.tokenDecimals!)}
+                      </Text>
+                    }
                     {
                       parsedTx.operations.map((op, opIdx) => {
                         let symbol = ''
@@ -157,7 +160,7 @@ export function Transactions() {
                               <Card key={`${parsedTx.id}-${opIdx}`}>
                                 <CardBody>
                                   <Text>
-                                    Sent {amount} {symbol} to
+                                    <FiSend style={{ display: 'inline-block' }} /> Sent {amount} {symbol} to
                                     {' '}
                                     <Link href={`${selectedNetwork?.explorerUrl}/address/${op.to}`} isExternal>
                                       {truncateAccount(op.to!)} <FiExternalLink style={{ display: 'inline-block' }} />
@@ -173,7 +176,7 @@ export function Transactions() {
                               <Card key={`${parsedTx.id}-${opIdx}`}>
                                 <CardBody>
                                   <Text>
-                                    Received {amount} {symbol} from
+                                    <FiDownload style={{ display: 'inline-block' }} /> Received {amount} {symbol} from
                                     {' '}
                                     <Link href={`${selectedNetwork?.explorerUrl}/address/${op.from}`} isExternal>
                                       {truncateAccount(op.from!)} <FiExternalLink style={{ display: 'inline-block' }} />
@@ -188,7 +191,7 @@ export function Transactions() {
                             return (
                               <Card key={`${parsedTx.id}-${opIdx}`}>
                                 <CardBody>
-                                  <Text>Minted {amount} {symbol} to your account</Text>
+                                  <Text><FiPlus style={{ display: 'inline-block' }} />Minted {amount} {symbol} to your account</Text>
                                 </CardBody>
                               </Card>
                             )
@@ -198,7 +201,7 @@ export function Transactions() {
                             return (
                               <Card key={`${parsedTx.id}-${opIdx}`}>
                                 <CardBody>
-                                  <Text>Burned {amount} {symbol} from your account</Text>
+                                  <Text><FiTrash2 style={{ display: 'inline-block' }} />Burned {amount} {symbol} from your account</Text>
                                 </CardBody>
                               </Card>
                             )
@@ -209,7 +212,7 @@ export function Transactions() {
                               <Card key={`${parsedTx.id}-${opIdx}`}>
                                 <CardBody>
                                   <Text>
-                                    Interacted with contract
+                                    <FiCpu style={{ display: 'inline-block' }} /> Interacted with contract
                                     {' '}
                                     <Link href={`${selectedNetwork?.explorerUrl}/contract/${op.contractId}`} isExternal>
                                       {truncateAccount(op.contractId!)} <FiExternalLink style={{ display: 'inline-block' }} />
@@ -225,7 +228,7 @@ export function Transactions() {
                               <Card key={`${parsedTx.id}-${opIdx}`}>
                                 <CardBody>
                                   <Text>
-                                    Uploaded contract
+                                    <FiUpload style={{ display: 'inline-block' }} /> Uploaded contract
                                     {' '}
                                     <Link href={`${selectedNetwork?.explorerUrl}/contract/${op.contractId}`} isExternal>
                                       {truncateAccount(op.contractId!)} <FiExternalLink style={{ display: 'inline-block' }} />
