@@ -13,7 +13,7 @@ export default function App({ Component, pageProps }: AppProps) {
       <NetworksProvider>
         <WalletsProvider>
           <Head>
-            <title>Wallet</title>
+            <title>My Koinos Wallet</title>
             <meta
               name="viewport"
               content="width=device-width, height=device-height, initial-scale=1.0, minimum-scale=1.0"
