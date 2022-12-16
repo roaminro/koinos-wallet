@@ -1,9 +1,9 @@
 import { Contract, Provider, utils } from 'koilib'
 import useSWR from 'swr'
-import { Network, useNetworks } from '../context/NetworksProvider'
+import { useNetworks } from '../context/NetworksProvider'
 
 export const useTokenBalance = (accountAddress?: string, tokenAddress?: string) => {
-  const { provider, selectedNetwork } = useNetworks()
+  const { provider } = useNetworks()
 
   const contract = new Contract({
     id: tokenAddress,
@@ -12,7 +12,7 @@ export const useTokenBalance = (accountAddress?: string, tokenAddress?: string) 
   })
 
   //@ts-ignore provider and accountAddress and tokenAddress are not undefined when swr calls the fetcher
-  const { data, error } = useSWR(() => selectedNetwork && provider && accountAddress && tokenAddress ? `${selectedNetwork.chainId}_${accountAddress}_${tokenAddress}_balance` : null, getTokenBalanceFetcher(accountAddress, contract))
+  const { data, error } = useSWR(() => provider && accountAddress && tokenAddress ? `${accountAddress}_${tokenAddress}_balance` : null, getTokenBalanceFetcher(accountAddress, contract))
 
   return {
     balance: data,

@@ -1,9 +1,7 @@
 import { Button, Card, CardBody, CardHeader, Center, Divider, Stack, Table, TableContainer, Tbody, Td, Th, Thead, Tr, useClipboard, useToast, Skeleton, IconButton, Tooltip, Hide } from '@chakra-ui/react'
 import SimpleSidebar from '../../components/Sidebar'
 import { useRouter } from 'next/router'
-import NextLink from 'next/link'
-import RevealSecretRecoveryPhraseModal from '../../components/RevealSecretRecoveryPhraseModal'
-import { FiEdit, FiEye, FiTrash, FiUsers } from 'react-icons/fi'
+import { FiEdit, FiTrash } from 'react-icons/fi'
 import { BackButton } from '../../components/BackButton'
 import { useTokens } from '../../context/TokensProvider'
 

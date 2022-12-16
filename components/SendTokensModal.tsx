@@ -1,4 +1,4 @@
-import { Modal, ModalOverlay, ModalContent, ModalHeader, ModalCloseButton, ModalBody, ModalFooter, Button, FormControl, FormErrorMessage, FormHelperText, FormLabel, Input, NumberDecrementStepper, NumberIncrementStepper, NumberInput, NumberInputField, NumberInputStepper, Select, useToast } from '@chakra-ui/react'
+import { Text, Modal, ModalOverlay, ModalContent, ModalHeader, ModalCloseButton, ModalBody, ModalFooter, Button, FormControl, FormErrorMessage, FormHelperText, FormLabel, Input, NumberDecrementStepper, NumberIncrementStepper, NumberInput, NumberInputField, NumberInputStepper, Select, useToast, Link, Tooltip } from '@chakra-ui/react'
 import { Contract, utils, Signer } from 'koilib'
 import { ChangeEvent, useEffect, useState } from 'react'
 import { useNetworks } from '../context/NetworksProvider'
@@ -6,18 +6,14 @@ import { useWallets } from '../context/WalletsProvider'
 import { TransactionJson } from 'koilib/lib/interface'
 import { getErrorMessage } from '../util/Utils'
 import { useSWRConfig } from 'swr'
+import { Token, useTokens } from '../context/TokensProvider'
+import { useTokenBalance } from './BalanceUtils'
 
 interface SendTokensModalProps {
   isOpen: boolean
   onClose: () => void
 }
 
-type Token = {
-  address: string,
-  name: string,
-  symbol: string,
-  decimals: number
-}
 
 export default function SendTokensModal({ isOpen, onClose }: SendTokensModalProps) {
   const toast = useToast()
@@ -25,10 +21,11 @@ export default function SendTokensModal({ isOpen, onClose }: SendTokensModalProp
 
   const { selectedAccount, signTransaction } = useWallets()
   const { selectedNetwork, provider } = useNetworks()
+  const { tokens } = useTokens()
 
   const [amount, setAmount] = useState('0')
   const [recipientAddress, setRecipientAddress] = useState('')
-  const [tokens, setTokens] = useState<Record<string, Token>>()
+  const [availableTokens, setAvailableTokens] = useState<Record<string, Token>>()
   const [selectedToken, setSelectedToken] = useState<Token>()
   const [isSending, setIsSending] = useState(false)
 
@@ -41,32 +38,42 @@ export default function SendTokensModal({ isOpen, onClose }: SendTokensModalProp
   }
 
   const handleTokenChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    if (tokens) {
-      setSelectedToken(tokens[event.target.value])
+    if (availableTokens) {
+      setSelectedToken(availableTokens[event.target.value])
     }
   }
 
 
   useEffect(() => {
-    if (selectedNetwork) {
-      const initialToken = {
-        name: selectedNetwork?.tokenName,
-        address: selectedNetwork?.tokenAddress,
-        symbol: selectedNetwork?.tokenSymbol,
-        decimals: selectedNetwork?.tokenDecimals,
+    if (tokens.length && selectedNetwork) {
+      const tkns: Record<string, Token> = {}
+
+      const initialToken: Token = {
+        chainId: selectedNetwork.chainId,
+        name: selectedNetwork.tokenName,
+        address: selectedNetwork.tokenAddress,
+        symbol: selectedNetwork.tokenSymbol,
+        decimals: selectedNetwork.tokenDecimals,
       }
-      setTokens({
-        [selectedNetwork.tokenAddress]: initialToken
-      })
+
+      tkns[initialToken.address] = initialToken
+
+      for (const token of tokens) {
+        if (token.chainId === selectedNetwork.chainId) {
+          tkns[token.address] = token
+        }
+      }
+
+      setAvailableTokens({ ...tkns })
 
       setSelectedToken(initialToken)
     }
-  }, [selectedNetwork])
+  }, [selectedNetwork, tokens])
 
   const sendTokens = async () => {
     setIsSending(true)
     try {
-      if (selectedToken) {
+      if (selectedAccount && selectedToken && selectedNetwork) {
         const formattedAmount = utils.parseUnits(amount, selectedToken.decimals)
 
         const dummySigner = Signer.fromSeed('dummy_signer')
@@ -81,12 +88,12 @@ export default function SendTokensModal({ isOpen, onClose }: SendTokensModalProp
 
         // generate transaction
         const { transaction } = await tokenContract.functions.transfer({
-          from: selectedAccount?.account.public.address,
+          from: selectedAccount.account.public.address,
           to: recipientAddress,
           value: formattedAmount,
         }, {
-          payer: selectedAccount?.account.public.address,
-          chainId: selectedNetwork?.chainId,
+          payer: selectedAccount.account.public.address,
+          chainId: selectedNetwork.chainId,
           signTransaction: false,
           sendTransaction: false,
           broadcast: false,
@@ -94,14 +101,14 @@ export default function SendTokensModal({ isOpen, onClose }: SendTokensModalProp
         })
 
         // sign transaction
-        const signedTx = await signTransaction(selectedAccount?.account.public.address!, transaction as TransactionJson)
+        const signedTx = await signTransaction(selectedAccount.account.public.address!, transaction as TransactionJson)
 
         // send transaction
         const sendResult = await provider?.sendTransaction(signedTx)
 
         await sendResult?.transaction.wait('byTransactionId', 60000)
 
-        const cacheKey = `${selectedNetwork?.chainId}_${selectedAccount?.account.public.address!}_history_undefined_10`
+        const cacheKey = `${selectedNetwork.chainId}_${selectedAccount?.account.public.address!}_history_undefined_10`
         mutate(cacheKey)
 
         toast({
@@ -122,6 +129,10 @@ export default function SendTokensModal({ isOpen, onClose }: SendTokensModalProp
     }
     setIsSending(false)
   }
+
+  const { balance: tokenBalance, isLoading: isLoadingTokenBalance } = useTokenBalance(selectedAccount?.account?.public.address, selectedToken?.address)
+
+  let formattedBalance = tokenBalance && selectedToken ? utils.formatUnits(tokenBalance, selectedToken.decimals) : ''
 
   let isRecipientAddressInvalid = false
 
@@ -148,8 +159,8 @@ export default function SendTokensModal({ isOpen, onClose }: SendTokensModalProp
               onChange={handleTokenChange}
             >
               {
-                tokens && Object.keys(tokens).map((tknAddr) => (
-                  <option key={tknAddr} value={tknAddr} >{tokens[tknAddr].name} ({tokens[tknAddr].symbol})</option>
+                availableTokens && Object.keys(availableTokens).map((tknAddr) => (
+                  <option key={tknAddr} value={tknAddr} >{availableTokens[tknAddr].name} ({availableTokens[tknAddr].symbol})</option>
                 ))
               }
             </Select>
@@ -180,7 +191,16 @@ export default function SendTokensModal({ isOpen, onClose }: SendTokensModalProp
                 <NumberDecrementStepper />
               </NumberInputStepper>
             </NumberInput>
-            <FormHelperText>Amount of tokens to send.</FormHelperText>
+            <FormHelperText>
+              <Tooltip
+                label='use balance as amount'
+                placement="bottom"
+                hasArrow
+              >
+                <Link onClick={() => setAmount(formattedBalance)}>Balance: {formattedBalance}</Link>
+              </Tooltip>
+              <Text>Amount of tokens to send.</Text>
+            </FormHelperText>
           </FormControl>
         </ModalBody>
 
