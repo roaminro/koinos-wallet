@@ -1,5 +1,3 @@
-import { Network } from '../context/NetworksProvider'
-
 export const SETTINGS_KEY = 'SETTINGS'
 
 export const VAULT_KEY = 'VAULT'
@@ -22,6 +20,8 @@ export const VAULT_SERVICE_WORKER_ID = 'vault-connector-parent'
 export const NETWORKS_KEY = 'NETWORKS'
 export const SELECTED_NETWORK_KEY = 'SELECTED_NETWORK'
 export const SELECTED_ACCOUNT_KEY = 'SELECTED_ACCOUNT'
+
+export const TOKENS_KEY = 'TOKENS'
 
 export const MY_KOINOS_WALLET_CONNECTOR_CHILD_MESSENGER_ID = 'my-koinos-wallet-connector-child'
 export const MY_KOINOS_WALLET_CONNECTOR_PARENT_MESSENGER_ID = 'my-koinos-wallet-connector-parent'
