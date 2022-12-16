@@ -1,35 +1,33 @@
 import {
   FiRepeat,
 } from 'react-icons/fi'
-import { Stack, Card, CardHeader, Heading, Divider, CardBody, FormControl, FormLabel, Input, FormHelperText, FormErrorMessage, Button, useToast, IconButton, NumberDecrementStepper, NumberIncrementStepper, NumberInput, NumberInputField, NumberInputStepper, InputGroup, InputRightElement, Tooltip } from '@chakra-ui/react'
+import { Stack, Card, CardHeader, Heading, Divider, CardBody, FormControl, FormLabel, Input, FormHelperText, Button, useToast, IconButton, NumberDecrementStepper, NumberIncrementStepper, NumberInput, NumberInputField, NumberInputStepper, InputGroup, InputRightElement, Tooltip } from '@chakra-ui/react'
 import { Contract, Provider, utils } from 'koilib'
-import { ChangeEvent, useState } from 'react'
-
-import SidebarWithHeader from '../../components/Sidebar'
-import { BackButton } from '../../components/BackButton'
-import { useNetworks } from '../../context/NetworksProvider'
-import { useTokens } from '../../context/TokensProvider'
+import { ChangeEvent, useEffect, useState } from 'react'
 import { useRouter } from 'next/router'
 
-export default function Add() {
-  const router = useRouter()
+import SidebarWithHeader from '../../../components/Sidebar'
+import { BackButton } from '../../../components/BackButton'
+import { Network, useNetworks } from '../../../context/NetworksProvider'
+import { useTokens } from '../../../context/TokensProvider'
+
+export default function Edit() {
   const toast = useToast()
-  const { selectedNetwork } = useNetworks()
-  const { tokens, addToken } = useTokens()
+  const router = useRouter()
+  const { networks } = useNetworks()
+  const { updateToken, tokens } = useTokens()
+
+  const { tokenAddress } = router.query
 
   const [isLoading, setIsLoading] = useState(false)
   const [tokenName, setTokenName] = useState('')
-  const [tokenAddress, setTokenAddress] = useState('')
   const [tokenSymbol, setTokenSymbol] = useState('')
+  const [network, setNetwork] = useState<Network>()
   const [tokenDecimals, setTokenDecimals] = useState(0)
 
 
   const handleTokenNameChange = (e: ChangeEvent<HTMLInputElement>) => {
     setTokenName(e.target.value)
-  }
-
-  const handleTokenAddressChange = (e: ChangeEvent<HTMLInputElement>) => {
-    setTokenAddress(e.target.value)
   }
 
   const handleTokenSymbolChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -42,10 +40,10 @@ export default function Add() {
 
   const fetchTokenInformation = async () => {
     try {
-      const provider = new Provider(selectedNetwork?.rpcUrl!)
+      const provider = new Provider(network?.rpcUrl!)
 
       const tokenContract = new Contract({
-        id: tokenAddress,
+        id: tokenAddress as string,
         abi: utils.tokenAbi,
         provider
       })
@@ -90,9 +88,9 @@ export default function Add() {
 
     try {
 
-      addToken({
-        chainId: selectedNetwork?.chainId!,
-        address: tokenAddress,
+      updateToken({
+        chainId: network?.chainId!,
+        address: tokenAddress as string,
         name: tokenName,
         symbol: tokenSymbol,
         decimals: tokenDecimals
@@ -101,15 +99,15 @@ export default function Add() {
       router.push('/tokens')
 
       toast({
-        title: 'Token successfully added',
-        description: 'The token was successfully added!',
+        title: 'Token successfully saved',
+        description: 'The token was successfully saved!',
         status: 'success',
         isClosable: true,
       })
     } catch (error) {
       console.error(error)
       toast({
-        title: 'An error occured while adding the token',
+        title: 'An error occured while editing the token',
         description: String(error),
         status: 'error',
         isClosable: true,
@@ -119,8 +117,25 @@ export default function Add() {
     }
   }
 
-  const cannotAddToken = tokens.some(token => token.address === tokenAddress)
+  useEffect(() => {
+    if (tokenAddress) {
+      const token = tokens.find((tkn) => tkn.address === tokenAddress)
 
+      if (token) {
+        setTokenName(token.name)
+        setTokenSymbol(token.symbol)
+        setTokenDecimals(token.decimals)
+
+        const ntwrk = networks.find((net) => net.chainId === token.chainId)
+
+        if (ntwrk) {
+          setNetwork(ntwrk)
+        }
+      }
+    }
+  }, [tokenAddress, tokens, networks])
+
+  if (!tokenAddress) return <></>
 
   return (
     <SidebarWithHeader>
@@ -128,8 +143,8 @@ export default function Add() {
         <Card maxW='sm'>
           <CardHeader>
             <Heading size='md'>
-            <BackButton />
-              Add token
+              <BackButton />
+              Edit token
             </Heading>
           </CardHeader>
           <Divider />
@@ -137,14 +152,14 @@ export default function Add() {
             <Stack mt='6' spacing='3'>
               <FormControl isDisabled={true}>
                 <FormLabel>Network</FormLabel>
-                <Input value={selectedNetwork?.name} />
+                <Input value={network?.name} />
                 <FormHelperText>Name of the network.</FormHelperText>
               </FormControl>
 
-              <FormControl isRequired isInvalid={cannotAddToken}>
+              <FormControl isDisabled={true}>
                 <FormLabel>Token address</FormLabel>
                 <InputGroup>
-                  <Input value={tokenAddress} onChange={handleTokenAddressChange} />
+                  <Input value={tokenAddress} />
                   <InputRightElement>
                     <Tooltip label="Fetch token information" aria-label='Fetch token information from rpc'>
                       <IconButton
@@ -156,9 +171,6 @@ export default function Add() {
                   </InputRightElement>
                 </InputGroup>
                 <FormHelperText>Address of the token.</FormHelperText>
-                {
-                  cannotAddToken && <FormErrorMessage>There is already another token with the same address.</FormErrorMessage>
-                }
               </FormControl>
 
               <FormControl isRequired>
@@ -186,11 +198,10 @@ export default function Add() {
               </FormControl>
               <Button
                 isLoading={isLoading}
-                isDisabled={cannotAddToken}
                 variant='solid'
                 colorScheme='green'
                 onClick={handleBtnClick}>
-                Add token
+                Save changes
               </Button>
             </Stack>
           </CardBody>
