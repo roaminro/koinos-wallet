@@ -11,6 +11,7 @@ import { HDKoinos } from '../util/HDKoinos'
 import { isAlphanumeric, equalArray } from '../util/Utils'
 import { useWallets } from '../context/WalletsProvider'
 import SidebarWithHeader from './Sidebar'
+import { BackButton } from './BackButton'
 
 interface WalletCreateProps {
   importingSecretRecoveryPhrase?: boolean
@@ -141,6 +142,7 @@ export default function WalletCreator({ importingSecretRecoveryPhrase = false }:
         <Card maxW='sm'>
           <CardHeader>
             <Heading size='md'>
+            <BackButton /> 
               {
                 importingSecretRecoveryPhrase ? 'Import a wallet' : 'Create a new wallet'
               }

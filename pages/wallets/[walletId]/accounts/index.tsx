@@ -53,7 +53,7 @@ export default function Wallets() {
                 </Thead>
                 <Tbody>
                   {
-                    walletId && Object.keys(wallets[walletId as string].accounts).map((accountId) => {
+                    walletId && wallets[walletId as string] && Object.keys(wallets[walletId as string].accounts).map((accountId) => {
                       const account = wallets[walletId as string].accounts[accountId]
                       return (
                         <Tr key={accountId}>

@@ -62,7 +62,7 @@ export default function Add() {
         <Card maxW='sm'>
           <CardHeader>
             <Heading size='md'>
-            <BackButton /> Add account to wallet &quot;{walletId && wallets[walletId as string].name}&quot;
+            <BackButton /> Add account to wallet &quot;{walletId && wallets[walletId as string] && wallets[walletId as string].name}&quot;
             </Heading>
           </CardHeader>
           <Divider />
