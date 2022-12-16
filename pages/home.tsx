@@ -1,15 +1,14 @@
 import { FiClipboard, FiSend } from 'react-icons/fi'
-import { Box, Button, Card, CardBody, CardHeader, Center, Divider, Heading, IconButton, Link, Menu, MenuButton, MenuItemOption, MenuList, MenuOptionGroup, Skeleton, Stack, Stat, StatHelpText, StatNumber, Table, TableContainer, Tbody, Td, Th, Thead, Tooltip, Tr, useClipboard, useToast, VStack } from '@chakra-ui/react'
+import { Box, Button, Card, CardBody, CardHeader, Center, Divider, Heading, IconButton, Menu, MenuButton, MenuItemOption, MenuList, MenuOptionGroup, Skeleton, Stat, StatHelpText, StatNumber, Tooltip, useClipboard, useToast, VStack } from '@chakra-ui/react'
 import { useEffect, useState } from 'react'
 import { FiChevronDown } from 'react-icons/fi'
 import SimpleSidebar from '../components/Sidebar'
 import { useWallets } from '../context/WalletsProvider'
-import { truncateAccount, truncateTransactionId } from '../util/Utils'
+import { truncateAccount } from '../util/Utils'
 import { asFloat, useManaBalance, useTokenBalance } from '../components/BalanceUtils'
 import { useNetworks } from '../context/NetworksProvider'
-import { useAccountHistory } from '../components/AccountHistoryUtils'
-import { ExternalLinkIcon } from '@chakra-ui/icons'
 import SendTokensModal from '../components/SendTokensModal'
+import { Transactions } from '../components/Transactions'
 
 export default function Home() {
   const { wallets, selectedAccount, selectAccount } = useWallets()
@@ -19,8 +18,6 @@ export default function Home() {
 
   const { balance: koinBalance, isLoading: isLoadingKoinBalance } = useTokenBalance(selectedAccount?.account?.public.address, selectedNetwork?.tokenAddress)
   const { mana, isLoading: isLoadingManaBalance } = useManaBalance(selectedAccount?.account?.public.address)
-
-  const { transactions, isLoading: isLoadingAccountHistory } = useAccountHistory(selectedAccount?.account?.public.address)
 
   const [isSendTokensModalOpen, setIsSendTokensModalOpen] = useState(false)
 
@@ -149,34 +146,7 @@ export default function Home() {
           </CardHeader>
           <Divider />
           <CardBody>
-            <Stack mt='6' spacing='3'>
-              <Heading size='sm'>Last 10 transactions</Heading>
-              <Skeleton isLoaded={!isLoadingAccountHistory}>
-
-                <TableContainer>
-                  <Table variant='striped' colorScheme='blue'>
-                    <Thead>
-                      <Tr>
-                        <Th>Transaction Id</Th>
-                      </Tr>
-                    </Thead>
-                    <Tbody>
-                      {
-                        transactions?.map(historyx =>
-                          <Tr key={historyx.trx.transaction.id}>
-                            <Td>
-                              <Link href={`${selectedNetwork?.explorerUrl}/tx/${historyx.trx.transaction.id}`} isExternal>
-                                {truncateTransactionId(historyx.trx.transaction.id!)} <ExternalLinkIcon mx='2px' />
-                              </Link>
-                            </Td>
-                          </Tr>
-                        )
-                      }
-                    </Tbody>
-                  </Table>
-                </TableContainer>
-              </Skeleton>
-            </Stack>
+            <Transactions />
           </CardBody>
         </Card>
         <SendTokensModal
