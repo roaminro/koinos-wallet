@@ -32,13 +32,15 @@ export const TokensProvider = ({
   children: ReactNode;
 }): JSX.Element => {
 
-  const [tokens, setTokens] = useState<Token[]>(appConfig.defaultTokens)
+  const [tokens, setTokens] = useState<Token[]>([])
 
   useEffect(() => {
     const savedTokens = localStorage.getItem(TOKENS_KEY)
 
     if (savedTokens) {
       setTokens(JSON.parse(savedTokens))
+    } else {
+      setTokens(appConfig.defaultTokens)
     }
   }, [])
 

@@ -41,7 +41,7 @@ export const NetworksProvider = ({
   children: ReactNode;
 }): JSX.Element => {
 
-  const [networks, setNetworks] = useState<Network[]>(appConfig.defaultNetworks)
+  const [networks, setNetworks] = useState<Network[]>([])
   const [provider, setProvider] = useState<Provider>()
   const [selectedNetwork, setSelectedNetwork] = useState<Network>()
 

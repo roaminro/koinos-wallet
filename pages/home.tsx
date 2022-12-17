@@ -1,5 +1,5 @@
 import { FiClipboard, FiSend } from 'react-icons/fi'
-import { Box, Button, Card, CardBody, CardHeader, Center, Divider, Heading, IconButton, Menu, MenuButton, MenuItemOption, MenuList, MenuOptionGroup, Skeleton, Stat, StatHelpText, StatNumber, Tooltip, useClipboard, useToast, VStack } from '@chakra-ui/react'
+import { Box, Button, Card, CardBody, CardHeader, Center, Divider, Heading, IconButton, Menu, MenuButton, MenuItemOption, MenuList, MenuOptionGroup, Skeleton, Stat, StatHelpText, StatNumber, Tab, TabList, TabPanel, TabPanels, Tabs, Tooltip, useClipboard, useToast, VStack } from '@chakra-ui/react'
 import { useEffect, useState } from 'react'
 import { FiChevronDown } from 'react-icons/fi'
 import SimpleSidebar from '../components/Sidebar'
@@ -8,7 +8,8 @@ import { truncateAccount } from '../util/Utils'
 import { asFloat, useManaBalance, useTokenBalance } from '../components/BalanceUtils'
 import { useNetworks } from '../context/NetworksProvider'
 import SendTokensModal from '../components/SendTokensModal'
-import { Transactions } from '../components/Transactions'
+import { TransactionsPanel } from '../components/TransactionsPanel'
+import { TokensPanel } from '../components/TokensPanel'
 
 export default function Home() {
   const { wallets, selectedAccount, selectAccount } = useWallets()
@@ -146,7 +147,20 @@ export default function Home() {
           </CardHeader>
           <Divider />
           <CardBody>
-            <Transactions />
+            <Tabs>
+              <TabList>
+                <Tab>Tokens</Tab>
+                <Tab>Activity</Tab>
+              </TabList>
+              <TabPanels>
+                <TabPanel>
+                  <TokensPanel />
+                </TabPanel>
+                <TabPanel>
+                  <TransactionsPanel />
+                </TabPanel>
+              </TabPanels>
+            </Tabs>
           </CardBody>
         </Card>
         <SendTokensModal
