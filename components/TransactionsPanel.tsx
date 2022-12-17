@@ -149,6 +149,9 @@ export function TransactionsPanel() {
                       if (op.contractId === selectedNetwork?.tokenAddress) {
                         symbol = selectedNetwork.tokenSymbol
                         amount = utils.formatUnits(op.amount!, selectedNetwork.tokenDecimals)
+                      } else if (tokens[op.contractId]) {
+                        symbol = tokens[op.contractId].symbol
+                        amount = utils.formatUnits(op.amount!, tokens[op.contractId].decimals)
                       } else if (op.amount) {
                         symbol = op.contractId
                         amount = `${op.amount} (unparsed amount) tokens with contract id`
