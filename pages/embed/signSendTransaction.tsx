@@ -112,8 +112,9 @@ export default function SignSendTransaction() {
       } else if (selectedNetwork && tempTransaction!.header.chain_id === selectedNetwork?.chainId) {
         setNetworkName(selectedNetwork.name)
       } else {
-        for (let index = 0; index < networks.length; index++) {
-          const network = networks[index]
+        for (const networkRpcUrl in networks) {
+          const network = networks[networkRpcUrl]
+
           if (network.chainId === tempTransaction!.header.chain_id) {
             setNetworkName(network.name)
             break

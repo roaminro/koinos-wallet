@@ -32,7 +32,7 @@ export default function Networks() {
   const [tokenDecimals, setTokenDecimals] = useState(0)
   const [rpcUrl, setRpcUrl] = useState('')
   const [explorerUrl, setExplorerUrl] = useState('')
-  const [networkRpcUrloDelete, setNetworkRpcUrloDelete] = useState<string | null>(null)
+  const [networkToDelete, setNetworkToDelete] = useState<Network | null>(null)
 
   const handleNameChange = (e: ChangeEvent<HTMLInputElement>) => {
     setName(e.target.value)
@@ -64,7 +64,7 @@ export default function Networks() {
   }
 
   const handleRpcUrlChange = (e: ChangeEvent<HTMLInputElement>) => {
-    setRpcUrl(e.target.value)
+    setRpcUrl(e.target.value.trim())
   }
 
   const handleExplorerUrlChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -84,8 +84,8 @@ export default function Networks() {
     setExplorerUrl(network.explorerUrl)
   }
 
-  const handleDeleteClick = (networkRpcUrl: string) => {
-    setNetworkRpcUrloDelete(networkRpcUrl)
+  const handleDeleteClick = (network: Network) => {
+    setNetworkToDelete(network)
     onOpen()
   }
 
@@ -175,7 +175,7 @@ export default function Networks() {
     }
   }
 
-  const isEditing = networks.some(network => network.rpcUrl === rpcUrl)
+  const isEditing = networks[rpcUrl] !== undefined
 
   const handleBtnClick = async () => {
     setIsLoading(true)
@@ -249,26 +249,29 @@ export default function Networks() {
               <Table variant='simple'>
                 <Tbody>
                   {
-                    networks.map((network) => (
-                      <Tr
-                        key={network.chainId}
-                      >
-                        <Td>{network.name}</Td>
-                        <Td>
-                          <IconButton
-                            aria-label='Edit Network'
-                            colorScheme='blue'
-                            icon={<FiEdit />}
-                            onClick={() => handleEditClick(network)} />
-                          {' '}
-                          <IconButton
-                            aria-label='Delete Network'
-                            colorScheme='red'
-                            icon={<FiTrash2 />}
-                            onClick={() => handleDeleteClick(network.rpcUrl)} />
-                        </Td>
-                      </Tr>
-                    ))
+                    Object.keys(networks).map((networkRpcUrl) => {
+                      const network = networks[networkRpcUrl]
+                      return (
+                        <Tr
+                          key={network.chainId}
+                        >
+                          <Td>{network.name}</Td>
+                          <Td>
+                            <IconButton
+                              aria-label='Edit Network'
+                              colorScheme='blue'
+                              icon={<FiEdit />}
+                              onClick={() => handleEditClick(network)} />
+                            {' '}
+                            <IconButton
+                              aria-label='Delete Network'
+                              colorScheme='red'
+                              icon={<FiTrash2 />}
+                              onClick={() => handleDeleteClick(network)} />
+                          </Td>
+                        </Tr>
+                      )
+                    })
                   }
                 </Tbody>
               </Table>
@@ -278,8 +281,8 @@ export default function Networks() {
               onClose={onClose}
               body='Are you sure you want to delete this network?'
               onAccept={() => {
-                removeNetwork(networkRpcUrloDelete!)
-                setNetworkRpcUrloDelete(null)
+                removeNetwork(networkToDelete!)
+                setNetworkToDelete(null)
                 toast({
                   title: 'Network successfully removed',
                   description: 'The network was successfully removed!',

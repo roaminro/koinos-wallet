@@ -126,10 +126,11 @@ export default function Edit() {
         setTokenSymbol(token.symbol)
         setTokenDecimals(token.decimals)
 
-        const ntwrk = networks.find((net) => net.chainId === token.chainId)
-
-        if (ntwrk) {
-          setNetwork(ntwrk)
+        for (const networkRpcUrl in networks) {
+          const network = networks[networkRpcUrl]
+          if (network.chainId === token.chainId) {
+            setNetwork(network)
+          }
         }
       }
     }

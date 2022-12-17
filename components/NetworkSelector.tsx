@@ -25,15 +25,18 @@ export function NetworkSelector() {
           value={selectedNetwork?.chainId}
         >
           {
-            networks.map((network) => (
-              <MenuItemOption
-                key={network.chainId}
-                onClick={() => selectNetwork(network)}
-                value={network.chainId}
-              >
-                {network.name}
-              </MenuItemOption>
-            ))
+            Object.keys(networks).map((networkRpcUrl) => {
+              const network = networks[networkRpcUrl]
+              return (
+                <MenuItemOption
+                  key={network.chainId}
+                  onClick={() => selectNetwork(network)}
+                  value={network.chainId}
+                >
+                  {network.name}
+                </MenuItemOption>
+              )
+            })
           }
           <MenuDivider />
           <MenuItem onClick={() => router.push('/networks')}>Add new network...</MenuItem>

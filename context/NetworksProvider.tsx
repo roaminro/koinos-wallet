@@ -16,13 +16,13 @@ export type Network = {
 }
 
 type NetworksContextType = {
-  networks: Network[]
+  networks: Record<string, Network>
   selectedNetwork?: Network
   provider?: Provider
   selectNetwork: (network: Network) => void
   addNetwork: (network: Network) => void
   updateNetwork: (network: Network) => void
-  removeNetwork: (networkChainId: string) => void
+  removeNetwork: (network: Network) => void
 }
 
 export const NetworksContext = createContext<NetworksContextType>({
@@ -30,7 +30,7 @@ export const NetworksContext = createContext<NetworksContextType>({
   selectNetwork: (network: Network) => { },
   addNetwork: (network: Network) => { },
   updateNetwork: (network: Network) => { },
-  removeNetwork: (networkChainId: string) => { }
+  removeNetwork: (network: Network) => { }
 })
 
 export const useNetworks = () => useContext(NetworksContext)
@@ -41,7 +41,7 @@ export const NetworksProvider = ({
   children: ReactNode;
 }): JSX.Element => {
 
-  const [networks, setNetworks] = useState<Network[]>([])
+  const [networks, setNetworks] = useState<Record<string, Network>>({})
   const [provider, setProvider] = useState<Provider>()
   const [selectedNetwork, setSelectedNetwork] = useState<Network>()
 
@@ -61,13 +61,15 @@ export const NetworksProvider = ({
       setSelectedNetwork(savedNetwork)
       setProvider(new Provider(savedNetwork.rpcUrl))
     } else {
-      setSelectedNetwork(appConfig.defaultNetworks[0])
-      setProvider(new Provider(appConfig.defaultNetworks[0].rpcUrl))
+      const firstNetworkKey = Object.keys(appConfig.defaultNetworks)[0]
+      const firstNetwork = (appConfig.defaultNetworks as Record<string, Network>)[firstNetworkKey]
+      setSelectedNetwork(firstNetwork)
+      setProvider(new Provider(firstNetwork.rpcUrl))
     }
   }, [])
 
   useEffect(() => {
-    if (networks.length) {
+    if (Object.keys(networks).length) {
       localStorage.setItem(NETWORKS_KEY, JSON.stringify(networks))
     }
   }, [networks])
@@ -85,22 +87,21 @@ export const NetworksProvider = ({
   }
 
   const addNetwork = (network: Network) => {
-    setNetworks([...networks, network])
+    setNetworks({ ...networks, [network.rpcUrl]: network })
   }
 
-  const removeNetwork = (networkRpcUrl: string) => {
-    setNetworks([...networks.filter((network) => network.rpcUrl !== networkRpcUrl)])
+  const removeNetwork = (network: Network) => {
+    if (networks[network.rpcUrl]) {
+      delete networks[network.rpcUrl]
+      setNetworks({ ...networks })
+    }
   }
 
   const updateNetwork = (network: Network) => {
-    for (let index = 0; index < networks.length; index++) {
-      if (networks[index].rpcUrl === network.rpcUrl) {
-        networks[index] = network
-        break
-      }
+    if (networks[network.rpcUrl]) {
+      networks[network.rpcUrl] = network
+      setNetworks({ ...networks })
     }
-
-    setNetworks([...networks])
   }
 
   return (
