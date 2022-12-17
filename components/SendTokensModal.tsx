@@ -45,7 +45,7 @@ export default function SendTokensModal({ isOpen, onClose }: SendTokensModalProp
 
 
   useEffect(() => {
-    if (tokens.length && selectedNetwork) {
+    if (tokens && selectedNetwork) {
       const tkns: Record<string, Token> = {}
 
       const initialToken: Token = {
@@ -57,6 +57,8 @@ export default function SendTokensModal({ isOpen, onClose }: SendTokensModalProp
       }
 
       tkns[initialToken.address] = initialToken
+
+
 
       for (const tokenAddress in tokens) {
         const token = tokens[tokenAddress]
