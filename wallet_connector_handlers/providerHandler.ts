@@ -65,6 +65,10 @@ export const handler = (sender: string, data: IncomingMessage, sendData: SendDat
       return getNonce(data, sendData, sendError, provider)
     }
 
+    case 'getNextNonce': {
+      return getNextNonce(data, sendData, sendError, provider)
+    }
+
     case 'getAccountRc': {
       return getAccountRc(data, sendData, sendError, provider)
     }
@@ -129,6 +133,15 @@ const getNonce = async (data: IncomingMessage, sendData: SendDataFn<OutgoingMess
   try {
     const { account } = JSON.parse(data.arguments!) as GetNonceArguments
     sendData({ result: await provider.getNonce(account) })
+  } catch (error) {
+    sendError(getErrorMessage(error))
+  }
+}
+
+const getNextNonce = async (data: IncomingMessage, sendData: SendDataFn<OutgoingMessage>, sendError: SendErrorFn, provider: Provider) => {
+  try {
+    const { account } = JSON.parse(data.arguments!) as GetNonceArguments
+    sendData({ result: await provider.getNextNonce(account) })
   } catch (error) {
     sendError(getErrorMessage(error))
   }
