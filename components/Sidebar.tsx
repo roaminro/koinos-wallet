@@ -1,5 +1,6 @@
 import React, { ReactNode } from 'react'
 import Link from 'next/link'
+import getConfig from 'next/config'
 import {
   IconButton,
   Box,
@@ -26,7 +27,8 @@ import {
   FiCreditCard,
   FiGlobe,
   FiHardDrive,
-  FiDatabase
+  FiDatabase,
+  FiGithub
 } from 'react-icons/fi'
 import { IconType } from 'react-icons'
 import { useWallets } from '../context/WalletsProvider'
@@ -86,6 +88,7 @@ interface SidebarProps extends BoxProps {
 
 const SidebarContent = ({ onClose, ...rest }: SidebarProps) => {
   const { isVaultSetup } = useWallets()
+  const { publicRuntimeConfig } = getConfig()
 
   return (
     <Box
@@ -109,6 +112,14 @@ const SidebarContent = ({ onClose, ...rest }: SidebarProps) => {
           {link.name}
         </NavItem>
       ))}
+      <HStack position='absolute' bottom='0px' justify='center' width='100%'>
+        <Link target='_blank' href='https://github.com/roaminro/my-koinos-wallet'>
+          <FiGithub />
+        </Link>
+        <Link target='_blank' href='https://github.com/roaminro/my-koinos-wallet'>
+          <Text fontSize='xs' align='center'>v{publicRuntimeConfig.version}</Text>
+        </Link>
+      </HStack>
     </Box>
   )
 }
