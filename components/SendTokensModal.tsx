@@ -58,7 +58,8 @@ export default function SendTokensModal({ isOpen, onClose }: SendTokensModalProp
 
       tkns[initialToken.address] = initialToken
 
-      for (const token of tokens) {
+      for (const tokenAddress in tokens) {
+        const token = tokens[tokenAddress]
         if (token.chainId === selectedNetwork.chainId) {
           tkns[token.address] = token
         }

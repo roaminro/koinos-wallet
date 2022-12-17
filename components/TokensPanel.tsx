@@ -15,7 +15,8 @@ export function TokensPanel() {
   return (
     <Stack mt='6' spacing='3'>
       {
-        selectedAccount && selectedNetwork && tokens.map(token => {
+        selectedAccount && selectedNetwork && Object.keys(tokens).map(tokenAddress => {
+          const token = tokens[tokenAddress]
           if (token.chainId === selectedNetwork.chainId) {
             return (
               <TokenBalance

@@ -48,8 +48,8 @@ export default function Tokens() {
                 </Thead>
                 <Tbody>
                   {
-                    tokens.map((token) => {
-
+                    Object.keys(tokens).map((tokenAddress) => {
+                      const token = tokens[tokenAddress]
                       return (
                         <Tr key={token.address}>
                           <Td>

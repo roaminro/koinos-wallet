@@ -3,6 +3,7 @@ import { Serializer, utils } from 'koilib'
 import { useEffect, useRef, useState } from 'react'
 import { FiCpu, FiDownload, FiExternalLink, FiPlus, FiSend, FiTrash2, FiUpload } from 'react-icons/fi'
 import { useNetworks } from '../context/NetworksProvider'
+import { useTokens } from '../context/TokensProvider'
 import { useWallets } from '../context/WalletsProvider'
 import { truncateAccount, truncateTransactionId } from '../util/Utils'
 import { useAccountHistory } from './AccountHistoryUtils'
@@ -29,6 +30,7 @@ export function TransactionsPanel() {
 
   const { selectedAccount } = useWallets()
   const { selectedNetwork } = useNetworks()
+  const { tokens } = useTokens()
 
   const [parsedTransactions, setParsedTransactions] = useState<ParsedTransaction[]>([])
 

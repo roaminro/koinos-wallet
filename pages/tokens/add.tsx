@@ -119,7 +119,7 @@ export default function Add() {
     }
   }
 
-  const cannotAddToken = tokens.some(token => token.address === tokenAddress)
+  const cannotAddToken = tokens[tokenAddress] !== undefined
 
 
   return (

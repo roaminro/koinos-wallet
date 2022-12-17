@@ -25,22 +25,22 @@ const appConfig = {
       explorerUrl: 'https://koinosblocks.com'
     }
   ],
-  defaultTokens: [
-    {
+  defaultTokens: {
+    '1AdzuXSpC6K9qtXdCBgD5NUpDNwHjMgrc9': {
       chainId: 'EiBZK_GGVP0H_fXVAM3j6EAuz3-B-l3ejxRSewi7qIBfSA==',
       address: '1AdzuXSpC6K9qtXdCBgD5NUpDNwHjMgrc9',
       name: 'Virtual Hash Power',
       symbol: 'VHP',
       decimals: 8,
     },
-    {
+    '1JZqj7dDrK5LzvdJgufYBJNUFo88xBoWC8': {
       chainId: 'EiAAKqFi-puoXnuJTdn7qBGGJa8yd-dcS2P0ciODe4wupQ==',
       address: '1JZqj7dDrK5LzvdJgufYBJNUFo88xBoWC8',
       name: 'Test Virtual Hash Power',
       symbol: 'tVHP',
       decimals: 8,
     }
-  ]
+  }
 }
 
 module.exports = appConfig
