@@ -50,6 +50,8 @@ export const NetworksProvider = ({
 
     if (savedNetworks) {
       setNetworks(JSON.parse(savedNetworks))
+    } else {
+      setNetworks(appConfig.defaultNetworks)
     }
 
     const savedSelectedNetwork = localStorage.getItem(SELECTED_NETWORK_KEY)

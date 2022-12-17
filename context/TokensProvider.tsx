@@ -11,7 +11,7 @@ export type Token = {
 }
 
 type TokensContextType = {
-  tokens: Token[]
+  tokens: Record<string, Token>
   addToken: (token: Token) => void
   updateToken: (token: Token) => void
   removeToken: (token: Token) => void
@@ -32,7 +32,7 @@ export const TokensProvider = ({
   children: ReactNode;
 }): JSX.Element => {
 
-  const [tokens, setTokens] = useState<Token[]>([])
+  const [tokens, setTokens] = useState<Record<string, Token>>({})
 
   useEffect(() => {
     const savedTokens = localStorage.getItem(TOKENS_KEY)
@@ -45,29 +45,28 @@ export const TokensProvider = ({
   }, [])
 
   useEffect(() => {
-    if (tokens.length) {
+    if (Object.keys(tokens).length) {
       localStorage.setItem(TOKENS_KEY, JSON.stringify(tokens))
     }
   }, [tokens])
 
 
   const addToken = (token: Token) => {
-    setTokens([...tokens, token])
+    setTokens({ ...tokens, [token.address]: token })
   }
 
   const removeToken = (token: Token) => {
-    setTokens([...tokens.filter((tkn) => tkn.address !== token.address)])
+    if (tokens[token.address]) {
+      delete tokens[token.address]
+      setTokens({ ...tokens })
+    }
   }
 
   const updateToken = (token: Token) => {
-    for (let index = 0; index < tokens.length; index++) {
-      if (tokens[index].address === token.address) {
-        tokens[index] = token
-        break
-      }
+    if (tokens[token.address]) {
+      tokens[token.address] = token
+      setTokens({ ...tokens })
     }
-
-    setTokens([...tokens])
   }
 
   return (

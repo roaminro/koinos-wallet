@@ -119,7 +119,7 @@ export default function Edit() {
 
   useEffect(() => {
     if (tokenAddress) {
-      const token = tokens.find((tkn) => tkn.address === tokenAddress)
+      const token = tokens[tokenAddress as string]
 
       if (token) {
         setTokenName(token.name)
