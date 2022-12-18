@@ -105,7 +105,7 @@ const SidebarContent = ({ onClose, ...rest }: SidebarProps) => {
       h="full"
       {...rest}>
       <Flex h="20" alignItems="center" mx="8" justifyContent="space-between">
-        <Logo size='40px' />
+        <Logo display='flex' size='40px' />
         <Link href='/home'>
           <Text fontSize={['sm', 'md', 'md', 'md']} fontWeight="bold">
             My Koinos Wallet
@@ -192,7 +192,7 @@ const MobileNav = ({ onOpen, ...rest }: MobileProps) => {
         <HStack>
           <Hide above='md'>
             <Link href='/home'>
-              <Logo size='40px' />
+              <Logo display={{ base: 'flex', md: 'none' }} size='40px' />
             </Link>
           </Hide>
           <IconButton

@@ -22,7 +22,7 @@ export default function Welcome() {
               <Stack mt='6' spacing='3'>
                 <Heading size='md'>Create a new wallet</Heading>
                 <Text>
-                  Create a new wallet if this is your first time using Koinos.
+                  Create a new wallet if this is your first time using My Koinos Wallet.
                 </Text>
               </Stack>
             </CardBody>
@@ -56,7 +56,7 @@ export default function Welcome() {
               <Stack mt='6' spacing='3'>
                 <Heading size='md'>Import an existing vault</Heading>
                 <Text>
-                  If you already used this application, you can import a vault that you previously exported.
+                  If you already used My Koinos Wallet before, you can import a vault that you previously exported.
                 </Text>
               </Stack>
             </CardBody>
