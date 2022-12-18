@@ -141,7 +141,7 @@ export default function Home() {
                 placement="bottom"
                 hasArrow
               >
-                <IconButton colorScheme='blue' aria-label='send tokens' icon={<FiSend />} onClick={() => setIsSendTokensModalOpen(true)} />
+                <IconButton bg='brand.blue' aria-label='send tokens' icon={<FiSend />} onClick={() => setIsSendTokensModalOpen(true)} />
               </Tooltip>
             </VStack>
           </CardHeader>

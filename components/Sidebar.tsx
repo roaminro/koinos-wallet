@@ -18,6 +18,8 @@ import {
   Button,
   useColorMode,
   Hide,
+  AlertIcon,
+  Alert,
 } from '@chakra-ui/react'
 import {
   FiHome,
@@ -103,7 +105,7 @@ const SidebarContent = ({ onClose, ...rest }: SidebarProps) => {
       h="full"
       {...rest}>
       <Flex h="20" alignItems="center" mx="8" justifyContent="space-between">
-          <Logo size='32px' />
+        <Logo size='40px' />
         <Link href='/home'>
           <Text fontSize={['sm', 'md', 'md', 'md']} fontWeight="bold">
             My Koinos Wallet
@@ -117,6 +119,10 @@ const SidebarContent = ({ onClose, ...rest }: SidebarProps) => {
           {link.name}
         </NavItem>
       ))}
+      <Alert status='warning'>
+        <AlertIcon />
+        My Koinos Wallet is still a work in progress and breaking changes may happen. Make sure to export your Vault everytime you create a new wallet.
+      </Alert>
       <HStack position='absolute' bottom='0px' justify='center' width='100%'>
         <Text fontSize='xs'>Graphics by Karlos</Text>
         <Link target='_blank' href='https://github.com/roaminro/my-koinos-wallet'>
@@ -186,7 +192,7 @@ const MobileNav = ({ onOpen, ...rest }: MobileProps) => {
         <HStack>
           <Hide above='md'>
             <Link href='/home'>
-              <Logo size='32px' />
+              <Logo size='40px' />
             </Link>
           </Hide>
           <IconButton

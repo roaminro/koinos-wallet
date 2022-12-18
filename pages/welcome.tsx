@@ -28,7 +28,7 @@ export default function Welcome() {
             </CardBody>
             <Divider />
             <CardFooter>
-              <Button variant='solid' colorScheme='green' onClick={() => router.push('/wallets/create')}>
+              <Button bg='brand.blue' onClick={() => router.push('/wallets/create')}>
                 Create wallet
               </Button>
             </CardFooter>
@@ -45,7 +45,7 @@ export default function Welcome() {
             </CardBody>
             <Divider />
             <CardFooter>
-              <Button variant='solid' colorScheme='blue' onClick={() => router.push('/wallets/import')}>
+              <Button bg='brand.blue' onClick={() => router.push('/wallets/import')}>
                 Import wallet
               </Button>
             </CardFooter>
@@ -62,7 +62,7 @@ export default function Welcome() {
             </CardBody>
             <Divider />
             <CardFooter>
-              <Button variant='solid' colorScheme='blue' onClick={() => router.push('/vault')}>
+              <Button bg='brand.blue' onClick={() => router.push('/vault')}>
                 Import vault
               </Button>
             </CardFooter>
