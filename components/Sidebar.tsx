@@ -17,6 +17,7 @@ import {
   FlexProps,
   Button,
   useColorMode,
+  Hide,
 } from '@chakra-ui/react'
 import {
   FiHome,
@@ -33,6 +34,7 @@ import {
 import { IconType } from 'react-icons'
 import { useWallets } from '../context/WalletsProvider'
 import { NetworkSelector } from './NetworkSelector'
+import Logo from './Logo'
 
 interface LinkItemProps {
   name: string
@@ -101,9 +103,12 @@ const SidebarContent = ({ onClose, ...rest }: SidebarProps) => {
       h="full"
       {...rest}>
       <Flex h="20" alignItems="center" mx="8" justifyContent="space-between">
-        <Text fontSize={['sm', 'md', 'lg', 'xl']} fontWeight="bold">
-          <Link href='/home'>My Koinos Wallet</Link>
-        </Text>
+          <Logo size='32px' />
+        <Link href='/home'>
+          <Text fontSize={['sm', 'md', 'md', 'md']} fontWeight="bold">
+            My Koinos Wallet
+          </Text>
+        </Link>
         <CloseButton display={{ base: 'flex', md: 'none' }} onClick={onClose} />
       </Flex>
       {LinkItems.map((link) => (
@@ -113,11 +118,12 @@ const SidebarContent = ({ onClose, ...rest }: SidebarProps) => {
         </NavItem>
       ))}
       <HStack position='absolute' bottom='0px' justify='center' width='100%'>
+        <Text fontSize='xs'>Graphics by Karlos</Text>
         <Link target='_blank' href='https://github.com/roaminro/my-koinos-wallet'>
           <FiGithub />
         </Link>
         <Link target='_blank' href='https://github.com/roaminro/my-koinos-wallet'>
-          <Text fontSize='xs' align='center'>v{publicRuntimeConfig.version}</Text>
+          <Text fontSize='xs'>v{publicRuntimeConfig.version}</Text>
         </Link>
       </HStack>
     </Box>
@@ -176,20 +182,22 @@ const MobileNav = ({ onOpen, ...rest }: MobileProps) => {
       borderBottomColor={useColorModeValue('gray.200', 'gray.700')}
       justifyContent={{ base: 'space-between', md: 'flex-end' }}
       {...rest}>
-      <IconButton
-        display={{ base: 'flex', md: 'none' }}
-        onClick={onOpen}
-        variant="outline"
-        aria-label="open menu"
-        icon={<FiMenu />}
-      />
-
-      <Text
-        display={{ base: 'flex', md: 'none' }}
-        fontSize={['sm', 'md', 'lg', 'xl']}
-        fontWeight="bold">
-        <Link href='/home'>My Koinos Wallet</Link>
-      </Text>
+      <Box>
+        <HStack>
+          <Hide above='md'>
+            <Link href='/home'>
+              <Logo size='32px' />
+            </Link>
+          </Hide>
+          <IconButton
+            display={{ base: 'flex', md: 'none' }}
+            onClick={onOpen}
+            variant="outline"
+            aria-label="open menu"
+            icon={<FiMenu />}
+          />
+        </HStack>
+      </Box>
 
       <HStack spacing={{ base: '0', md: '6' }}>
         <NetworkSelector />
@@ -203,6 +211,6 @@ const MobileNav = ({ onOpen, ...rest }: MobileProps) => {
           {colorMode === 'light' ? <FiMoon /> : <FiSun />}
         </Button>
       </HStack>
-    </Flex>
+    </Flex >
   )
 }

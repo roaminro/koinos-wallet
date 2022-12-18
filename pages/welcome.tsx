@@ -1,4 +1,4 @@
-import { Box, Button, Card, CardBody, CardFooter, Divider, Heading, Stack, Text } from '@chakra-ui/react'
+import { Image, Box, Button, Card, CardBody, CardFooter, Divider, Heading, Stack, Text } from '@chakra-ui/react'
 import { useRouter } from 'next/router'
 
 import SidebarWithHeader from '../components/Sidebar'
@@ -11,8 +11,12 @@ export default function Welcome() {
       <Box padding={{ base: 4, md: 8 }} margin='auto' maxWidth='1024px'>
         <Stack mt='6' spacing='3' align='center'>
 
-          <Heading size='lg'>Welcome to My Koinos Wallet</Heading>
-
+          <Heading size='lg'>Welcome to</Heading>
+          <Image
+            src='/logo-txt.png'
+            alt="My Koinos Wallet Text Logo"
+            width='240px'
+          />
           <Card maxW='sm'>
             <CardBody>
               <Stack mt='6' spacing='3'>
