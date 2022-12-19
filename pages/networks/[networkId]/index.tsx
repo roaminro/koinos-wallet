@@ -216,7 +216,7 @@ export default function Edit() {
         <Card maxW='sm'>
           <CardHeader>
             <Heading size='md'>
-              <BackButton /> Add network
+              <BackButton /> Edit network
             </Heading>
           </CardHeader>
           <Divider />
