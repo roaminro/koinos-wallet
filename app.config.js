@@ -2,7 +2,8 @@ const appConfig = {
   logLevel: 'debug',
   vaultWorkerLogLevel: 'info',
   defaultNetworks: {
-    'https://api.koinos.io': {
+    'b0a8e5bb-0572-4ea7-b927-eefac512290c': {
+      id: 'b0a8e5bb-0572-4ea7-b927-eefac512290c',
       name: 'Mainnet',
       chainId: 'EiBZK_GGVP0H_fXVAM3j6EAuz3-B-l3ejxRSewi7qIBfSA==',
       nameserviceAddress: '19WxDJ9Kcvx4VqQFkpwVmwVEy1hMuwXtQE',
@@ -13,7 +14,8 @@ const appConfig = {
       rpcUrl: 'https://api.koinos.io',
       explorerUrl: 'https://koinosblocks.com'
     },
-    'https://harbinger-api.koinos.io': {
+    'cbebb428-01bb-4ad5-ba44-8583ca4aaa11': {
+      id: 'cbebb428-01bb-4ad5-ba44-8583ca4aaa11',
       name: 'Harbinger (testnet)',
       chainId: 'EiAAKqFi-puoXnuJTdn7qBGGJa8yd-dcS2P0ciODe4wupQ==',
       nameserviceAddress: '1AM1c73tDNTc24KYqYvSHmoZ2C7oe4DZhh',
