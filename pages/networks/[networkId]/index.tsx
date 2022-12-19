@@ -217,6 +217,7 @@ export default function Edit() {
           <CardHeader>
             <Heading size='md'>
               <BackButton /> Edit network
+            </Heading>
           </CardHeader>
           <Divider />
           <CardBody>
