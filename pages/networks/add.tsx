@@ -1,27 +1,23 @@
 import {
-  FiTrash2,
-  FiEdit,
   FiRepeat,
 } from 'react-icons/fi'
-import { Box, Stack, Card, CardHeader, Heading, Divider, CardBody, FormControl, FormLabel, Input, FormHelperText, FormErrorMessage, CardFooter, Button, useToast, Table, TableContainer, Tbody, Td, Tr, IconButton, NumberDecrementStepper, NumberIncrementStepper, NumberInput, NumberInputField, NumberInputStepper, useDisclosure, InputGroup, InputRightElement, Tooltip } from '@chakra-ui/react'
+import { Stack, Card, CardHeader, Heading, Divider, CardBody, FormControl, FormLabel, Input, FormHelperText, Button, useToast, IconButton, NumberDecrementStepper, NumberIncrementStepper, NumberInput, NumberInputField, NumberInputStepper, InputGroup, InputRightElement, Tooltip } from '@chakra-ui/react'
 import { Contract, Provider, utils } from 'koilib'
-import { ChangeEvent, useRef, useState } from 'react'
-import { ConfirmationDialog } from '../components/ConfirmationDialog'
-import { Network, useNetworks } from '../context/NetworksProvider'
+import { ChangeEvent, useState } from 'react'
+import { Network, useNetworks } from '../../context/NetworksProvider'
 
 import { koinos } from '@koinos/proto-js'
-import SidebarWithHeader from '../components/Sidebar'
-import { BackButton } from '../components/BackButton'
+import SidebarWithHeader from '../../components/Sidebar'
+import { BackButton } from '../../components/BackButton'
+import { useRouter } from 'next/router'
 
-export default function Networks() {
+export default function Add() {
   const toast = useToast()
-  const { isOpen, onOpen, onClose } = useDisclosure()
+  const router = useRouter()
 
-  const { networks, removeNetwork, addNetwork, updateNetwork } = useNetworks()
+  const { addNetwork } = useNetworks()
 
   const [isLoading, setIsLoading] = useState(false)
-
-  const confirmDialogRef = useRef(null)
 
   const [name, setName] = useState('')
   const [chainId, setChainId] = useState('')
@@ -32,7 +28,6 @@ export default function Networks() {
   const [tokenDecimals, setTokenDecimals] = useState(0)
   const [rpcUrl, setRpcUrl] = useState('')
   const [explorerUrl, setExplorerUrl] = useState('')
-  const [networkToDelete, setNetworkToDelete] = useState<Network | null>(null)
 
   const handleNameChange = (e: ChangeEvent<HTMLInputElement>) => {
     setName(e.target.value)
@@ -69,24 +64,6 @@ export default function Networks() {
 
   const handleExplorerUrlChange = (e: ChangeEvent<HTMLInputElement>) => {
     setExplorerUrl(e.target.value)
-  }
-
-  const handleEditClick = (network: Network) => {
-    setName(network.name)
-    setChainId(network.chainId)
-    setTokenName(network.tokenName)
-    setTokenAddress(network.tokenAddress)
-    setNameserviceAddress(network.nameserviceAddress)
-    setTokenName(network.tokenName)
-    setTokenSymbol(network.tokenSymbol)
-    setTokenDecimals(network.tokenDecimals)
-    setRpcUrl(network.rpcUrl)
-    setExplorerUrl(network.explorerUrl)
-  }
-
-  const handleDeleteClick = (network: Network) => {
-    setNetworkToDelete(network)
-    onOpen()
   }
 
   const fetchChainInformation = async () => {
@@ -175,56 +152,34 @@ export default function Networks() {
     }
   }
 
-  const isEditing = networks[rpcUrl] !== undefined
-
   const handleBtnClick = async () => {
     setIsLoading(true)
 
     try {
+      addNetwork({
+        name,
+        chainId,
+        nameserviceAddress,
+        tokenAddress,
+        tokenName,
+        tokenSymbol,
+        tokenDecimals,
+        rpcUrl,
+        explorerUrl
+      })
 
-      if (isEditing) {
-        updateNetwork({
-          name,
-          chainId,
-          nameserviceAddress,
-          tokenAddress,
-          tokenName,
-          tokenSymbol,
-          tokenDecimals,
-          rpcUrl,
-          explorerUrl
-        })
+      router.push('/networks')
 
-        toast({
-          title: 'Network successfully updated',
-          description: 'The network was successfully updated!',
-          status: 'success',
-          isClosable: true,
-        })
-      } else {
-        addNetwork({
-          name,
-          chainId,
-          nameserviceAddress,
-          tokenAddress,
-          tokenName,
-          tokenSymbol,
-          tokenDecimals,
-          rpcUrl,
-          explorerUrl
-        })
-
-        toast({
-          title: 'Network successfully added',
-          description: 'The network was successfully added!',
-          status: 'success',
-          isClosable: true,
-        })
-      }
+      toast({
+        title: 'Network successfully added',
+        description: 'The network was successfully added!',
+        status: 'success',
+        isClosable: true,
+      })
     } catch (error) {
       console.error(error)
       toast({
-        title: 'An error occured while updating the network',
+        title: 'An error occured while adding the network',
         description: String(error),
         status: 'error',
         isClosable: true,
@@ -240,64 +195,7 @@ export default function Networks() {
         <Card maxW='sm'>
           <CardHeader>
             <Heading size='md'>
-            <BackButton /> Networks
-            </Heading>
-          </CardHeader>
-          <Divider />
-          <CardBody>
-            <TableContainer>
-              <Table variant='simple'>
-                <Tbody>
-                  {
-                    Object.keys(networks).map((networkRpcUrl) => {
-                      const network = networks[networkRpcUrl]
-                      return (
-                        <Tr
-                          key={network.chainId}
-                        >
-                          <Td>{network.name}</Td>
-                          <Td>
-                            <IconButton
-                              aria-label='Edit Network'
-                              colorScheme='blue'
-                              icon={<FiEdit />}
-                              onClick={() => handleEditClick(network)} />
-                            {' '}
-                            <IconButton
-                              aria-label='Delete Network'
-                              colorScheme='red'
-                              icon={<FiTrash2 />}
-                              onClick={() => handleDeleteClick(network)} />
-                          </Td>
-                        </Tr>
-                      )
-                    })
-                  }
-                </Tbody>
-              </Table>
-            </TableContainer>
-            <ConfirmationDialog
-              modalRef={confirmDialogRef}
-              onClose={onClose}
-              body='Are you sure you want to delete this network?'
-              onAccept={() => {
-                removeNetwork(networkToDelete!)
-                setNetworkToDelete(null)
-                toast({
-                  title: 'Network successfully removed',
-                  description: 'The network was successfully removed!',
-                  status: 'success',
-                  isClosable: true,
-                })
-              }}
-              isOpen={isOpen}
-            />
-          </CardBody>
-        </Card>
-        <Card maxW='sm'>
-          <CardHeader>
-            <Heading size='md'>
-              Add/Edit networks
+              <BackButton /> Add network
             </Heading>
           </CardHeader>
           <Divider />
@@ -389,9 +287,7 @@ export default function Networks() {
                 variant='solid'
                 colorScheme='green'
                 onClick={handleBtnClick}>
-                {
-                  isEditing ? 'Save changes' : 'Add network'
-                }
+                Add network
               </Button>
             </Stack>
           </CardBody>

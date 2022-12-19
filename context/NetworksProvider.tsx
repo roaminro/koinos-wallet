@@ -4,6 +4,7 @@ import appConfig from '../app.config'
 import { NETWORKS_KEY, SELECTED_NETWORK_KEY } from '../util/Constants'
 
 export type Network = {
+  id?: string
   name: string
   chainId: string
   rpcUrl: string
@@ -87,19 +88,21 @@ export const NetworksProvider = ({
   }
 
   const addNetwork = (network: Network) => {
-    setNetworks({ ...networks, [network.rpcUrl]: network })
+    const id = crypto.randomUUID()
+    network.id = id
+    setNetworks({ ...networks, [id]: network })
   }
 
   const removeNetwork = (network: Network) => {
-    if (networks[network.rpcUrl]) {
-      delete networks[network.rpcUrl]
+    if (network.id && networks[network.id]) {
+      delete networks[network.id]
       setNetworks({ ...networks })
     }
   }
 
   const updateNetwork = (network: Network) => {
-    if (networks[network.rpcUrl]) {
-      networks[network.rpcUrl] = network
+    if (network.id && networks[network.id]) {
+      networks[network.id] = network
       setNetworks({ ...networks })
     }
   }
