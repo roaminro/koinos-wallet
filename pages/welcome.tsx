@@ -54,16 +54,16 @@ export default function Welcome() {
           <Card maxW='sm'>
             <CardBody>
               <Stack mt='6' spacing='3'>
-                <Heading size='md'>Import an existing vault</Heading>
+                <Heading size='md'>Restore a backup</Heading>
                 <Text>
-                  If you already used My Koinos Wallet before, you can import a vault that you previously exported.
+                  If you already used My Koinos Wallet before, you can restore a backup your previously generated.
                 </Text>
               </Stack>
             </CardBody>
             <Divider />
             <CardFooter>
-              <Button bg='brand.blue' onClick={() => router.push('/vault')}>
-                Import vault
+              <Button bg='brand.blue' onClick={() => router.push('/backup')}>
+                Restore backup
               </Button>
             </CardFooter>
           </Card>

@@ -49,7 +49,7 @@ const LinkItems: Array<LinkItemProps> = [
   { name: 'Tokens', icon: FiDatabase, href: '/tokens', hideWhenVaultNotSetup: true },
   { name: 'Wallets', icon: FiCreditCard, href: '/wallets', hideWhenVaultNotSetup: true },
   { name: 'Networks', icon: FiGlobe, href: '/networks' },
-  { name: 'Vault', icon: FiHardDrive, href: '/vault' },
+  { name: 'Backup', icon: FiHardDrive, href: '/backup' },
 ]
 
 export default function SidebarWithHeader({
@@ -121,7 +121,7 @@ const SidebarContent = ({ onClose, ...rest }: SidebarProps) => {
       ))}
       <Alert status='warning'>
         <AlertIcon />
-        My Koinos Wallet is still a work in progress and breaking changes may happen. Make sure to export your Vault everytime you create a new wallet.
+        My Koinos Wallet is still a work in progress and breaking changes may happen. Make sure to generate a backup everytime you add a new wallet.
       </Alert>
       <HStack position='absolute' bottom='0px' justify='center' width='100%'>
         <Text fontSize='xs'>Graphics by Karlos</Text>

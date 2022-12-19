@@ -11,7 +11,7 @@ export const PUBLIC_PATHS = [
     '/unlock',
     '/welcome',
     '/create-password',
-    '/vault',
+    '/backup',
     '/networks'
 ]
 
