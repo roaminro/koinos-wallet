@@ -4,7 +4,7 @@ import useSWR from 'swr'
 import { useNetworks } from '../context/NetworksProvider'
 
 export type HistoryTransaction = {
-  seq_num: string,
+  seq_num?: string,
   trx: {
     receipt: TransactionReceipt,
     transaction: TransactionJson
