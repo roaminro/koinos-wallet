@@ -1,4 +1,4 @@
-import { Link, Stack, Skeleton, Card, CardBody, VStack, Text, Button } from '@chakra-ui/react'
+import { Link, Stack, Skeleton, Card, CardBody, VStack, Text, Button, NumberDecrementStepper, NumberIncrementStepper, NumberInput, NumberInputField, NumberInputStepper, Tooltip } from '@chakra-ui/react'
 import { Serializer, utils } from 'koilib'
 import { useEffect, useRef, useState } from 'react'
 import { FiArrowLeft, FiArrowRight, FiCpu, FiDownload, FiExternalLink, FiPlus, FiSend, FiTrash2, FiUpload } from 'react-icons/fi'
@@ -34,7 +34,7 @@ export function AccountHistory() {
 
   const [parsedTransactions, setParsedTransactions] = useState<ParsedTransaction[]>([])
   const [seqNum, setSeqNum] = useState<string>()
-  const limit = 10
+  const [limit, setLimit] = useState(10)
 
   const { transactions, isLoading: isLoadingAccountHistory } = useAccountHistory(selectedAccount?.account?.public.address, limit, seqNum)
 
@@ -152,6 +152,10 @@ export function AccountHistory() {
     }
   }
 
+  const handleLimitChange = (_: string, newLimit: number) => {
+    setLimit(newLimit)
+  }
+
   const isPreviousDisabled = transactions === undefined || (transactions.length > 0 && !transactions[transactions.length - 1].seq_num)
   const isNextDisabled = transactions && transactions.length === 0
 
@@ -159,10 +163,31 @@ export function AccountHistory() {
     <Skeleton isLoaded={!isLoadingAccountHistory}>
       <VStack>
         <Stack direction='row' spacing={4}>
-          <Button leftIcon={<FiArrowLeft />} isDisabled={isNextDisabled} onClick={loadNext}>
+          <Button size='xs' leftIcon={<FiArrowLeft />} isDisabled={isNextDisabled} onClick={loadNext}>
             Next
           </Button>
-          <Button rightIcon={<FiArrowRight />} isDisabled={isPreviousDisabled} onClick={loadPrevious}>
+          <Tooltip
+            label="number of records per page"
+            placement="bottom"
+            hasArrow
+          >
+            <NumberInput
+              width='60px'
+              size='xs'
+              min={5}
+              max={50}
+              step={5}
+              value={limit}
+              onChange={handleLimitChange}
+            >
+              <NumberInputField />
+              <NumberInputStepper>
+                <NumberIncrementStepper />
+                <NumberDecrementStepper />
+              </NumberInputStepper>
+            </NumberInput>
+          </Tooltip>
+          <Button size='xs' rightIcon={<FiArrowRight />} isDisabled={isPreviousDisabled} onClick={loadPrevious}>
             Previous
           </Button>
         </Stack>
@@ -299,10 +324,31 @@ export function AccountHistory() {
           })
         }
         <Stack direction='row' spacing={4}>
-          <Button leftIcon={<FiArrowLeft />} isDisabled={isNextDisabled} onClick={loadNext}>
+          <Button size='xs' leftIcon={<FiArrowLeft />} isDisabled={isNextDisabled} onClick={loadNext}>
             Next
           </Button>
-          <Button rightIcon={<FiArrowRight />} isDisabled={isPreviousDisabled} onClick={loadPrevious}>
+          <Tooltip
+            label="number of records per page"
+            placement="bottom"
+            hasArrow
+          >
+            <NumberInput
+              width='60px'
+              size='xs'
+              min={5}
+              max={50}
+              step={5}
+              value={limit}
+              onChange={handleLimitChange}
+            >
+              <NumberInputField />
+              <NumberInputStepper>
+                <NumberIncrementStepper />
+                <NumberDecrementStepper />
+              </NumberInputStepper>
+            </NumberInput>
+          </Tooltip>
+          <Button size='xs' rightIcon={<FiArrowRight />} isDisabled={isPreviousDisabled} onClick={loadPrevious}>
             Previous
           </Button>
         </Stack>
