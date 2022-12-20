@@ -1,7 +1,7 @@
-import { Link, Stack, Skeleton, Card, CardBody, VStack, Text } from '@chakra-ui/react'
+import { Link, Stack, Skeleton, Card, CardBody, VStack, Text, Button, NumberDecrementStepper, NumberIncrementStepper, NumberInput, NumberInputField, NumberInputStepper, Tooltip } from '@chakra-ui/react'
 import { Serializer, utils } from 'koilib'
 import { useEffect, useRef, useState } from 'react'
-import { FiCpu, FiDownload, FiExternalLink, FiPlus, FiSend, FiTrash2, FiUpload } from 'react-icons/fi'
+import { FiArrowLeft, FiArrowRight, FiCpu, FiDownload, FiExternalLink, FiPlus, FiSend, FiTrash2, FiUpload } from 'react-icons/fi'
 import { useNetworks } from '../context/NetworksProvider'
 import { useTokens } from '../context/TokensProvider'
 import { useWallets } from '../context/WalletsProvider'
@@ -26,15 +26,17 @@ interface ParsedTransaction {
   }[]
 }
 
-export function TransactionsPanel() {
+export function AccountHistory() {
 
   const { selectedAccount } = useWallets()
   const { selectedNetwork } = useNetworks()
   const { tokens } = useTokens()
 
   const [parsedTransactions, setParsedTransactions] = useState<ParsedTransaction[]>([])
+  const [seqNum, setSeqNum] = useState<string>()
+  const [limit, setLimit] = useState(10)
 
-  const { transactions, isLoading: isLoadingAccountHistory } = useAccountHistory(selectedAccount?.account?.public.address)
+  const { transactions, isLoading: isLoadingAccountHistory } = useAccountHistory(selectedAccount?.account?.public.address, limit, seqNum)
 
   const serializer = useRef(new Serializer(utils.tokenAbi.koilib_types))
 
@@ -126,9 +128,72 @@ export function TransactionsPanel() {
     }
   }, [isLoadingAccountHistory, selectedAccount?.account.public.address, transactions])
 
+  const loadNext = () => {
+    if (transactions?.length) {
+      let sequenceNumber = transactions[0].seq_num || '0'
+      if (sequenceNumber) {
+        sequenceNumber = `${parseInt(sequenceNumber) + limit}`
+      }
+      setSeqNum(sequenceNumber)
+    } else {
+      setSeqNum(undefined)
+    }
+  }
+
+  const loadPrevious = () => {
+    if (transactions?.length) {
+      let sequenceNumber = transactions[transactions.length - 1].seq_num
+      if (sequenceNumber) {
+        sequenceNumber = `${parseInt(sequenceNumber) - 1}`
+      }
+      setSeqNum(sequenceNumber)
+    } else {
+      setSeqNum(undefined)
+    }
+  }
+
+  const handleLimitChange = (_: string, newLimit: number) => {
+    setLimit(newLimit)
+  }
+
+  const isPreviousDisabled = transactions === undefined || (transactions.length > 0 && !transactions[transactions.length - 1].seq_num)
+  const isNextDisabled = transactions && transactions.length === 0
+
   return (
     <Skeleton isLoaded={!isLoadingAccountHistory}>
       <VStack>
+        <Stack direction='row' spacing={4}>
+          <Button size='xs' leftIcon={<FiArrowLeft />} isDisabled={isNextDisabled} onClick={loadNext}>
+            Next
+          </Button>
+          <Tooltip
+            label="number of records per page"
+            placement="bottom"
+            hasArrow
+          >
+            <NumberInput
+              width='60px'
+              size='xs'
+              min={5}
+              max={50}
+              step={5}
+              value={limit}
+              onChange={handleLimitChange}
+            >
+              <NumberInputField />
+              <NumberInputStepper>
+                <NumberIncrementStepper />
+                <NumberDecrementStepper />
+              </NumberInputStepper>
+            </NumberInput>
+          </Tooltip>
+          <Button size='xs' rightIcon={<FiArrowRight />} isDisabled={isPreviousDisabled} onClick={loadPrevious}>
+            Previous
+          </Button>
+        </Stack>
+        {
+          !parsedTransactions.length && <Text>No activity found</Text>
+        }
         {
           parsedTransactions?.map(parsedTx => {
             return (
@@ -258,11 +323,35 @@ export function TransactionsPanel() {
             )
           })
         }
-        <Text>
-          <Link href={`${selectedNetwork?.explorerUrl}/address/${selectedAccount?.account.public.address}`} isExternal>
-            See more <FiExternalLink style={{ display: 'inline-block' }} />
-          </Link>
-        </Text>
+        <Stack direction='row' spacing={4}>
+          <Button size='xs' leftIcon={<FiArrowLeft />} isDisabled={isNextDisabled} onClick={loadNext}>
+            Next
+          </Button>
+          <Tooltip
+            label="number of records per page"
+            placement="bottom"
+            hasArrow
+          >
+            <NumberInput
+              width='60px'
+              size='xs'
+              min={5}
+              max={50}
+              step={5}
+              value={limit}
+              onChange={handleLimitChange}
+            >
+              <NumberInputField />
+              <NumberInputStepper>
+                <NumberIncrementStepper />
+                <NumberDecrementStepper />
+              </NumberInputStepper>
+            </NumberInput>
+          </Tooltip>
+          <Button size='xs' rightIcon={<FiArrowRight />} isDisabled={isPreviousDisabled} onClick={loadPrevious}>
+            Previous
+          </Button>
+        </Stack>
       </VStack>
     </Skeleton>
   )

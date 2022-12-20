@@ -8,7 +8,7 @@ import { truncateAccount } from '../util/Utils'
 import { asFloat, useManaBalance, useTokenBalance } from '../components/BalanceUtils'
 import { useNetworks } from '../context/NetworksProvider'
 import SendTokensModal from '../components/SendTokensModal'
-import { TransactionsPanel } from '../components/TransactionsPanel'
+import { AccountHistory } from '../components/AccountHistory'
 import { TokensPanel } from '../components/TokensPanel'
 
 export default function Home() {
@@ -147,7 +147,7 @@ export default function Home() {
           </CardHeader>
           <Divider />
           <CardBody>
-            <Tabs>
+            <Tabs isLazy>
               <TabList>
                 <Tab>Tokens</Tab>
                 <Tab>Activity</Tab>
@@ -157,7 +157,7 @@ export default function Home() {
                   <TokensPanel />
                 </TabPanel>
                 <TabPanel>
-                  <TransactionsPanel />
+                  <AccountHistory />
                 </TabPanel>
               </TabPanels>
             </Tabs>
