@@ -74,29 +74,27 @@ export default function Home() {
                       const wallet = wallets[walletId]
 
                       return (
-                        <Box key={walletId}>
-                          <MenuOptionGroup
-                            title={wallet.name}
-                            type='radio'
-                            value={`${selectedAccount?.walletId}-${selectedAccount?.account.public.id}`}
-                          >
-                            {
-                              Object.keys(wallet.accounts).map((accountId) => {
-                                const account = wallet.accounts[accountId]
-                                return (
-                                  <MenuItemOption
-                                    key={`${wallet.id}-${accountId}`}
-                                    onClick={() => selectAccount(wallet.id, wallet.name, account)}
-                                    value={`${wallet.name}-${accountId}`}
-                                  >
-                                    {account.public.name} ({truncateAccount(account.public.address)})
-                                  </MenuItemOption>
-                                )
-                              })
-                            }
-                          </MenuOptionGroup>
-                          <Divider />
-                        </Box>
+                        <MenuOptionGroup
+                          key={walletId}
+                          title={wallet.name}
+                          type='radio'
+                          value={`${selectedAccount?.walletId}-${selectedAccount?.account.public.id}`}
+                        >
+                          {
+                            Object.keys(wallet.accounts).map((accountId) => {
+                              const account = wallet.accounts[accountId]
+                              return (
+                                <MenuItemOption
+                                  key={`${wallet.id}-${accountId}`}
+                                  onClick={() => selectAccount(wallet.id, wallet.name, account)}
+                                  value={`${wallet.id}-${accountId}`}
+                                >
+                                  {account.public.name} ({truncateAccount(account.public.address)})
+                                </MenuItemOption>
+                              )
+                            })
+                          }
+                        </MenuOptionGroup>
                       )
                     })
                   }
