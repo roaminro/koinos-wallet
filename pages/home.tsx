@@ -147,7 +147,7 @@ export default function Home() {
           </CardHeader>
           <Divider />
           <CardBody>
-            <Tabs>
+            <Tabs isLazy>
               <TabList>
                 <Tab>Tokens</Tab>
                 <Tab>Activity</Tab>
