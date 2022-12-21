@@ -21,6 +21,7 @@ export default function App({ Component, pageProps }: AppProps) {
                 name="viewport"
                 content="width=device-width, height=device-height, initial-scale=1.0, minimum-scale=1.0"
               />
+              <link rel='manifest' href='/manifest.json' />
             </Head>
             <RouteGuard>
               <Component {...pageProps} />
