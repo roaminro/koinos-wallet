@@ -118,7 +118,7 @@ export default function WalletCreator({ importingSecretRecoveryPhrase = false }:
 
   const isWalletNameInvalid = walletName.length < 1 || !isAlphanumeric(walletName)
   // if we are importing a secret recovery phrase, then just check the number of words entered
-  const isSecretRecoveryPhraseConfirmed = importingSecretRecoveryPhrase ? secretRecoveryPhrase!.split(' ').length === 12 : equalArray(secretRecoveryPhraseWords, secretRecoveryPhraseConfirmation)
+  const isSecretRecoveryPhraseConfirmed = importingSecretRecoveryPhrase ? secretRecoveryPhrase?.split(' ').length === 12 : equalArray(secretRecoveryPhraseWords, secretRecoveryPhraseConfirmation)
 
   let isCreateImportButtonDisabled = true
 
