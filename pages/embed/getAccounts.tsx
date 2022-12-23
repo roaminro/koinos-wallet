@@ -1,11 +1,13 @@
 import { useColorModeValue, Text, Box, Button, ButtonGroup, Card, CardBody, CardFooter, CardHeader, Checkbox, Divider, Heading, Input, Skeleton, Spinner, Stack, Center } from '@chakra-ui/react'
-import { useEffect, useState } from 'react'
+import { ReactElement, useEffect, useState } from 'react'
 import { Messenger } from '../../util/Messenger'
 import { useWallets } from '../../context/WalletsProvider'
 import { truncateAccount } from '../../util/Utils'
 import { GetAccountsArguments, GetAccountsResult, IAccount } from '../../wallet_connector_handlers/accountsHandler'
+import type { NextPageWithLayout } from '../_app'
 
-export default function GetAccounts() {
+
+const GetAccounts: NextPageWithLayout = () => {
   const { wallets } = useWallets()
 
   const [requester, setRequester] = useState('')
@@ -187,3 +189,11 @@ export default function GetAccounts() {
     </Center>
   )
 }
+
+GetAccounts.getLayout = function getLayout(page: ReactElement) {
+  return (
+    page
+  )
+}
+
+export default GetAccounts

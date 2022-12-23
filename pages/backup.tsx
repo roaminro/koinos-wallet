@@ -4,7 +4,6 @@ import { ChangeEvent, useRef, useState } from 'react'
 import { useWallets } from '../context/WalletsProvider'
 import { NETWORKS_KEY, SELECTED_ACCOUNT_KEY, SELECTED_NETWORK_KEY, SETTINGS_KEY, TOKENS_KEY, VAULT_KEY } from '../util/Constants'
 import { generateString, saveFile } from '../util/Utils'
-import SidebarWithHeader from '../components/Sidebar'
 import { ConfirmationDialog } from '../components/ConfirmationDialog'
 import { BackButton } from '../components/BackButton'
 
@@ -71,7 +70,7 @@ export default function Vault() {
     setIsLoading(true)
 
     try {
-      const parsedBackup: Record<string, string> = JSON.parse(backup!) 
+      const parsedBackup: Record<string, string> = JSON.parse(backup!)
 
       const encryptedVault = parsedBackup[VAULT_KEY]
       await tryDecrypt(password, encryptedVault!)
@@ -128,77 +127,75 @@ export default function Vault() {
   const isRestoreBackupDisabled = isPasswordInvalid || !backup
 
   return (
-    <SidebarWithHeader>
-      <Stack mt='6' spacing='3' align='center'>
-        {
-          isVaultSetup &&
-          <Card maxW='sm' minWidth='350px'>
-            <CardHeader>
-              <Heading size='md'>
-              <BackButton /> Generate backup
-              </Heading>
-            </CardHeader>
-            <Divider />
-            <CardBody>
-              <Text marginBottom={2}>The Backup contains all the wallets, accounts, tokens, networks and settings you have setup.</Text>
-              <Button
-                disabled={!isVaultSetup}
-                isLoading={isLoading}
-                variant='solid'
-                colorScheme='green'
-                width='100%'
-                onClick={generateBackup}>
-                Generate backup
-              </Button>
-            </CardBody>
-          </Card>
-        }
-        <Card maxW='sm'>
+    <Stack mt='6' spacing='3' align='center'>
+      {
+        isVaultSetup &&
+        <Card maxW='sm' minWidth='350px'>
           <CardHeader>
             <Heading size='md'>
-              Restore backup
+              <BackButton /> Generate backup
             </Heading>
           </CardHeader>
           <Divider />
           <CardBody>
-            <Stack mt='6' spacing='3'>
-              <FormControl isRequired isInvalid={!backup}>
-                <FormLabel>Backup file</FormLabel>
-                <Input type='file' onChange={onFileChange} />
-                <FormHelperText>Select the vault file to import.</FormHelperText>
-                {
-                  !backup && <FormErrorMessage>You must select a backup file.</FormErrorMessage>
-                }
-              </FormControl>
-              <FormControl isRequired isInvalid={isPasswordInvalid}>
-                <FormLabel>Password</FormLabel>
-                <Input type='password' value={password} onChange={handlePasswordChange} />
-                <FormHelperText>Enter the vault&apos;s password.</FormHelperText>
-                {
-                  isPasswordInvalid && <FormErrorMessage>The password must be at least 8 characters.</FormErrorMessage>
-                }
-              </FormControl>
-              <Button
-                disabled={isRestoreBackupDisabled}
-                isLoading={isLoading}
-                variant='solid'
-                colorScheme='green'
-                onClick={restoreBackup}>
-                Restore backup
-              </Button>
-            </Stack>
-            <ConfirmationDialog
-              modalRef={confirmDialogRef}
-              body='Restoring a backup vault will destroy the current wallets, accounts, tokens, networks and settings, are you sure you want to restore this backup?'
-              onClose={onClose}
-              onAccept={async () => {
-                await restoreNewBackup()
-              }}
-              isOpen={isOpen}
-            />
+            <Text marginBottom={2}>The Backup contains all the wallets, accounts, tokens, networks and settings you have setup.</Text>
+            <Button
+              disabled={!isVaultSetup}
+              isLoading={isLoading}
+              variant='solid'
+              colorScheme='green'
+              width='100%'
+              onClick={generateBackup}>
+              Generate backup
+            </Button>
           </CardBody>
         </Card>
-      </Stack>
-    </SidebarWithHeader>
+      }
+      <Card maxW='sm'>
+        <CardHeader>
+          <Heading size='md'>
+            Restore backup
+          </Heading>
+        </CardHeader>
+        <Divider />
+        <CardBody>
+          <Stack mt='6' spacing='3'>
+            <FormControl isRequired isInvalid={!backup}>
+              <FormLabel>Backup file</FormLabel>
+              <Input type='file' onChange={onFileChange} />
+              <FormHelperText>Select the vault file to import.</FormHelperText>
+              {
+                !backup && <FormErrorMessage>You must select a backup file.</FormErrorMessage>
+              }
+            </FormControl>
+            <FormControl isRequired isInvalid={isPasswordInvalid}>
+              <FormLabel>Password</FormLabel>
+              <Input type='password' value={password} onChange={handlePasswordChange} />
+              <FormHelperText>Enter the vault&apos;s password.</FormHelperText>
+              {
+                isPasswordInvalid && <FormErrorMessage>The password must be at least 8 characters.</FormErrorMessage>
+              }
+            </FormControl>
+            <Button
+              disabled={isRestoreBackupDisabled}
+              isLoading={isLoading}
+              variant='solid'
+              colorScheme='green'
+              onClick={restoreBackup}>
+              Restore backup
+            </Button>
+          </Stack>
+          <ConfirmationDialog
+            modalRef={confirmDialogRef}
+            body='Restoring a backup vault will destroy the current wallets, accounts, tokens, networks and settings, are you sure you want to restore this backup?'
+            onClose={onClose}
+            onAccept={async () => {
+              await restoreNewBackup()
+            }}
+            isOpen={isOpen}
+          />
+        </CardBody>
+      </Card>
+    </Stack>
   )
 }

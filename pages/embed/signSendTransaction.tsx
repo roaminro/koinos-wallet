@@ -1,5 +1,5 @@
 import { Text, Button, ButtonGroup, Card, CardBody, useColorModeValue, CardHeader, Divider, Heading, Skeleton, Center, useToast, Alert, AlertIcon, FormControl, FormLabel, Textarea, FormHelperText, Input, NumberDecrementStepper, NumberIncrementStepper, NumberInput, NumberInputField, NumberInputStepper, Stack, Box, useDisclosure, Modal, ModalBody, ModalCloseButton, ModalContent, ModalFooter, ModalHeader, ModalOverlay } from '@chakra-ui/react'
-import { useEffect, useState } from 'react'
+import { ReactElement, useEffect, useState } from 'react'
 import { Messenger } from '../../util/Messenger'
 import { useWallets } from '../../context/WalletsProvider'
 import { Contract, Serializer, Signer, utils } from 'koilib'
@@ -7,12 +7,13 @@ import { OperationJson, SendTransactionOptions, TransactionJson, TransactionRece
 import { useNetworks } from '../../context/NetworksProvider'
 import { SignSendTransactionArguments, SignSendTransactionResult } from '../../wallet_connector_handlers/signerHandler'
 import { getErrorMessage } from '../../util/Utils'
+import type { NextPageWithLayout } from '../_app'
 
-export default function SignSendTransaction() {
+const SignSendTransaction: NextPageWithLayout = () => {
   const toast = useToast()
   const { isOpen, onOpen, onClose } = useDisclosure()
 
-  const { wallets, signTransaction } = useWallets()
+  const { signTransaction } = useWallets()
   const { provider, selectedNetwork, networks } = useNetworks()
 
   const [requester, setRequester] = useState('')
@@ -382,3 +383,11 @@ export default function SignSendTransaction() {
     </Center>
   )
 }
+
+SignSendTransaction.getLayout = function getLayout(page: ReactElement) {
+  return (
+    page
+  )
+}
+
+export default SignSendTransaction
