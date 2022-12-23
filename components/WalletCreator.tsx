@@ -23,24 +23,22 @@ export default function WalletCreator({ importingSecretRecoveryPhrase = false }:
   const { addWallet } = useWallets()
 
   const [walletName, setWalletName] = useState('')
-  const [secretRecoveryPhrase, setSecretRecoveryPhrase] = useState('')
+  const [secretRecoveryPhrase, setSecretRecoveryPhrase] = useState<string>()
   const [isSecretRecoveryPhraseSaved, setIsSecretRecoveryPhraseSaved] = useState(false)
   const [secretRecoveryPhraseConfirmation, setSecretRecoveryPhraseConfirmation] = useState<string[]>([])
   const [randomizedSecretRecoveryPhraseWords, setRandomizedSecretRecoveryPhraseWords] = useState<string[]>([])
   const [secretRecoveryPhraseWords, setSecretRecoveryPhraseWords] = useState<string[]>([])
   const [isCreatingWallet, setIsCreatingWallet] = useState(false)
 
-  useEffect(() => {
-    if (!importingSecretRecoveryPhrase) {
-      const secretRecoveryPhrase = HDKoinos.randomMnemonic()
-      setSecretRecoveryPhrase(secretRecoveryPhrase)
-      setSecretRecoveryPhraseWords(secretRecoveryPhrase.split(' '))
-      setRandomizedSecretRecoveryPhraseWords(secretRecoveryPhrase.split(' ').sort(() => Math.random() - 0.5))
-      setSecretRecoveryPhraseConfirmation([])
-      setValue(secretRecoveryPhrase)
-    }
 
-  }, [importingSecretRecoveryPhrase, setValue])
+  if (!importingSecretRecoveryPhrase && !secretRecoveryPhrase) {
+    const secretRecoveryPhrase = HDKoinos.randomMnemonic()
+    setSecretRecoveryPhrase(secretRecoveryPhrase)
+    setSecretRecoveryPhraseWords(secretRecoveryPhrase.split(' '))
+    setRandomizedSecretRecoveryPhraseWords(secretRecoveryPhrase.split(' ').sort(() => Math.random() - 0.5))
+    setSecretRecoveryPhraseConfirmation([])
+    setValue(secretRecoveryPhrase)
+  }
 
   const handleSecretRecoveryPhraseChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
     setSecretRecoveryPhrase(e.target.value)
@@ -52,7 +50,7 @@ export default function WalletCreator({ importingSecretRecoveryPhrase = false }:
 
   const handleSavedSecretRecoveryPhraseChange = (e: ChangeEvent<HTMLInputElement>) => {
     setIsSecretRecoveryPhraseSaved(e.target.checked)
-    setRandomizedSecretRecoveryPhraseWords(secretRecoveryPhrase.split(' ').sort(() => Math.random() - 0.5))
+    setRandomizedSecretRecoveryPhraseWords(secretRecoveryPhrase!.split(' ').sort(() => Math.random() - 0.5))
     setSecretRecoveryPhraseConfirmation([])
   }
 
@@ -120,7 +118,7 @@ export default function WalletCreator({ importingSecretRecoveryPhrase = false }:
 
   const isWalletNameInvalid = walletName.length < 1 || !isAlphanumeric(walletName)
   // if we are importing a secret recovery phrase, then just check the number of words entered
-  const isSecretRecoveryPhraseConfirmed = importingSecretRecoveryPhrase ? secretRecoveryPhrase.split(' ').length === 12 : equalArray(secretRecoveryPhraseWords, secretRecoveryPhraseConfirmation)
+  const isSecretRecoveryPhraseConfirmed = importingSecretRecoveryPhrase ? secretRecoveryPhrase!.split(' ').length === 12 : equalArray(secretRecoveryPhraseWords, secretRecoveryPhraseConfirmation)
 
   let isCreateImportButtonDisabled = true
 

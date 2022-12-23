@@ -75,7 +75,6 @@ export const WalletsProvider = ({
 
   useEffect(() => {
     if (!isLoading && isVaultSetup && !isLocked) {
-      console.log('saving vault')
       saveVault()
     }
   }, [isLocked, isLoading, wallets, isVaultSetup])

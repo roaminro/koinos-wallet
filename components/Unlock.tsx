@@ -1,5 +1,5 @@
 import { Button, Card, CardBody, CardHeader, Center, Divider, FormControl, FormErrorMessage, FormHelperText, FormLabel, Heading, Input, InputGroup, InputRightAddon, NumberDecrementStepper, NumberIncrementStepper, NumberInput, NumberInputField, NumberInputStepper, Stack } from '@chakra-ui/react'
-import { ChangeEvent, useState } from 'react'
+import { ChangeEvent, useEffect, useState } from 'react'
 import { useRouter } from 'next/router'
 
 import { getSetting, setSetting } from '../util/Settings'
@@ -14,6 +14,18 @@ export default function Unlock() {
   const [unlockTime, setUnlockTime] = useState<number>()
   const [isUnlocking, setIsUnlocking] = useState(false)
   const [unlockError, setUnlockError] = useState('')
+
+  useEffect(() => {
+    if (!unlockTime) {
+      const defaultUnlockTime = getSetting<number>(DEFAULT_AUTOLOCK_TIME_KEY)
+
+      if (defaultUnlockTime) {
+        setUnlockTime(defaultUnlockTime)
+      } else {
+        setUnlockTime(1)
+      }
+    }
+  }, [unlockTime])
 
   const onUnlockClick = async () => {
     setIsUnlocking(true)
@@ -37,16 +49,6 @@ export default function Unlock() {
 
   const handleUnlockTimeChange = (_: string, valueAsNumber: number) => {
     setUnlockTime(valueAsNumber)
-  }
-
-  if (!unlockTime) {
-    const defaultUnlockTime = getSetting<number>(DEFAULT_AUTOLOCK_TIME_KEY)
-
-    if (defaultUnlockTime) {
-      setUnlockTime(defaultUnlockTime)
-    } else {
-      setUnlockTime(1)
-    }
   }
 
   if (!isVaultSetup) {

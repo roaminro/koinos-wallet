@@ -58,8 +58,6 @@ export default function SendTokensModal({ isOpen, onClose }: SendTokensModalProp
 
       tkns[initialToken.address] = initialToken
 
-
-
       for (const tokenAddress in tokens) {
         const token = tokens[tokenAddress]
         if (token.chainId === selectedNetwork.chainId) {
@@ -133,7 +131,7 @@ export default function SendTokensModal({ isOpen, onClose }: SendTokensModalProp
     setIsSending(false)
   }
 
-  const { balance: tokenBalance, isLoading: isLoadingTokenBalance } = useTokenBalance(selectedAccount?.account?.public.address, selectedToken?.address)
+  const { balance: tokenBalance } = useTokenBalance(selectedAccount?.account?.public.address, selectedToken?.address)
 
   let formattedBalance = tokenBalance && selectedToken ? utils.formatUnits(tokenBalance, selectedToken.decimals) : ''
 
