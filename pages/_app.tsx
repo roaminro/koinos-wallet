@@ -7,8 +7,21 @@ import { WalletsProvider } from '../context/WalletsProvider'
 import { NetworksProvider } from '../context/NetworksProvider'
 import { TokensProvider } from '../context/TokensProvider'
 import theme from '../styles/theme'
+import { ReactElement, ReactNode } from 'react'
+import { NextPage } from 'next'
+import Sidebar from '../components/Sidebar'
 
-export default function App({ Component, pageProps }: AppProps) {
+export type NextPageWithLayout<P = {}, IP = P> = NextPage<P, IP> & {
+  getLayout?: (page: ReactElement) => ReactNode
+}
+
+type AppPropsWithLayout = AppProps & {
+  Component: NextPageWithLayout
+}
+
+export default function App({ Component, pageProps }: AppPropsWithLayout) {
+
+  const getLayout = Component.getLayout ?? ((page) => <Sidebar>{page}</Sidebar>)
 
   return (
     <ChakraProvider theme={theme}>
@@ -23,7 +36,9 @@ export default function App({ Component, pageProps }: AppProps) {
               />
             </Head>
             <RouteGuard>
-              <Component {...pageProps} />
+              {
+                getLayout(<Component {...pageProps} />)
+              }
             </RouteGuard>
           </TokensProvider>
         </WalletsProvider>
