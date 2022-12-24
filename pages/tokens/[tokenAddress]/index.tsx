@@ -125,10 +125,11 @@ export default function Edit() {
         setTokenSymbol(token.symbol)
         setTokenDecimals(token.decimals)
 
-        for (const networkRpcUrl in networks) {
-          const network = networks[networkRpcUrl]
+        for (const networkId in networks) {
+          const network = networks[networkId]
           if (network.chainId === token.chainId) {
             setNetwork(network)
+            break
           }
         }
       }

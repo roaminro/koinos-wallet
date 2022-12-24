@@ -113,8 +113,8 @@ const SignSendTransaction: NextPageWithLayout = () => {
       } else if (selectedNetwork && tempTransaction!.header.chain_id === selectedNetwork?.chainId) {
         setNetworkName(selectedNetwork.name)
       } else {
-        for (const networkRpcUrl in networks) {
-          const network = networks[networkRpcUrl]
+        for (const networkId in networks) {
+          const network = networks[networkId]
 
           if (network.chainId === tempTransaction!.header.chain_id) {
             setNetworkName(network.name)
