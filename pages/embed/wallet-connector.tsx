@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { ReactElement, useEffect, useRef } from 'react'
 import { Messenger } from '../../util/Messenger'
 import { useWallets } from '../../context/WalletsProvider'
 import { debug } from '../../util/Utils'
@@ -7,6 +7,7 @@ import { handler as signerHandler } from '../../wallet_connector_handlers/signer
 import { handler as providerHandler } from '../../wallet_connector_handlers/providerHandler'
 import { useNetworks } from '../../context/NetworksProvider'
 import { MY_KOINOS_WALLET_CONNECTOR_PARENT_MESSENGER_ID, MY_KOINOS_WALLET_CONNECTOR_CHILD_MESSENGER_ID } from '../../util/Constants'
+import { NextPageWithLayout } from '../_app'
 
 export interface IncomingMessage {
   scope: string
@@ -18,7 +19,7 @@ export interface OutgoingMessage {
   result: any
 }
 
-export default function WalletConnector() {
+const WalletConnector: NextPageWithLayout = () => {
   const { isVaultSetup } = useWallets()
   const { provider } = useNetworks()
 
@@ -72,3 +73,11 @@ export default function WalletConnector() {
     <></>
   )
 }
+
+WalletConnector.getLayout = function getLayout(page: ReactElement) {
+  return (
+    page
+  )
+}
+
+export default WalletConnector
