@@ -115,7 +115,7 @@ const SidebarContent = ({ onClose, ...rest }: SidebarProps) => {
       </Flex>
       {LinkItems.map((link) => (
         ((!isVaultSetup && !link.hideWhenVaultNotSetup) || isVaultSetup) &&
-        <NavItem key={link.name} href={link.href} icon={link.icon}>
+        <NavItem key={link.name} href={link.href} icon={link.icon} onClick={onClose}>
           {link.name}
         </NavItem>
       ))}
