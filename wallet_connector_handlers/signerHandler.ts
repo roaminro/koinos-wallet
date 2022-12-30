@@ -48,8 +48,16 @@ export const handler = (sender: string, data: IncomingMessage, sendData: SendDat
 
 const prepareTransaction = async (data: IncomingMessage, sendData: SendDataFn<OutgoingMessage>, sendError: SendErrorFn, provider: Provider) => {
   try {
-    const { signerAddress, transaction} = JSON.parse(data.arguments!) as PrepareTransactionArguments
+    const { signerAddress, transaction } = JSON.parse(data.arguments!) as PrepareTransactionArguments
     
+    if(!signerAddress) {
+      throw new Error('missing "signerAddress" argument')
+    }
+
+    if(!transaction) {
+      throw new Error('missing "transaction" argument')
+    }
+
     const dummySigner = Signer.fromSeed('dummy_signer')
     dummySigner.provider = provider
 
@@ -68,6 +76,18 @@ const prepareTransaction = async (data: IncomingMessage, sendData: SendDataFn<Ou
 }
 
 const signSendTransaction = (send: boolean, requester: string, data: IncomingMessage, sendData: SendDataFn<OutgoingMessage>, sendError: SendErrorFn) => {
+  const args = JSON.parse(data.arguments!) as SignSendTransactionArguments
+
+  if (!args.signerAddress) {
+    sendError('missing "signerAddress" argument')
+    return
+  }
+
+  if (!args.transaction) {
+    sendError('missing "transaction" argument')
+    return
+  }
+
   return new Promise<void>((resolve) => {
     const params = 'popup=yes,scrollbars=no,resizable=yes,status=no,location=no,toolbar=no,menubar=no,width=450,height=550'
     const newWindow = window.open('/embed/signSendTransaction', 'Transaction', params)!
@@ -91,7 +111,6 @@ const signSendTransaction = (send: boolean, requester: string, data: IncomingMes
         })
 
         popupMsgr.onRequest(({ sendData }) => {
-          const args = JSON.parse(data.arguments!) as SignSendTransactionArguments
           args.requester = requester
           args.send = send
           sendData(args)
