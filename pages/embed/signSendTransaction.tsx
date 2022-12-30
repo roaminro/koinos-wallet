@@ -154,17 +154,14 @@ const SignSendTransaction: NextPageWithLayout = () => {
     setIsSigning(true)
     try {
       let tempTransaction = { ...transaction }
-      tempTransaction.header!.rc_limit = utils.parseUnits(rcLimit.toString(), selectedNetwork?.tokenDecimals!)
+      const formattedRcLimit = utils.parseUnits(rcLimit.toString(), selectedNetwork?.tokenDecimals!)
 
-      if (!tempTransaction?.header?.nonce
-        || !tempTransaction?.header?.operation_merkle_root
-        || !tempTransaction?.id
-      ) {
-        const dummySigner = Signer.fromSeed('dummy_signer')
-        dummySigner.provider = provider
+      tempTransaction.header!.rc_limit = formattedRcLimit
 
-        tempTransaction = await dummySigner.prepareTransaction(tempTransaction)
-      }
+      const dummySigner = Signer.fromSeed('dummy_signer')
+      dummySigner.provider = provider
+
+      tempTransaction = await dummySigner.prepareTransaction(tempTransaction)
 
       const signedTransaction = await signTransaction(signerAddress, tempTransaction)
 
@@ -192,17 +189,14 @@ const SignSendTransaction: NextPageWithLayout = () => {
     setIsSigning(true)
     try {
       let tempTransaction = { ...transaction }
-      tempTransaction.header!.rc_limit = utils.parseUnits(rcLimit.toString(), selectedNetwork?.tokenDecimals!)
+      const formattedRcLimit = utils.parseUnits(rcLimit.toString(), selectedNetwork?.tokenDecimals!)
 
-      if (!tempTransaction?.header?.nonce
-        || !tempTransaction?.header?.operation_merkle_root
-        || !tempTransaction?.id
-      ) {
-        const dummySigner = Signer.fromSeed('dummy_signer')
-        dummySigner.provider = provider
+      tempTransaction.header!.rc_limit = formattedRcLimit
 
-        tempTransaction = await dummySigner.prepareTransaction(tempTransaction)
-      }
+      const dummySigner = Signer.fromSeed('dummy_signer')
+      dummySigner.provider = provider
+
+      tempTransaction = await dummySigner.prepareTransaction(tempTransaction)
 
       const signedTransaction = await signTransaction(signerAddress, tempTransaction)
 
