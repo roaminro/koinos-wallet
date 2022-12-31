@@ -14,13 +14,13 @@ export type AppPermissions = {
 type PermissionsContextType = {
   permissions: Record<string, AppPermissions>
   updateAppPermissions: (appPermissions: AppPermissions) => void
-  deleteAppPermissions: (appPermissions: AppPermissions) => void
+  removeAppPermissions: (appPermissions: AppPermissions) => void
 }
 
 export const PermissionsContext = createContext<PermissionsContextType>({
   permissions: {},
   updateAppPermissions: (appPermissions: AppPermissions) => { },
-  deleteAppPermissions: (appPermissions: AppPermissions) => { }
+  removeAppPermissions: (appPermissions: AppPermissions) => { }
 })
 
 export const usePermissions = () => useContext(PermissionsContext)
@@ -41,22 +41,22 @@ export const PermissionsProvider = ({
     }
   }, [])
 
-  useEffect(() => {
-    if (Object.keys(permissions).length) {
-      localStorage.setItem(PERMISSIONS_KEY, JSON.stringify(permissions))
-    }
-  }, [permissions])
+  const saveToLocalStorage = (permissions: Record<string, AppPermissions>) => {
+    localStorage.setItem(PERMISSIONS_KEY, JSON.stringify(permissions))
+  }
 
   const updateAppPermissions = (appPermissions: AppPermissions) => {
     if (appPermissions.id) {
       permissions[appPermissions.id] = appPermissions
+      saveToLocalStorage(permissions)
       setPermissions({ ...permissions })
     }
   }
 
-  const deleteAppPermissions = (appPermissions: AppPermissions) => {
+  const removeAppPermissions = (appPermissions: AppPermissions) => {
     if (appPermissions.id && permissions[appPermissions.id]) {
       delete permissions[appPermissions.id]
+      saveToLocalStorage(permissions)
       setPermissions({ ...permissions })
     }
   }
@@ -65,7 +65,7 @@ export const PermissionsProvider = ({
     <PermissionsContext.Provider value={{
       permissions,
       updateAppPermissions,
-      deleteAppPermissions
+      removeAppPermissions
     }}>
       {children}
     </PermissionsContext.Provider>

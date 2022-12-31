@@ -108,36 +108,34 @@ const RequestPermissions: NextPageWithLayout = () => {
                 Review the permissions requested by the website &quot;{requester}&quot;:
               </Text>
               <Divider marginTop={4} marginBottom={4} />
-              <Stack pl={6} mt={1} spacing={1}>
-                <List spacing={3}>
-                  {
-                    requestedPermissions.map((permission) => {
-                      let icon: IconType = FiAlertCircle
+              <List spacing={3}>
+                {
+                  requestedPermissions.map((permission) => {
+                    let icon: IconType = FiAlertCircle
 
-                      switch (permission.scope) {
-                        case 'accounts':
-                          icon = FiUsers
-                          break
-                        case 'signer':
-                          icon = FiEdit2
-                          break
-                        case 'provider':
-                          icon = FiGlobe
-                          break
-                        default:
-                          break
-                      }
+                    switch (permission.scope) {
+                      case 'accounts':
+                        icon = FiUsers
+                        break
+                      case 'signer':
+                        icon = FiEdit2
+                        break
+                      case 'provider':
+                        icon = FiGlobe
+                        break
+                      default:
+                        break
+                    }
 
-                      return (
-                        <ListItem key={`${permission.scope}-${permission.command}`}>
-                          <ListIcon as={icon} color='green.500' />
-                          {permission.description}
-                        </ListItem>
-                      )
-                    })
-                  }
-                </List>
-              </Stack>
+                    return (
+                      <ListItem key={`${permission.scope}-${permission.command}`}>
+                        <ListIcon as={icon} color='green.500' />
+                        {permission.description}
+                      </ListItem>
+                    )
+                  })
+                }
+              </List>
             </Skeleton>
           </CardBody>
         </Card>
