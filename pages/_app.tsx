@@ -10,6 +10,7 @@ import theme from '../styles/theme'
 import { ReactElement, ReactNode } from 'react'
 import { NextPage } from 'next'
 import Sidebar from '../components/Sidebar'
+import { PermissionsProvider } from '../context/PermissionsProvider'
 
 export type NextPageWithLayout<P = {}, IP = P> = NextPage<P, IP> & {
   getLayout?: (page: ReactElement) => ReactNode
@@ -25,24 +26,26 @@ export default function App({ Component, pageProps }: AppPropsWithLayout) {
 
   return (
     <ChakraProvider theme={theme}>
-      <NetworksProvider>
-        <WalletsProvider>
-          <TokensProvider>
-            <Head>
-              <title>My Koinos Wallet</title>
-              <meta
-                name="viewport"
-                content="width=device-width, height=device-height, initial-scale=1.0, minimum-scale=1.0"
-              />
-            </Head>
-            <RouteGuard>
-              {
-                getLayout(<Component {...pageProps} />)
-              }
-            </RouteGuard>
-          </TokensProvider>
-        </WalletsProvider>
-      </NetworksProvider>
+      <PermissionsProvider>
+        <NetworksProvider>
+          <WalletsProvider>
+            <TokensProvider>
+              <Head>
+                <title>My Koinos Wallet</title>
+                <meta
+                  name="viewport"
+                  content="width=device-width, height=device-height, initial-scale=1.0, minimum-scale=1.0"
+                />
+              </Head>
+              <RouteGuard>
+                {
+                  getLayout(<Component {...pageProps} />)
+                }
+              </RouteGuard>
+            </TokensProvider>
+          </WalletsProvider>
+        </NetworksProvider>
+      </PermissionsProvider>
     </ChakraProvider>
   )
 }

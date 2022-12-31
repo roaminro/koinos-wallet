@@ -2,7 +2,7 @@ import { Stack, Card, CardHeader, Heading, Divider, CardBody, FormControl, FormL
 import { useRouter } from 'next/router'
 import { ChangeEvent, useRef, useState } from 'react'
 import { useWallets } from '../context/WalletsProvider'
-import { NETWORKS_KEY, SELECTED_ACCOUNT_KEY, SELECTED_NETWORK_KEY, SETTINGS_KEY, TOKENS_KEY, VAULT_KEY } from '../util/Constants'
+import { NETWORKS_KEY, PERMISSIONS_KEY, SELECTED_ACCOUNT_KEY, SELECTED_NETWORK_KEY, SETTINGS_KEY, TOKENS_KEY, VAULT_KEY } from '../util/Constants'
 import { generateString, saveFile } from '../util/Utils'
 import { ConfirmationDialog } from '../components/ConfirmationDialog'
 import { BackButton } from '../components/BackButton'
@@ -50,6 +50,8 @@ export default function Vault() {
 
       backup[TOKENS_KEY] = localStorage.getItem(TOKENS_KEY)!
 
+      backup[PERMISSIONS_KEY] = localStorage.getItem(PERMISSIONS_KEY)!
+
       backup[SETTINGS_KEY] = localStorage.getItem(SETTINGS_KEY)!
 
       await saveFile(`${generateString(6)}.txt`, new Blob([JSON.stringify(backup)]))
@@ -73,23 +75,40 @@ export default function Vault() {
       const parsedBackup: Record<string, string> = JSON.parse(backup!)
 
       const encryptedVault = parsedBackup[VAULT_KEY]
-      await tryDecrypt(password, encryptedVault!)
-      localStorage.setItem(VAULT_KEY, encryptedVault!)
+      if (encryptedVault) {
+        await tryDecrypt(password, encryptedVault!)
+        localStorage.setItem(VAULT_KEY, encryptedVault!)
+      }
 
       const selectedAccount = parsedBackup[SELECTED_ACCOUNT_KEY]
-      localStorage.setItem(SELECTED_ACCOUNT_KEY, selectedAccount)
+      if (selectedAccount) {
+        localStorage.setItem(SELECTED_ACCOUNT_KEY, selectedAccount)
+      }
 
       const networks = parsedBackup[NETWORKS_KEY]
-      localStorage.setItem(NETWORKS_KEY, networks)
+      if (networks) {
+        localStorage.setItem(NETWORKS_KEY, networks)
+      }
 
       const selectedNetwork = parsedBackup[SELECTED_NETWORK_KEY]
-      localStorage.setItem(SELECTED_NETWORK_KEY, selectedNetwork)
+      if (selectedNetwork) {
+        localStorage.setItem(SELECTED_NETWORK_KEY, selectedNetwork)
+      }
 
       const tokens = parsedBackup[TOKENS_KEY]
-      localStorage.setItem(TOKENS_KEY, tokens)
+      if (tokens) {
+        localStorage.setItem(TOKENS_KEY, tokens)
+      }
+
+      const permissions = parsedBackup[PERMISSIONS_KEY]
+      if (permissions) {
+        localStorage.setItem(PERMISSIONS_KEY, permissions)
+      }
 
       const settings = parsedBackup[SETTINGS_KEY]
-      localStorage.setItem(SETTINGS_KEY, settings)
+      if (settings) {
+        localStorage.setItem(SETTINGS_KEY, settings)
+      }
 
       await unlock(password)
 

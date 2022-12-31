@@ -123,6 +123,11 @@ export const handler = (sender: string, data: IncomingMessage, sendData: SendDat
 const call = async (data: IncomingMessage, sendData: SendDataFn<OutgoingMessage>, sendError: SendErrorFn, provider: Provider) => {
   try {
     const { method, params } = JSON.parse(data.arguments!) as CallArguments
+
+    if(!method) {
+      throw new Error('missing "method" argument')
+    }
+
     sendData({ result: await provider.call(method, params) })
   } catch (error) {
     sendError(getErrorMessage(error))
@@ -132,6 +137,11 @@ const call = async (data: IncomingMessage, sendData: SendDataFn<OutgoingMessage>
 const getNonce = async (data: IncomingMessage, sendData: SendDataFn<OutgoingMessage>, sendError: SendErrorFn, provider: Provider) => {
   try {
     const { account } = JSON.parse(data.arguments!) as GetNonceArguments
+
+    if(!account) {
+      throw new Error('missing "account" argument')
+    }
+
     sendData({ result: await provider.getNonce(account) })
   } catch (error) {
     sendError(getErrorMessage(error))
@@ -141,6 +151,11 @@ const getNonce = async (data: IncomingMessage, sendData: SendDataFn<OutgoingMess
 const getNextNonce = async (data: IncomingMessage, sendData: SendDataFn<OutgoingMessage>, sendError: SendErrorFn, provider: Provider) => {
   try {
     const { account } = JSON.parse(data.arguments!) as GetNonceArguments
+
+    if(!account) {
+      throw new Error('missing "account" argument')
+    }
+
     sendData({ result: await provider.getNextNonce(account) })
   } catch (error) {
     sendError(getErrorMessage(error))
@@ -150,6 +165,11 @@ const getNextNonce = async (data: IncomingMessage, sendData: SendDataFn<Outgoing
 const getAccountRc = async (data: IncomingMessage, sendData: SendDataFn<OutgoingMessage>, sendError: SendErrorFn, provider: Provider) => {
   try {
     const { account } = JSON.parse(data.arguments!) as GetAccountRcArguments
+
+    if(!account) {
+      throw new Error('missing "account" argument')
+    }
+
     sendData({ result: await provider.getAccountRc(account) })
   } catch (error) {
     sendError(getErrorMessage(error))
@@ -159,6 +179,11 @@ const getAccountRc = async (data: IncomingMessage, sendData: SendDataFn<Outgoing
 const getTransactionsById = async (data: IncomingMessage, sendData: SendDataFn<OutgoingMessage>, sendError: SendErrorFn, provider: Provider) => {
   try {
     const { transactionIds } = JSON.parse(data.arguments!) as GetTransactionsByIdArguments
+    
+    if(!transactionIds) {
+      throw new Error('missing "transactionIds" argument')
+    }
+
     sendData({ result: await provider.getTransactionsById(transactionIds) })
   } catch (error) {
     sendError(getErrorMessage(error))
@@ -168,6 +193,11 @@ const getTransactionsById = async (data: IncomingMessage, sendData: SendDataFn<O
 const getBlocksById = async (data: IncomingMessage, sendData: SendDataFn<OutgoingMessage>, sendError: SendErrorFn, provider: Provider) => {
   try {
     const { blockIds } = JSON.parse(data.arguments!) as GetBlocksByIdArguments
+
+    if(!blockIds) {
+      throw new Error('missing "blockIds" argument')
+    }
+
     sendData({ result: await provider.getBlocksById(blockIds) })
   } catch (error) {
     sendError(getErrorMessage(error))
@@ -193,6 +223,15 @@ const getChainId = async (sendData: SendDataFn<OutgoingMessage>, sendError: Send
 const getBlocks = async (data: IncomingMessage, sendData: SendDataFn<OutgoingMessage>, sendError: SendErrorFn, provider: Provider) => {
   try {
     const { height, numBlocks, idRef } = JSON.parse(data.arguments!) as GetBlocksArguments
+
+    if(!height) {
+      throw new Error('missing "height" argument')
+    }
+
+    if(!numBlocks) {
+      throw new Error('missing "numBlocks" argument')
+    }
+
     sendData({ result: await provider.getBlocks(height, numBlocks, idRef) })
   } catch (error) {
     sendError(getErrorMessage(error))
@@ -202,6 +241,11 @@ const getBlocks = async (data: IncomingMessage, sendData: SendDataFn<OutgoingMes
 const getBlock = async (data: IncomingMessage, sendData: SendDataFn<OutgoingMessage>, sendError: SendErrorFn, provider: Provider) => {
   try {
     const { height } = JSON.parse(data.arguments!) as GetBlockArguments
+
+    if(!height) {
+      throw new Error('missing "height" argument')
+    }
+
     sendData({ result: await provider.getBlock(height) })
   } catch (error) {
     sendError(getErrorMessage(error))
@@ -211,6 +255,11 @@ const getBlock = async (data: IncomingMessage, sendData: SendDataFn<OutgoingMess
 const wait = async (data: IncomingMessage, sendData: SendDataFn<OutgoingMessage>, sendError: SendErrorFn, provider: Provider) => {
   try {
     const { transactionId, type, timeout } = JSON.parse(data.arguments!) as WaitArguments
+
+    if(!transactionId) {
+      throw new Error('missing "transactionId" argument')
+    }
+
     sendData({ result: await provider.wait(transactionId, type, timeout) })
   } catch (error) {
     sendError(getErrorMessage(error))
@@ -220,6 +269,11 @@ const wait = async (data: IncomingMessage, sendData: SendDataFn<OutgoingMessage>
 const sendTransaction = async (data: IncomingMessage, sendData: SendDataFn<OutgoingMessage>, sendError: SendErrorFn, provider: Provider) => {
   try {
     const { transaction, broadcast } = JSON.parse(data.arguments!) as SendTransactionArguments
+
+    if(!transaction) {
+      throw new Error('missing "transaction" argument')
+    }
+
     sendData({ result: await provider.sendTransaction(transaction, broadcast) })
   } catch (error) {
     sendError(getErrorMessage(error))
@@ -238,6 +292,11 @@ const readContract = async (data: IncomingMessage, sendData: SendDataFn<Outgoing
 const submitBlock = async (data: IncomingMessage, sendData: SendDataFn<OutgoingMessage>, sendError: SendErrorFn, provider: Provider) => {
   try {
     const { block } = JSON.parse(data.arguments!) as SubmitBlockArguments
+
+    if(!block) {
+      throw new Error('missing "block" argument')
+    }
+
     sendData({ result: await provider.submitBlock(block) })
   } catch (error) {
     sendError(getErrorMessage(error))

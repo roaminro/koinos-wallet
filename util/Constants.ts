@@ -23,5 +23,7 @@ export const SELECTED_ACCOUNT_KEY = 'SELECTED_ACCOUNT'
 
 export const TOKENS_KEY = 'TOKENS'
 
+export const PERMISSIONS_KEY = 'PERMISSIONS'
+
 export const MY_KOINOS_WALLET_CONNECTOR_CHILD_MESSENGER_ID = 'my-koinos-wallet-connector-child'
 export const MY_KOINOS_WALLET_CONNECTOR_PARENT_MESSENGER_ID = 'my-koinos-wallet-connector-parent'
