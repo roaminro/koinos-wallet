@@ -39,6 +39,19 @@ export const PermissionsProvider = ({
     if (savedPermissions) {
       setPermissions(JSON.parse(savedPermissions))
     }
+
+    const onStorageUpdate = (e: StorageEvent) => {
+      const { key, newValue } = e
+      if (newValue && key === PERMISSIONS_KEY) {
+        setPermissions(JSON.parse(newValue))
+      }
+    }
+
+    window.addEventListener('storage', onStorageUpdate)
+    
+    return () => {
+      window.removeEventListener('storage', onStorageUpdate)
+    }
   }, [])
 
   const saveToLocalStorage = (permissions: Record<string, AppPermissions>) => {

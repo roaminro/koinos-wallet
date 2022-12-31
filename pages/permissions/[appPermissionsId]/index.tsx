@@ -32,12 +32,13 @@ export default function Edit() {
   const confirmDialogRef = useRef(null)
   const [appPermissionsToDelete, setAppPermissionsToDelete] = useState<AppPermissions | null>(null)
 
-  if (!appPermissionsId) return <></>
 
   const handleDeleteClick = (appPermissions: AppPermissions) => {
     setAppPermissionsToDelete(appPermissions)
     onOpen()
   }
+
+  if (!appPermissionsId || !permissions[appPermissionsId as string]) return <></>
 
   const appPermissions = permissions[appPermissionsId as string]
 
