@@ -61,16 +61,16 @@ export const PermissionsProvider = ({
   const updateAppPermissions = (appPermissions: AppPermissions) => {
     if (appPermissions.id) {
       permissions[appPermissions.id] = appPermissions
-      saveToLocalStorage(permissions)
       setPermissions({ ...permissions })
+      saveToLocalStorage(permissions)
     }
   }
 
   const removeAppPermissions = (appPermissions: AppPermissions) => {
     if (appPermissions.id && permissions[appPermissions.id]) {
       delete permissions[appPermissions.id]
-      saveToLocalStorage(permissions)
       setPermissions({ ...permissions })
+      saveToLocalStorage(permissions)
     }
   }
 
