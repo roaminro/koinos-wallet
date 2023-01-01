@@ -49,12 +49,12 @@ export const handler = (sender: string, data: IncomingMessage, sendData: SendDat
 const prepareTransaction = async (data: IncomingMessage, sendData: SendDataFn<OutgoingMessage>, sendError: SendErrorFn, provider: Provider) => {
   try {
     const { signerAddress, transaction } = JSON.parse(data.arguments!) as PrepareTransactionArguments
-    
-    if(!signerAddress) {
+
+    if (!signerAddress) {
       throw new Error('missing "signerAddress" argument')
     }
 
-    if(!transaction) {
+    if (!transaction) {
       throw new Error('missing "transaction" argument')
     }
 
@@ -68,7 +68,7 @@ const prepareTransaction = async (data: IncomingMessage, sendData: SendDataFn<Ou
     if (!transaction.header?.payer) {
       transaction.header.payer = signerAddress
     }
- 
+
     sendData({ result: await dummySigner.prepareTransaction(transaction) })
   } catch (error) {
     sendError(getErrorMessage(error))
@@ -91,35 +91,35 @@ const signSendTransaction = (send: boolean, requester: string, data: IncomingMes
   return new Promise<void>((resolve) => {
     const params = 'popup=yes,scrollbars=no,resizable=yes,status=no,location=no,toolbar=no,menubar=no,width=450,height=550'
     const newWindow = window.open('/embed/signSendTransaction', 'Transaction', params)!
-    newWindow.resizeTo(450, 550)
+    const popupMsgr = new Messenger<SignSendTransactionResult, SignSendTransactionArguments>(newWindow, 'sign-send-transaction-popup-parent', true, window.location.origin)
 
-    newWindow.onload = async () => {
-      try {
-        const popupMsgr = new Messenger<SignSendTransactionResult, SignSendTransactionArguments>(newWindow, 'sign-send-transaction-popup-parent', true, window.location.origin)
-
-        newWindow.onunload = () => {
-          popupMsgr.removeListener()
-          sendError('request was cancelled')
-          resolve()
-        }
-
-        popupMsgr.onMessage(({ data }) => {
-          sendData({ result: data })
-          popupMsgr.removeListener()
-          newWindow.close()
-          resolve()
-        })
-
-        popupMsgr.onRequest(({ sendData }) => {
-          args.requester = requester
-          args.send = send
-          sendData(args)
-        })
-      } catch (error) {
-        sendError(getErrorMessage(error))
+    newWindow.onload = () => {
+      newWindow.onunload = () => {
+        popupMsgr.removeListener()
+        sendError('request was cancelled')
         resolve()
       }
     }
+
+    try {
+      popupMsgr.onMessage(({ data }) => {
+        sendData({ result: data })
+        popupMsgr.removeListener()
+        newWindow.close()
+        resolve()
+      })
+
+      popupMsgr.onRequest(({ sendData }) => {
+        args.requester = requester
+        args.send = send
+        sendData(args)
+      })
+    } catch (error) {
+      sendError(getErrorMessage(error))
+      resolve()
+    }
+
+    newWindow.resizeTo(450, 550)
 
     newWindow.focus()
   })

@@ -31,32 +31,33 @@ const getAccounts = (requester: string, _: IncomingMessage, sendData: SendDataFn
   return new Promise<void>((resolve) => {
     const params = 'popup=yes,scrollbars=no,resizable=yes,status=no,location=no,toolbar=no,menubar=no,width=400,height=500'
     const newWindow = window.open('/embed/getAccounts', 'Accounts', params)!
-    newWindow.resizeTo(400, 500)
+    const popupMsgr = new Messenger<GetAccountsResult, GetAccountsArguments>(newWindow, 'accounts-popup-parent', true, window.location.origin)
 
-    newWindow.onload = async () => {
-      try {
-        const popupMsgr = new Messenger<GetAccountsResult, GetAccountsArguments>(newWindow, 'accounts-popup-parent', true, window.location.origin)
-        newWindow.onunload = () => {
-          popupMsgr.removeListener()
-          sendError('request was cancelled')
-          resolve()
-        }
-
-        popupMsgr.onMessage(({ data: accounts }) => {
-          sendData({ result: accounts })
-          popupMsgr.removeListener()
-          newWindow.close()
-          resolve()
-        })
-
-        popupMsgr.onRequest(({ sendData }) => {
-          sendData({ requester })
-        })
-      } catch (error) {
-        sendError(getErrorMessage(error))
+    newWindow.onload = () => {
+      newWindow.onunload = () => {
+        popupMsgr.removeListener()
+        sendError('request was cancelled')
         resolve()
       }
     }
+
+    try {
+      popupMsgr.onMessage(({ data: accounts }) => {
+        sendData({ result: accounts })
+        popupMsgr.removeListener()
+        newWindow.close()
+        resolve()
+      })
+
+      popupMsgr.onRequest(({ sendData }) => {
+        sendData({ requester })
+      })
+    } catch (error) {
+      sendError(getErrorMessage(error))
+      resolve()
+    }
+
+    newWindow.resizeTo(400, 500)
 
     newWindow.focus()
   })
