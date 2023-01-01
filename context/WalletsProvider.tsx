@@ -279,10 +279,12 @@ export const WalletsProvider = ({
       const { key, newValue } = e
 
       if (newValue) {
-        if (key === VAULT_KEY && !await isVaultLocked()) {
+        if (key === VAULT_KEY) {
           setIsVaultSetup(true)
-          setWallets(await getVaultAccounts())
-          setIsLocked(false)
+          if (!await isVaultLocked()) {
+            setWallets(await getVaultAccounts())
+            setIsLocked(false)
+          }
         } else if (key === SELECTED_ACCOUNT_KEY) {
           setSelectedAccount(JSON.parse(newValue))
         }
