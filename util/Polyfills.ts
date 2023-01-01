@@ -1,4 +1,8 @@
-export default function initiPolyfills() {
+export default (() => {
+  if (typeof crypto === 'undefined') {
+    var crypto = require('crypto')
+  }
+    
   if (!('randomUUID' in crypto)) {
     // https://stackoverflow.com/a/2117523/2800218
     // LICENSE: https://creativecommons.org/licenses/by-sa/4.0/legalcode
@@ -11,4 +15,4 @@ export default function initiPolyfills() {
         )
     }
   }
-}
+})()
