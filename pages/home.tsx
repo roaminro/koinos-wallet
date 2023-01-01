@@ -28,8 +28,10 @@ export default function Home() {
       if (walletIds.length) {
         const walletId = walletIds[0]
         const accountIds = Object.keys(wallets[walletId].accounts)
-        const account = wallets[walletId].accounts[accountIds[0]]
-        selectAccount(walletId, wallets[walletId].name, account)
+        if (accountIds.length) {
+          const account = wallets[walletId].accounts[accountIds[0]]
+          selectAccount(walletId, wallets[walletId].name, account)
+        }
       }
     }
   }, [wallets, selectedAccount, selectAccount])
