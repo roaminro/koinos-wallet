@@ -2,7 +2,7 @@ import { useColorModeValue, Text, Box, Button, ButtonGroup, Card, CardBody, Card
 import { ReactElement, useEffect, useState } from 'react'
 import { Messenger } from '../../util/Messenger'
 import { useWallets } from '../../context/WalletsProvider'
-import { truncateAccount } from '../../util/Utils'
+import { debug, truncateAccount } from '../../util/Utils'
 import { GetAccountsArguments, GetAccountsResult, IAccount } from '../../wallet_connector_handlers/accountsHandler'
 import type { NextPageWithLayout } from '../_app'
 
@@ -22,7 +22,7 @@ const GetAccounts: NextPageWithLayout = () => {
     const setupMessenger = async () => {
 
       await msgr.ping('accounts-popup-parent')
-      console.log('connected to parent iframe')
+      debug('connected to parent iframe')
 
       const { requester } = await msgr.sendRequest('accounts-popup-parent', null)
       setRequester(requester)

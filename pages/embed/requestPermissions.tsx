@@ -8,6 +8,7 @@ import { PERMISSIONS } from '../../util/Permissions'
 import getUuidByString from 'uuid-by-string'
 import { FiAlertCircle, FiEdit2, FiGlobe, FiUsers } from 'react-icons/fi'
 import { IconType } from 'react-icons'
+import { debug } from '../../util/Utils'
 
 interface DisplayPermission {
   scope: string
@@ -30,7 +31,7 @@ const RequestPermissions: NextPageWithLayout = () => {
     const setupMessenger = async () => {
 
       await msgr.ping('request-permissions-popup-parent')
-      console.log('connected to parent iframe')
+      debug('connected to parent iframe')
 
       const { requester, permissions } = await msgr.sendRequest('request-permissions-popup-parent', null)
       setRequester(requester)
