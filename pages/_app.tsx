@@ -7,10 +7,11 @@ import { WalletsProvider } from '../context/WalletsProvider'
 import { NetworksProvider } from '../context/NetworksProvider'
 import { TokensProvider } from '../context/TokensProvider'
 import theme from '../styles/theme'
-import { ReactElement, ReactNode } from 'react'
+import { ReactElement, ReactNode, useEffect } from 'react'
 import { NextPage } from 'next'
 import Sidebar from '../components/Sidebar'
 import { PermissionsProvider } from '../context/PermissionsProvider'
+import initPolyfills from '../util/Polyfills'
 
 export type NextPageWithLayout<P = {}, IP = P> = NextPage<P, IP> & {
   getLayout?: (page: ReactElement) => ReactNode
@@ -21,6 +22,9 @@ type AppPropsWithLayout = AppProps & {
 }
 
 export default function App({ Component, pageProps }: AppPropsWithLayout) {
+  useEffect(() => {
+    initPolyfills()
+  }, [])
 
   const getLayout = Component.getLayout ?? ((page) => <Sidebar>{page}</Sidebar>)
 
