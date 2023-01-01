@@ -3,7 +3,6 @@ import { Signer, utils } from 'koilib'
 import { useRouter } from 'next/router'
 import { useState, ChangeEvent } from 'react'
 import { BackButton } from '../../../../components/BackButton'
-import SidebarWithHeader from '../../../../components/Sidebar'
 import { useWallets } from '../../../../context/WalletsProvider'
 import { isAlphanumeric } from '../../../../util/Utils'
 
@@ -96,69 +95,67 @@ export default function Import() {
   if (isLocked) return <></>
 
   return (
-    <SidebarWithHeader>
-      <Center>
-        <Card maxW='sm'>
-          <CardHeader>
-            <Heading size='md'>
+    <Center>
+      <Card maxW='sm'>
+        <CardHeader>
+          <Heading size='md'>
             <BackButton /> Import account to wallet &quot;{walletId && wallets[walletId as string].name}&quot;
-            </Heading>
-          </CardHeader>
-          <Divider />
-          <CardBody>
-            <Stack mt='6' spacing='3'>
-              <FormControl isRequired isInvalid={isAccountNameInvalid}>
-                <FormLabel>Account Name</FormLabel>
-                <Input value={accountName} onChange={handleAccountNameChange} />
-                <FormHelperText>The account name is an easy way for you to identify an account.</FormHelperText>
+          </Heading>
+        </CardHeader>
+        <Divider />
+        <CardBody>
+          <Stack mt='6' spacing='3'>
+            <FormControl isRequired isInvalid={isAccountNameInvalid}>
+              <FormLabel>Account Name</FormLabel>
+              <Input value={accountName} onChange={handleAccountNameChange} />
+              <FormHelperText>The account name is an easy way for you to identify an account.</FormHelperText>
+              {
+                isAccountNameInvalid && <FormErrorMessage>The account name must be at least 1 character and can only composed of the following characters (_-[0-9][a-z][A-Z]).</FormErrorMessage>
+              }
+            </FormControl>
+            <FormControl isRequired>
+              <Checkbox isChecked={watchMode} onChange={handleWatchModeChange}>Import in Watch Mode (when checking this box you will not be able to sign transactions with this account).</Checkbox>
+            </FormControl>
+            {
+              watchMode &&
+              <FormControl isRequired isInvalid={isAccountAddressInvalid}>
+                <FormLabel>Account Address</FormLabel>
+                <Input value={accountAddress} onChange={handleAccountAddressChange} />
+                <FormHelperText>The account&apos;s address to import in Watch Mode.</FormHelperText>
                 {
-                  isAccountNameInvalid && <FormErrorMessage>The account name must be at least 1 character and can only composed of the following characters (_-[0-9][a-z][A-Z]).</FormErrorMessage>
+                  isAccountAddressInvalid && <FormErrorMessage>The account address entered is invalid.</FormErrorMessage>
                 }
               </FormControl>
-              <FormControl isRequired>
-                <Checkbox isChecked={watchMode} onChange={handleWatchModeChange}>Import in Watch Mode (when checking this box you will not be able to sign transactions with this account).</Checkbox>
-              </FormControl>
-              {
-                watchMode &&
-                <FormControl isRequired isInvalid={isAccountAddressInvalid}>
-                  <FormLabel>Account Address</FormLabel>
-                  <Input value={accountAddress} onChange={handleAccountAddressChange} />
-                  <FormHelperText>The account&apos;s address to import in Watch Mode.</FormHelperText>
+            }
+            {
+              !watchMode &&
+              <>
+                <FormControl isRequired isInvalid={isAccountPrivateKeyInvalid}>
+                  <FormLabel>Account Private Key (WIF format)</FormLabel>
+                  <Input type='password' value={accountPrivateKey} onChange={handleAccountPrivateKeyChange} />
+                  <FormHelperText>The account&apos;s private key your want to import in the WIF format.</FormHelperText>
                   {
-                    isAccountAddressInvalid && <FormErrorMessage>The account address entered is invalid.</FormErrorMessage>
+                    isAccountPrivateKeyInvalid && <FormErrorMessage>The Private Key entered is invalid.</FormErrorMessage>
                   }
                 </FormControl>
-              }
-              {
-                !watchMode &&
-                <>
-                  <FormControl isRequired isInvalid={isAccountPrivateKeyInvalid}>
-                    <FormLabel>Account Private Key (WIF format)</FormLabel>
-                    <Input type='password' value={accountPrivateKey} onChange={handleAccountPrivateKeyChange} />
-                    <FormHelperText>The account&apos;s private key your want to import in the WIF format.</FormHelperText>
-                    {
-                      isAccountPrivateKeyInvalid && <FormErrorMessage>The Private Key entered is invalid.</FormErrorMessage>
-                    }
-                  </FormControl>
-                  <FormControl isReadOnly={true}>
-                    <FormLabel>Account Address</FormLabel>
-                    <Input value={accountAddress} />
-                    <FormHelperText>The account&apos;s address associated with the above Private Key.</FormHelperText>
-                  </FormControl>
-                </>
-              }
-              <Button
-                disabled={isAccountNameInvalid || !walletId || isAccountPrivateKeyInvalid || isAccountAddressInvalid}
-                isLoading={isLoading}
-                variant='solid'
-                colorScheme='green'
-                onClick={importAccountClick}>
-                Import Account
-              </Button>
-            </Stack>
-          </CardBody>
-        </Card>
-      </Center>
-    </SidebarWithHeader>
+                <FormControl isReadOnly={true}>
+                  <FormLabel>Account Address</FormLabel>
+                  <Input value={accountAddress} />
+                  <FormHelperText>The account&apos;s address associated with the above Private Key.</FormHelperText>
+                </FormControl>
+              </>
+            }
+            <Button
+              disabled={isAccountNameInvalid || !walletId || isAccountPrivateKeyInvalid || isAccountAddressInvalid}
+              isLoading={isLoading}
+              variant='solid'
+              colorScheme='green'
+              onClick={importAccountClick}>
+              Import Account
+            </Button>
+          </Stack>
+        </CardBody>
+      </Card>
+    </Center>
   )
 }

@@ -31,7 +31,8 @@ import {
   FiGlobe,
   FiHardDrive,
   FiDatabase,
-  FiGithub
+  FiGithub,
+  FiFileText
 } from 'react-icons/fi'
 import { IconType } from 'react-icons'
 import { useWallets } from '../context/WalletsProvider'
@@ -48,6 +49,7 @@ const LinkItems: Array<LinkItemProps> = [
   { name: 'Home', icon: FiHome, href: '/home', hideWhenVaultNotSetup: true },
   { name: 'Tokens', icon: FiDatabase, href: '/tokens', hideWhenVaultNotSetup: true },
   { name: 'Wallets', icon: FiCreditCard, href: '/wallets', hideWhenVaultNotSetup: true },
+  { name: 'Apps Permissions', icon: FiFileText, href: '/permissions', hideWhenVaultNotSetup: true },
   { name: 'Networks', icon: FiGlobe, href: '/networks' },
   { name: 'Backup', icon: FiHardDrive, href: '/backup' },
 ]
@@ -115,7 +117,7 @@ const SidebarContent = ({ onClose, ...rest }: SidebarProps) => {
       </Flex>
       {LinkItems.map((link) => (
         ((!isVaultSetup && !link.hideWhenVaultNotSetup) || isVaultSetup) &&
-        <NavItem key={link.name} href={link.href} icon={link.icon}>
+        <NavItem key={link.name} href={link.href} icon={link.icon} onClick={onClose}>
           {link.name}
         </NavItem>
       ))}

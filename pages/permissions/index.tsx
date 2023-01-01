@@ -1,22 +1,22 @@
-import { Button, Card, CardBody, CardHeader, Center, Divider, Stack, Table, TableContainer, Tbody, Td, Th, Thead, Tr, useClipboard, useToast, Skeleton, IconButton, Tooltip, Hide, useDisclosure } from '@chakra-ui/react'
+import { Card, CardBody, CardHeader, Center, Divider, Stack, Table, TableContainer, Tbody, Td, Th, Thead, Tr, useToast, IconButton, Tooltip, useDisclosure } from '@chakra-ui/react'
 import { useRouter } from 'next/router'
-import { FiEdit, FiTrash } from 'react-icons/fi'
+import { FiEye, FiTrash } from 'react-icons/fi'
 import { BackButton } from '../../components/BackButton'
-import { Token, useTokens } from '../../context/TokensProvider'
 import { ConfirmationDialog } from '../../components/ConfirmationDialog'
 import { useRef, useState } from 'react'
+import { AppPermissions, usePermissions } from '../../context/PermissionsProvider'
 
-export default function Tokens() {
+export default function Networks() {
   const toast = useToast()
   const router = useRouter()
   const { isOpen, onOpen, onClose } = useDisclosure()
 
-  const { tokens, removeToken } = useTokens()
+  const { permissions, removeAppPermissions } = usePermissions()
   const confirmDialogRef = useRef(null)
-  const [tokenToDelete, setTokenToDelete] = useState<Token | null>(null)
+  const [appPermissionsToDelete, setAppPermissionsToDelete] = useState<AppPermissions | null>(null)
 
-  const handleDeleteClick = (token: Token) => {
-    setTokenToDelete(token)
+  const handleDeleteClick = (appPermissions: AppPermissions) => {
+    setAppPermissionsToDelete(appPermissions)
     onOpen()
   }
 
@@ -26,9 +26,6 @@ export default function Tokens() {
         <CardHeader>
           <Stack spacing={8} direction='row'>
             <BackButton />
-            <Button colorScheme='blue' onClick={() => router.push('/tokens/add')}>
-              Add token
-            </Button>
           </Stack>
         </CardHeader>
         <Divider />
@@ -37,51 +34,43 @@ export default function Tokens() {
             <Table variant='striped' colorScheme='blue'>
               <Thead>
                 <Tr>
-                  <Th>Token Name</Th>
-                  <Hide below='md'>
-                    <Th>Token Symbol</Th>
-                  </Hide>
+                  <Th>App Url</Th>
                   <Th>Actions</Th>
                 </Tr>
               </Thead>
               <Tbody>
                 {
-                  Object.keys(tokens).map((tokenAddress) => {
-                    const token = tokens[tokenAddress]
+                  Object.keys(permissions).map((appPermissionsId) => {
+                    const appPermissions = permissions[appPermissionsId]
                     return (
-                      <Tr key={token.address}>
+                      <Tr key={appPermissions.id}>
                         <Td>
-                          {token.name}
+                          {appPermissions.url}
                         </Td>
-                        <Hide below='md'>
-                          <Td>
-                            {token.symbol}
-                          </Td>
-                        </Hide>
                         <Td>
                           <Stack spacing={4} direction='row'>
                             <Tooltip
-                              label="edit token"
+                              label="view app permissions"
                               placement="top"
                               hasArrow
                             >
                               <IconButton
-                                aria-label='edit token'
+                                aria-label='view app permissions'
                                 colorScheme='blue'
-                                icon={<FiEdit />}
-                                onClick={() => router.push({ pathname: '/tokens/[tokenAddress]', query: { tokenAddress: token.address } })}
+                                icon={<FiEye />}
+                                onClick={() => router.push({ pathname: '/permissions/[appPermissionsId]', query: { appPermissionsId } })}
                               />
                             </Tooltip>
                             <Tooltip
-                              label="delete token"
+                              label="revoke app permissions"
                               placement="top"
                               hasArrow
                             >
                               <IconButton
-                                aria-label='delete token'
+                                aria-label='revoke app permissions'
                                 colorScheme='red'
                                 icon={<FiTrash />}
-                                onClick={() => handleDeleteClick(token)}
+                                onClick={() => handleDeleteClick(appPermissions)}
                               />
                             </Tooltip>
                           </Stack>
@@ -96,13 +85,13 @@ export default function Tokens() {
           <ConfirmationDialog
             modalRef={confirmDialogRef}
             onClose={onClose}
-            body='Are you sure you want to delete this token?'
+            body='Are you sure you want to revoke the permissions for this app?'
             onAccept={() => {
-              removeToken(tokenToDelete!)
-              setTokenToDelete(null)
+              removeAppPermissions(appPermissionsToDelete!)
+              setAppPermissionsToDelete(null)
               toast({
-                title: 'Token successfully removed',
-                description: 'The token was successfully removed!',
+                title: 'Permissions successfully revoked',
+                description: 'The permissions were successfully revoked!',
                 status: 'success',
                 isClosable: true,
               })

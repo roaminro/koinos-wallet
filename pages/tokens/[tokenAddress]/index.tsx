@@ -1,12 +1,11 @@
 import {
   FiRepeat,
 } from 'react-icons/fi'
-import { Stack, Card, CardHeader, Heading, Divider, CardBody, FormControl, FormLabel, Input, FormHelperText, Button, useToast, IconButton, NumberDecrementStepper, NumberIncrementStepper, NumberInput, NumberInputField, NumberInputStepper, InputGroup, InputRightElement, Tooltip } from '@chakra-ui/react'
+import { Stack, Card, CardHeader, Heading, Divider, CardBody, FormControl, FormLabel, Input, FormHelperText, Button, useToast, IconButton, NumberDecrementStepper, NumberIncrementStepper, NumberInput, NumberInputField, NumberInputStepper, InputGroup, InputRightElement, Tooltip, Center } from '@chakra-ui/react'
 import { Contract, Provider, utils } from 'koilib'
 import { ChangeEvent, useEffect, useState } from 'react'
 import { useRouter } from 'next/router'
 
-import SidebarWithHeader from '../../../components/Sidebar'
 import { BackButton } from '../../../components/BackButton'
 import { Network, useNetworks } from '../../../context/NetworksProvider'
 import { useTokens } from '../../../context/TokensProvider'
@@ -126,10 +125,11 @@ export default function Edit() {
         setTokenSymbol(token.symbol)
         setTokenDecimals(token.decimals)
 
-        for (const networkRpcUrl in networks) {
-          const network = networks[networkRpcUrl]
+        for (const networkId in networks) {
+          const network = networks[networkId]
           if (network.chainId === token.chainId) {
             setNetwork(network)
+            break
           }
         }
       }
@@ -139,75 +139,73 @@ export default function Edit() {
   if (!tokenAddress) return <></>
 
   return (
-    <SidebarWithHeader>
-      <Stack mt='6' spacing='3' align='center'>
-        <Card maxW='sm'>
-          <CardHeader>
-            <Heading size='md'>
-              <BackButton />
-              Edit token
-            </Heading>
-          </CardHeader>
-          <Divider />
-          <CardBody>
-            <Stack mt='6' spacing='3'>
-              <FormControl isDisabled={true}>
-                <FormLabel>Network</FormLabel>
-                <Input value={network?.name} />
-                <FormHelperText>Name of the network.</FormHelperText>
-              </FormControl>
+    <Center>
+      <Card>
+        <CardHeader>
+          <Heading size='md'>
+            <BackButton />
+            Edit token
+          </Heading>
+        </CardHeader>
+        <Divider />
+        <CardBody>
+          <Stack mt='6' spacing='3'>
+            <FormControl isDisabled={true}>
+              <FormLabel>Network</FormLabel>
+              <Input value={network?.name} />
+              <FormHelperText>Name of the network.</FormHelperText>
+            </FormControl>
 
-              <FormControl isDisabled={true}>
-                <FormLabel>Token address</FormLabel>
-                <InputGroup>
-                  <Input value={tokenAddress} />
-                  <InputRightElement>
-                    <Tooltip label="Fetch token information" aria-label='Fetch token information from rpc'>
-                      <IconButton
-                        disabled={!tokenAddress}
-                        aria-label='Fetch token information from rpc'
-                        icon={<FiRepeat />}
-                        onClick={fetchTokenInformation} />
-                    </Tooltip>
-                  </InputRightElement>
-                </InputGroup>
-                <FormHelperText>Address of the token.</FormHelperText>
-              </FormControl>
+            <FormControl isDisabled={true}>
+              <FormLabel>Token address</FormLabel>
+              <InputGroup>
+                <Input value={tokenAddress} />
+                <InputRightElement>
+                  <Tooltip label="Fetch token information" aria-label='Fetch token information from rpc'>
+                    <IconButton
+                      disabled={!tokenAddress}
+                      aria-label='Fetch token information from rpc'
+                      icon={<FiRepeat />}
+                      onClick={fetchTokenInformation} />
+                  </Tooltip>
+                </InputRightElement>
+              </InputGroup>
+              <FormHelperText>Address of the token.</FormHelperText>
+            </FormControl>
 
-              <FormControl isRequired>
-                <FormLabel>Name</FormLabel>
-                <Input value={tokenName} onChange={handleTokenNameChange} />
-                <FormHelperText>Name of the token.</FormHelperText>
-              </FormControl>
+            <FormControl isRequired>
+              <FormLabel>Name</FormLabel>
+              <Input value={tokenName} onChange={handleTokenNameChange} />
+              <FormHelperText>Name of the token.</FormHelperText>
+            </FormControl>
 
-              <FormControl isRequired>
-                <FormLabel>Symbol</FormLabel>
-                <Input value={tokenSymbol} onChange={handleTokenSymbolChange} />
-                <FormHelperText>Symbol of the token.</FormHelperText>
-              </FormControl>
+            <FormControl isRequired>
+              <FormLabel>Symbol</FormLabel>
+              <Input value={tokenSymbol} onChange={handleTokenSymbolChange} />
+              <FormHelperText>Symbol of the token.</FormHelperText>
+            </FormControl>
 
-              <FormControl>
-                <FormLabel>Decimals</FormLabel>
-                <NumberInput step={1} min={0} value={tokenDecimals} onChange={handleTokenDecimalsChange}>
-                  <NumberInputField />
-                  <NumberInputStepper>
-                    <NumberIncrementStepper />
-                    <NumberDecrementStepper />
-                  </NumberInputStepper>
-                </NumberInput>
-                <FormHelperText>Number of decimals for the token.</FormHelperText>
-              </FormControl>
-              <Button
-                isLoading={isLoading}
-                variant='solid'
-                colorScheme='green'
-                onClick={handleBtnClick}>
-                Save changes
-              </Button>
-            </Stack>
-          </CardBody>
-        </Card>
-      </Stack>
-    </SidebarWithHeader>
+            <FormControl>
+              <FormLabel>Decimals</FormLabel>
+              <NumberInput step={1} min={0} value={tokenDecimals} onChange={handleTokenDecimalsChange}>
+                <NumberInputField />
+                <NumberInputStepper>
+                  <NumberIncrementStepper />
+                  <NumberDecrementStepper />
+                </NumberInputStepper>
+              </NumberInput>
+              <FormHelperText>Number of decimals for the token.</FormHelperText>
+            </FormControl>
+            <Button
+              isLoading={isLoading}
+              variant='solid'
+              colorScheme='green'
+              onClick={handleBtnClick}>
+              Save changes
+            </Button>
+          </Stack>
+        </CardBody>
+      </Card>
+    </Center>
   )
 }

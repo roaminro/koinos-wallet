@@ -1,13 +1,12 @@
 import {
   FiRepeat,
 } from 'react-icons/fi'
-import { Stack, Card, CardHeader, Heading, Divider, CardBody, FormControl, FormLabel, Input, FormHelperText, Button, useToast, IconButton, NumberDecrementStepper, NumberIncrementStepper, NumberInput, NumberInputField, NumberInputStepper, InputGroup, InputRightElement, Tooltip } from '@chakra-ui/react'
+import { Stack, Card, CardHeader, Heading, Divider, CardBody, FormControl, FormLabel, Input, FormHelperText, Button, useToast, IconButton, NumberDecrementStepper, NumberIncrementStepper, NumberInput, NumberInputField, NumberInputStepper, InputGroup, InputRightElement, Tooltip, Center } from '@chakra-ui/react'
 import { Contract, Provider, utils } from 'koilib'
 import { ChangeEvent, useEffect, useState } from 'react'
 import { useNetworks } from '../../../context/NetworksProvider'
 
 import { koinos } from '@koinos/proto-js'
-import SidebarWithHeader from '../../../components/Sidebar'
 import { BackButton } from '../../../components/BackButton'
 import { useRouter } from 'next/router'
 
@@ -211,109 +210,107 @@ export default function Edit() {
   if (!networkId) return <></>
 
   return (
-    <SidebarWithHeader>
-      <Stack mt='6' spacing='3' align='center'>
-        <Card maxW='sm'>
-          <CardHeader>
-            <Heading size='md'>
-              <BackButton /> Edit network
-            </Heading>
-          </CardHeader>
-          <Divider />
-          <CardBody>
-            <Stack mt='6' spacing='3'>
-              <FormControl isRequired>
-                <FormLabel>Name</FormLabel>
-                <Input value={name} onChange={handleNameChange} />
-                <FormHelperText>Name of the network.</FormHelperText>
-              </FormControl>
+    <Center>
+      <Card maxW='sm'>
+        <CardHeader>
+          <Heading size='md'>
+            <BackButton /> Edit network
+          </Heading>
+        </CardHeader>
+        <Divider />
+        <CardBody>
+          <Stack mt='6' spacing='3'>
+            <FormControl isRequired>
+              <FormLabel>Name</FormLabel>
+              <Input value={name} onChange={handleNameChange} />
+              <FormHelperText>Name of the network.</FormHelperText>
+            </FormControl>
 
-              <FormControl isRequired>
-                <FormLabel>RPC url</FormLabel>
-                <InputGroup>
-                  <Input value={rpcUrl} onChange={handleRpcUrlChange} />
-                  <InputRightElement>
-                    <Tooltip label="Fetch chain id from rpc" aria-label='Fetch chain id from rpc'>
-                      <IconButton
-                        disabled={!rpcUrl}
-                        aria-label='Fetch chain id from rpc'
-                        icon={<FiRepeat />}
-                        onClick={fetchChainInformation} />
-                    </Tooltip>
-                  </InputRightElement>
-                </InputGroup>
-                <FormHelperText>Url of the RPC server.</FormHelperText>
-              </FormControl>
+            <FormControl isRequired>
+              <FormLabel>RPC url</FormLabel>
+              <InputGroup>
+                <Input value={rpcUrl} onChange={handleRpcUrlChange} />
+                <InputRightElement>
+                  <Tooltip label="Fetch chain id from rpc" aria-label='Fetch chain id from rpc'>
+                    <IconButton
+                      disabled={!rpcUrl}
+                      aria-label='Fetch chain id from rpc'
+                      icon={<FiRepeat />}
+                      onClick={fetchChainInformation} />
+                  </Tooltip>
+                </InputRightElement>
+              </InputGroup>
+              <FormHelperText>Url of the RPC server.</FormHelperText>
+            </FormControl>
 
-              <FormControl isRequired>
-                <FormLabel>Chain id</FormLabel>
-                <Input value={chainId} onChange={handleChainIdChange} />
-                <FormHelperText>Chain id of the network. (you can only have 1 network with the same chain id setup)</FormHelperText>
-              </FormControl>
+            <FormControl isRequired>
+              <FormLabel>Chain id</FormLabel>
+              <Input value={chainId} onChange={handleChainIdChange} />
+              <FormHelperText>Chain id of the network. (you can only have 1 network with the same chain id setup)</FormHelperText>
+            </FormControl>
 
-              <FormControl isRequired>
-                <FormLabel>Name service address</FormLabel>
-                <InputGroup>
-                  <Input value={nameserviceAddress} onChange={handleNameServiceChange} />
-                  <InputRightElement>
-                    <Tooltip label="Fetch token information from rpc" aria-label='Fetch token information from rpc'>
-                      <IconButton
-                        disabled={!rpcUrl || !nameserviceAddress}
-                        aria-label='Fetch token information from rpc'
-                        icon={<FiRepeat />}
-                        onClick={fetchTokenInformation} />
-                    </Tooltip>
-                  </InputRightElement>
-                </InputGroup>
-                <FormHelperText>Address of the name service.</FormHelperText>
-              </FormControl>
+            <FormControl isRequired>
+              <FormLabel>Name service address</FormLabel>
+              <InputGroup>
+                <Input value={nameserviceAddress} onChange={handleNameServiceChange} />
+                <InputRightElement>
+                  <Tooltip label="Fetch token information from rpc" aria-label='Fetch token information from rpc'>
+                    <IconButton
+                      disabled={!rpcUrl || !nameserviceAddress}
+                      aria-label='Fetch token information from rpc'
+                      icon={<FiRepeat />}
+                      onClick={fetchTokenInformation} />
+                  </Tooltip>
+                </InputRightElement>
+              </InputGroup>
+              <FormHelperText>Address of the name service.</FormHelperText>
+            </FormControl>
 
-              <FormControl isRequired>
-                <FormLabel>Token address</FormLabel>
-                <Input value={tokenAddress} onChange={handleTokenAddressChange} />
-                <FormHelperText>Address of the native token.</FormHelperText>
-              </FormControl>
+            <FormControl isRequired>
+              <FormLabel>Token address</FormLabel>
+              <Input value={tokenAddress} onChange={handleTokenAddressChange} />
+              <FormHelperText>Address of the native token.</FormHelperText>
+            </FormControl>
 
-              <FormControl isRequired>
-                <FormLabel>Token name</FormLabel>
-                <Input value={tokenName} onChange={handleTokenNameChange} />
-                <FormHelperText>Name of the native token.</FormHelperText>
-              </FormControl>
+            <FormControl isRequired>
+              <FormLabel>Token name</FormLabel>
+              <Input value={tokenName} onChange={handleTokenNameChange} />
+              <FormHelperText>Name of the native token.</FormHelperText>
+            </FormControl>
 
-              <FormControl isRequired>
-                <FormLabel>Token symbol</FormLabel>
-                <Input value={tokenSymbol} onChange={handleTokenSymbolChange} />
-                <FormHelperText>Symbol of the native token.</FormHelperText>
-              </FormControl>
+            <FormControl isRequired>
+              <FormLabel>Token symbol</FormLabel>
+              <Input value={tokenSymbol} onChange={handleTokenSymbolChange} />
+              <FormHelperText>Symbol of the native token.</FormHelperText>
+            </FormControl>
 
-              <FormControl>
-                <FormLabel>Token decimals</FormLabel>
-                <NumberInput step={1} min={0} value={tokenDecimals} onChange={handleTokenDecimalsChange}>
-                  <NumberInputField />
-                  <NumberInputStepper>
-                    <NumberIncrementStepper />
-                    <NumberDecrementStepper />
-                  </NumberInputStepper>
-                </NumberInput>
-                <FormHelperText>Number of decimals for the native token.</FormHelperText>
-              </FormControl>
+            <FormControl>
+              <FormLabel>Token decimals</FormLabel>
+              <NumberInput step={1} min={0} value={tokenDecimals} onChange={handleTokenDecimalsChange}>
+                <NumberInputField />
+                <NumberInputStepper>
+                  <NumberIncrementStepper />
+                  <NumberDecrementStepper />
+                </NumberInputStepper>
+              </NumberInput>
+              <FormHelperText>Number of decimals for the native token.</FormHelperText>
+            </FormControl>
 
-              <FormControl isRequired>
-                <FormLabel>Explorer url</FormLabel>
-                <Input value={explorerUrl} onChange={handleExplorerUrlChange} />
-                <FormHelperText>Url of the explorer.</FormHelperText>
-              </FormControl>
-              <Button
-                isLoading={isLoading}
-                variant='solid'
-                colorScheme='green'
-                onClick={handleBtnClick}>
-                Update network
-              </Button>
-            </Stack>
-          </CardBody>
-        </Card>
-      </Stack>
-    </SidebarWithHeader>
+            <FormControl isRequired>
+              <FormLabel>Explorer url</FormLabel>
+              <Input value={explorerUrl} onChange={handleExplorerUrlChange} />
+              <FormHelperText>Url of the explorer.</FormHelperText>
+            </FormControl>
+            <Button
+              isLoading={isLoading}
+              variant='solid'
+              colorScheme='green'
+              onClick={handleBtnClick}>
+              Update network
+            </Button>
+          </Stack>
+        </CardBody>
+      </Card>
+    </Center>
   )
 }
