@@ -19,9 +19,9 @@ type TokensContextType = {
 
 export const TokensContext = createContext<TokensContextType>({
   tokens: appConfig.defaultTokens,
-  addToken: (token: Token) => {},
-  updateToken: (token: Token) => {},
-  removeToken: (token: Token) => {}
+  addToken: (token: Token) => { },
+  updateToken: (token: Token) => { },
+  removeToken: (token: Token) => { }
 })
 
 export const useTokens = () => useContext(TokensContext)
@@ -41,31 +41,50 @@ export const TokensProvider = ({
       setTokens(JSON.parse(savedTokens))
     } else {
       setTokens(appConfig.defaultTokens)
+      saveToLocalStorage(appConfig.defaultTokens)
+    }
+
+    const onStorageUpdate = (e: StorageEvent) => {
+      const { key, newValue } = e
+      if (newValue && key === TOKENS_KEY) {
+        setTokens(JSON.parse(newValue))
+      }
+    }
+
+    window.addEventListener('storage', onStorageUpdate)
+
+    return () => {
+      window.removeEventListener('storage', onStorageUpdate)
     }
   }, [])
 
-  useEffect(() => {
-    if (Object.keys(tokens).length) {
-      localStorage.setItem(TOKENS_KEY, JSON.stringify(tokens))
-    }
-  }, [tokens])
-
+  const saveToLocalStorage = (tokens: Record<string, Token>) => {
+    localStorage.setItem(TOKENS_KEY, JSON.stringify(tokens))
+  }
 
   const addToken = (token: Token) => {
-    setTokens({ ...tokens, [token.address]: token })
+    const newTokens = { ...tokens, [token.address]: token }
+    setTokens(newTokens)
+    saveToLocalStorage(newTokens)
   }
 
   const removeToken = (token: Token) => {
     if (tokens[token.address]) {
-      delete tokens[token.address]
-      setTokens({ ...tokens })
+      const newTokens = { ...tokens }
+      delete newTokens[token.address]
+
+      setTokens(newTokens)
+      saveToLocalStorage(newTokens)
     }
   }
 
   const updateToken = (token: Token) => {
     if (tokens[token.address]) {
-      tokens[token.address] = token
-      setTokens({ ...tokens })
+      const newTokens = { ...tokens }
+      newTokens[token.address] = token
+
+      setTokens(newTokens)
+      saveToLocalStorage(newTokens)
     }
   }
 

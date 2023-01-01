@@ -25,7 +25,7 @@ type WalletContextType = {
   selectAccount: (walletId: string, walletName: string, account: Account) => void
   signTransaction: (signerAddress: string, transaction: TransactionJson) => Promise<TransactionJson>
   signHash: (signerAddress: string, hash: Uint8Array) => Promise<Uint8Array>
-  saveVault: () => Promise<void>
+  saveVaultToLocalStorage: () => Promise<void>
   getWalletSecretRecoveryPhrase: (walletId: string, password: string) => Promise<string>
   getAccountPrivateKey: (walletId: string, accountId: string, password: string) => Promise<string>
 }
@@ -50,7 +50,7 @@ export const WalletsContext = createContext<WalletContextType>({
   selectAccount: (walletId: string, walletName: string, account: Account) => { },
   signTransaction: (signerAddress: string, transaction: TransactionJson) => new Promise((resolve) => resolve({})),
   signHash: (signerAddress: string, hash: Uint8Array) => new Promise((resolve) => resolve(new Uint8Array)),
-  saveVault: () => new Promise((resolve) => resolve()),
+  saveVaultToLocalStorage: () => new Promise((resolve) => resolve()),
   getWalletSecretRecoveryPhrase: (walletId: string, password: string) => new Promise((resolve) => resolve('')),
   getAccountPrivateKey: (walletId: string, accountId: string, password: string) => new Promise((resolve) => resolve('')),
 })
@@ -73,11 +73,17 @@ export const WalletsProvider = ({
   const vaultServiceWorker = useRef<ServiceWorkerRegistration>()
   const vaultMessenger = useRef<Messenger<OutgoingMessage, IncomingMessage>>()
 
-  useEffect(() => {
-    if (!isLoading && isVaultSetup && !isLocked) {
-      saveVault()
-    }
-  }, [isLocked, isLoading, wallets, isVaultSetup])
+  const saveVaultToLocalStorage = async () => {
+    const { result: serializedVault } = await vaultMessenger.current!.sendRequest(VAULT_SERVICE_WORKER_ID, {
+      command: 'serialize'
+    })
+
+    localStorage.setItem(VAULT_KEY, serializedVault as SerializeResult)
+  }
+
+  const saveSelectedAccountToLocalStorage = (selectedAccount: SelectedAccount) => {
+    localStorage.setItem(SELECTED_ACCOUNT_KEY, JSON.stringify(selectedAccount))
+  }
 
   useEffect(() => {
     if (!isLoading && isLocked) {
@@ -123,6 +129,22 @@ export const WalletsProvider = ({
         encryptedVault
       } as TryDecryptArguments
     })
+  }
+
+  const isVaultLocked = async () => {
+    const { result } = await vaultMessenger.current!.sendRequest(VAULT_SERVICE_WORKER_ID, {
+      command: 'isLocked'
+    })
+
+    return result as IsLockedResult
+  }
+
+  const getVaultAccounts = async () => {
+    const { result } = await vaultMessenger.current!.sendRequest(VAULT_SERVICE_WORKER_ID, {
+      command: 'getAccounts'
+    })
+
+    return result as GetAccountsResult
   }
 
   const checkAutoLock = useCallback(async () => {
@@ -236,17 +258,9 @@ export const WalletsProvider = ({
             debug('Vault worker active')
           }
 
-          const { result: isLockedResult } = await msgr.sendRequest(VAULT_SERVICE_WORKER_ID, {
-            command: 'isLocked'
-          })
-
           // get accounts if already unlocked
-          if (!(isLockedResult as IsLockedResult)) {
-            const { result: getAccountsResult } = await msgr.sendRequest(VAULT_SERVICE_WORKER_ID, {
-              command: 'getAccounts'
-            })
-
-            setWallets(getAccountsResult as GetAccountsResult)
+          if (!await isVaultLocked()) {
+            setWallets(await getVaultAccounts())
 
             setIsLocked(false)
           }
@@ -254,24 +268,37 @@ export const WalletsProvider = ({
           setIsLoading(false)
 
         } catch (error) {
-          console.error(`Vault worker registration failed with ${error}`)
+          console.error('Vault worker registration failed with error', error)
         }
       }
     }
 
     setup()
 
+    const onStorageUpdate = async (e: StorageEvent) => {
+      const { key, newValue } = e
+
+      if (newValue) {
+        if (key === VAULT_KEY) {
+          setIsVaultSetup(true)
+          if (!await isVaultLocked()) {
+            setWallets(await getVaultAccounts())
+            setIsLocked(false)
+          }
+        } else if (key === SELECTED_ACCOUNT_KEY) {
+          setSelectedAccount(JSON.parse(newValue))
+        }
+      }
+    }
+
+    window.addEventListener('storage', onStorageUpdate)
+
     return () => {
       clearTimeout(timeout)
       msgr?.removeListener()
+      window.removeEventListener('storage', onStorageUpdate)
     }
   }, [])
-
-  useEffect(() => {
-    if (selectedAccount) {
-      localStorage.setItem(SELECTED_ACCOUNT_KEY, JSON.stringify(selectedAccount))
-    }
-  }, [selectedAccount])
 
   const addWallet = async (walletName: string, secretRecoveryPhrase?: string) => {
     // add wallet to vault
@@ -284,9 +311,11 @@ export const WalletsProvider = ({
     })
 
     const newWallet = addWalletResult as AddWalletResult
+    const newWallets = { ...wallets, [newWallet.id]: newWallet }
 
     // update state
-    setWallets({ ...wallets, [newWallet.id]: newWallet })
+    setWallets(newWallets)
+    saveVaultToLocalStorage()
 
     return newWallet
   }
@@ -303,10 +332,12 @@ export const WalletsProvider = ({
 
     const newAccount = addAccountResult as AddAccountResult
 
-    wallets[walletId].accounts[newAccount.public.id] = newAccount
+    const newWallets = { ...wallets }
+    newWallets[walletId].accounts[newAccount.public.id] = newAccount
 
     // update state
-    setWallets({ ...wallets })
+    setWallets(newWallets)
+    saveVaultToLocalStorage()
 
     return newAccount
   }
@@ -325,10 +356,13 @@ export const WalletsProvider = ({
 
     const newAccount = importAccountResult as ImportAccountResult
 
-    wallets[walletId].accounts[newAccount.public.id] = newAccount
+    const newWallets = { ...wallets }
+
+    newWallets[walletId].accounts[newAccount.public.id] = newAccount
 
     // update state
-    setWallets({ ...wallets })
+    setWallets(newWallets)
+    saveVaultToLocalStorage()
 
     return newAccount
   }
@@ -357,15 +391,6 @@ export const WalletsProvider = ({
     return signedHash as Uint8Array
   }
 
-  const saveVault = async () => {
-    // save vault to localstorage
-    const { result: serializedVault } = await vaultMessenger.current!.sendRequest(VAULT_SERVICE_WORKER_ID, {
-      command: 'serialize'
-    })
-
-    localStorage.setItem(VAULT_KEY, serializedVault as SerializeResult)
-  }
-
   const getWalletSecretRecoveryPhrase = async (walletId: string, password: string) => {
     const { result: secretRecoveryPhrase } = await vaultMessenger.current!.sendRequest(VAULT_SERVICE_WORKER_ID, {
       command: 'getWalletSecretRecoveryPhrase',
@@ -392,11 +417,14 @@ export const WalletsProvider = ({
   }
 
   const selectAccount = (walletId: string, walletName: string, account: Account) => {
-    setSelectedAccount({
+    const newSelectedAccount = {
       walletId,
       walletName,
       account
-    })
+    }
+
+    setSelectedAccount(newSelectedAccount)
+    saveSelectedAccountToLocalStorage(newSelectedAccount)
   }
 
   return (
@@ -411,7 +439,7 @@ export const WalletsProvider = ({
       addWallet,
       addAccount,
       importAccount,
-      saveVault,
+      saveVaultToLocalStorage,
       tryDecrypt,
       selectAccount,
       signTransaction,

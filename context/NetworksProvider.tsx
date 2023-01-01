@@ -53,6 +53,7 @@ export const NetworksProvider = ({
       setNetworks(JSON.parse(savedNetworks))
     } else {
       setNetworks(appConfig.defaultNetworks)
+      saveNetworksToLocalStorage(appConfig.defaultNetworks)
     }
 
     const savedSelectedNetwork = localStorage.getItem(SELECTED_NETWORK_KEY)
@@ -66,44 +67,69 @@ export const NetworksProvider = ({
       const firstNetwork = (appConfig.defaultNetworks as Record<string, Network>)[firstNetworkKey]
       setSelectedNetwork(firstNetwork)
       setProvider(new Provider(firstNetwork.rpcUrl))
+      saveSelectedNetworkToLocalStorage(firstNetwork)
+    }
+
+    const onStorageUpdate = (e: StorageEvent) => {
+      const { key, newValue } = e
+      if (newValue) {
+        if (key === NETWORKS_KEY) {
+          setNetworks(JSON.parse(newValue))
+        } else if (key === SELECTED_NETWORK_KEY) {
+          const newSelectedNetwork = JSON.parse(newValue) as Network
+          setSelectedNetwork(newSelectedNetwork)
+          setProvider(new Provider(newSelectedNetwork.rpcUrl))
+        }
+      }
+    }
+
+    window.addEventListener('storage', onStorageUpdate)
+
+    return () => {
+      window.removeEventListener('storage', onStorageUpdate)
     }
   }, [])
 
-  useEffect(() => {
-    if (Object.keys(networks).length) {
-      localStorage.setItem(NETWORKS_KEY, JSON.stringify(networks))
-    }
-  }, [networks])
+  const saveNetworksToLocalStorage = (networks: Record<string, Network>) => {
+    localStorage.setItem(NETWORKS_KEY, JSON.stringify(networks))
+  }
 
-  useEffect(() => {
-    if (selectedNetwork) {
-      localStorage.setItem(SELECTED_NETWORK_KEY, JSON.stringify(selectedNetwork))
-    }
-  }, [selectedNetwork])
-
+  const saveSelectedNetworkToLocalStorage = (network: Network) => {
+    localStorage.setItem(SELECTED_NETWORK_KEY, JSON.stringify(network))
+  }
 
   const selectNetwork = (network: Network) => {
     setSelectedNetwork(network)
     setProvider(new Provider(network.rpcUrl))
+    saveSelectedNetworkToLocalStorage(network)
   }
 
   const addNetwork = (network: Network) => {
     const id = crypto.randomUUID()
     network.id = id
-    setNetworks({ ...networks, [id]: network })
+    const newNetworks = { ...networks, [id]: network }
+
+    setNetworks(newNetworks)
+    saveNetworksToLocalStorage(newNetworks)
   }
 
   const removeNetwork = (network: Network) => {
     if (network.id && networks[network.id]) {
-      delete networks[network.id]
-      setNetworks({ ...networks })
+      const newNetworks = { ...networks }
+      delete newNetworks[network.id]
+
+      setNetworks(newNetworks)
+      saveNetworksToLocalStorage(newNetworks)
     }
   }
 
   const updateNetwork = (network: Network) => {
     if (network.id && networks[network.id]) {
-      networks[network.id] = network
-      setNetworks({ ...networks })
+      const newNetworks = { ...networks }
+      newNetworks[network.id] = network
+
+      setNetworks(newNetworks)
+      saveNetworksToLocalStorage(newNetworks)
     }
   }
 
