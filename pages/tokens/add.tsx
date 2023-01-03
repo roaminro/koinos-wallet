@@ -123,12 +123,12 @@ export default function Add() {
 
   return (
     <Center>
-      <Card>
+      <Card width='100%'>
         <CardHeader>
-          <Heading size='md'>
+          <Stack spacing={8} direction='row'>
             <BackButton />
-            Add token
-          </Heading>
+            <Heading size='md'>Add token</Heading>
+          </Stack>
         </CardHeader>
         <Divider />
         <CardBody>

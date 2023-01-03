@@ -9,7 +9,6 @@ import { BackButton } from '../components/BackButton'
 
 
 export default function Vault() {
-  const router = useRouter()
   const toast = useToast()
   const { isOpen, onOpen, onClose } = useDisclosure()
 
@@ -149,11 +148,12 @@ export default function Vault() {
     <Stack mt='6' spacing='3' align='center'>
       {
         isVaultSetup &&
-        <Card maxW='sm' minWidth='350px'>
+        <Card width='100%'>
           <CardHeader>
-            <Heading size='md'>
-              <BackButton /> Generate backup
-            </Heading>
+            <Stack spacing={8} direction='row'>
+              <BackButton />
+              <Heading size='md'>Generate backup</Heading>
+            </Stack>
           </CardHeader>
           <Divider />
           <CardBody>
@@ -170,11 +170,12 @@ export default function Vault() {
           </CardBody>
         </Card>
       }
-      <Card maxW='sm'>
+      <Card width='100%'>
         <CardHeader>
-          <Heading size='md'>
-            Restore backup
-          </Heading>
+          <Stack spacing={8} direction='row'>
+            <BackButton />
+            <Heading size='md'>Restore backup</Heading>
+          </Stack>
         </CardHeader>
         <Divider />
         <CardBody>

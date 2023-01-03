@@ -57,11 +57,12 @@ export default function Add() {
 
   return (
     <Center>
-      <Card maxW='sm'>
+      <Card width='100%'>
         <CardHeader>
-          <Heading size='md'>
-            <BackButton /> Add account to wallet &quot;{walletId && wallets[walletId as string] && wallets[walletId as string].name}&quot;
-          </Heading>
+          <Stack spacing={8} direction='row'>
+            <BackButton />
+            <Heading size='md'>Add account to wallet &quot;{walletId && wallets[walletId as string] && wallets[walletId as string].name}&quot;</Heading>
+          </Stack>
         </CardHeader>
         <Divider />
         <CardBody>

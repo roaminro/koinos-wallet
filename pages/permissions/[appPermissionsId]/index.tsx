@@ -4,7 +4,7 @@ import {
   FiGlobe,
   FiUsers,
 } from 'react-icons/fi'
-import { Card, CardHeader, Heading, Divider, CardBody, Button, useToast, Center, List, ListIcon, ListItem, useDisclosure } from '@chakra-ui/react'
+import { Card, CardHeader, Heading, Divider, CardBody, Button, useToast, Center, List, ListIcon, ListItem, useDisclosure, Stack } from '@chakra-ui/react'
 import { useRef, useState } from 'react'
 
 import { BackButton } from '../../../components/BackButton'
@@ -61,11 +61,14 @@ export default function Edit() {
 
   return (
     <Center>
-      <Card maxW='sm'>
+      <Card width='100%'>
         <CardHeader>
-          <Heading size='md'>
-            <BackButton /> Permissions for {appPermissions.url}
-          </Heading>
+          <Stack spacing={8} direction='row'>
+            <BackButton />
+            <Heading size='md'>
+              Permissions for {appPermissions.url}
+            </Heading>
+          </Stack>
         </CardHeader>
         <Divider />
         <CardBody>

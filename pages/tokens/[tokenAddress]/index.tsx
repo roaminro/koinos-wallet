@@ -140,21 +140,12 @@ export default function Edit() {
 
   return (
     <Center>
-      <Card>
+      <Card width='100%'>
         <CardHeader>
-          <Heading size='md'>
-            <Stack spacing={8} direction='row'>
-              <BackButton />
-              <Heading size='md'>Edit token</Heading>
-            </Stack>
-            <br />
-            <Text textAlign='center'>
-              {tokens[tokenAddress as string].name}
-            </Text>
-            <Text textAlign='center'>
-              ({tokens[tokenAddress as string].symbol})
-            </Text>
-          </Heading>
+          <Stack spacing={8} direction='row'>
+            <BackButton />
+            <Heading size='md'>Edit token</Heading>
+          </Stack>
         </CardHeader>
         <Divider />
         <CardBody>
