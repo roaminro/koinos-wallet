@@ -6,7 +6,7 @@ import { Wallet, Account } from '../util/Vault'
 import { getSetting, setSetting } from '../util/Settings'
 import { debounce, debug } from '../util/Utils'
 import { Messenger } from '../util/Messenger'
-import { AddAccountArguments, AddAccountResult, AddWalletArguments, AddWalletResult, GetAccountPrivateKeyArguments, GetAccountsResult, GetWalletSecretRecoveryPhraseArguments, ImportAccountArguments, ImportAccountResult, IncomingMessage, IsLockedResult, OutgoingMessage, SerializeResult, SignHashArguments, SignTransactionArguments, TryDecryptArguments, UnlockArguments, UnlockResult } from '../workers/Vault-Worker-Interfaces'
+import { AddAccountArguments, AddAccountResult, AddWalletArguments, AddWalletResult, GetAccountPrivateKeyArguments, GetAccountsResult, GetWalletSecretRecoveryPhraseArguments, ImportAccountArguments, ImportAccountResult, IncomingMessage, IsLockedResult, OutgoingMessage, RemoveAccountArguments, RemoveWalletArguments, SerializeResult, SignHashArguments, SignTransactionArguments, TryDecryptArguments, UnlockArguments, UnlockResult, UpdateAccountNameArguments, UpdateWalletNameArguments } from '../workers/Vault-Worker-Interfaces'
 import { TransactionJson } from 'koilib/lib/interface'
 
 
@@ -19,8 +19,12 @@ type WalletContextType = {
   unlock: (password: string) => Promise<void>
   lock: () => Promise<void>
   addWallet: (walletName: string, secretRecoveryPhrase?: string) => Promise<Wallet>
+  removeWallet: (walletId: string) => Promise<void>
+  updateWalletName: (walletId: string, newWalletName: string) => Promise<void>
   tryDecrypt: (password: string, encryptedVault: string) => Promise<void>
   addAccount: (walletId: string, accountName: string) => Promise<Account>
+  removeAccount: (walletId: string, accountId: string) => Promise<void>
+  updateAccountName: (walletId: string, accountId: string, newAccountName: string) => Promise<void>
   importAccount: (walletId: string, accountName: string, accountAddress: string, accountPrivateKey?: string) => Promise<Account>
   selectAccount: (walletId: string, walletName: string, account: Account) => void
   signTransaction: (signerAddress: string, transaction: TransactionJson) => Promise<TransactionJson>
@@ -44,8 +48,12 @@ export const WalletsContext = createContext<WalletContextType>({
   unlock: (password: string) => new Promise((resolve) => resolve()),
   lock: () => new Promise((resolve) => resolve()),
   addWallet: (walletName: string, secretRecoveryPhrase?: string) => new Promise((resolve) => resolve({ id: '', name: '', accounts: {} })),
+  removeWallet: (walletId: string) => new Promise((resolve) => resolve()),
+  updateWalletName: (walletId: string, newWalletName: string) => new Promise((resolve) => resolve()),
   tryDecrypt: (password: string, encryptedVault: string) => new Promise((resolve) => resolve()),
   addAccount: (walletId: string, accountName: string) => new Promise((resolve) => resolve({ public: { id: '', name: '', address: '' }, signers: {} })),
+  removeAccount: (walletId: string, accountId: string) => new Promise((resolve) => resolve()),
+  updateAccountName: (walletId: string, accountId: string, newAccountName: string) => new Promise((resolve) => resolve()),
   importAccount: (walletId: string, accountName: string, accountAddress: string, accountPrivateKey?: string) => new Promise((resolve) => resolve({ public: { id: '', name: '', address: '' }, signers: {} })),
   selectAccount: (walletId: string, walletName: string, account: Account) => { },
   signTransaction: (signerAddress: string, transaction: TransactionJson) => new Promise((resolve) => resolve({})),
@@ -320,6 +328,43 @@ export const WalletsProvider = ({
     return newWallet
   }
 
+  const removeWallet = async (walletId: string) => {
+    if (wallets[walletId]) {
+      await vaultMessenger.current!.sendRequest(VAULT_SERVICE_WORKER_ID, {
+        command: 'removeWallet',
+        arguments: {
+          walletId
+        } as RemoveWalletArguments
+      })
+  
+      const newWallets = { ...wallets }
+       delete newWallets[walletId]
+  
+      // update state
+      setWallets(newWallets)
+      saveVaultToLocalStorage()
+    }
+  }
+
+  const updateWalletName = async (walletId: string, newWalletName: string) => {
+    if (wallets[walletId]) {
+      await vaultMessenger.current!.sendRequest(VAULT_SERVICE_WORKER_ID, {
+        command: 'updateWalletName',
+        arguments: {
+          walletId,
+          newWalletName
+        } as UpdateWalletNameArguments
+      })
+  
+      const newWallets = { ...wallets }
+      newWallets[walletId].name = newWalletName
+  
+      // update state
+      setWallets(newWallets)
+      saveVaultToLocalStorage()
+    }
+  }
+
   const addAccount = async (walletId: string, accountName: string) => {
     // add account to wallet
     const { result: addAccountResult } = await vaultMessenger.current!.sendRequest(VAULT_SERVICE_WORKER_ID, {
@@ -340,6 +385,44 @@ export const WalletsProvider = ({
     saveVaultToLocalStorage()
 
     return newAccount
+  }
+
+  const removeAccount = async (walletId: string, accountId: string) => {
+    if (wallets[walletId] && wallets[walletId].accounts[accountId]) {
+      await vaultMessenger.current!.sendRequest(VAULT_SERVICE_WORKER_ID, {
+        command: 'removeAccount',
+        arguments: {
+          walletId
+        } as RemoveAccountArguments
+      })
+  
+      const newWallets = { ...wallets }
+       delete newWallets[walletId].accounts[accountId]
+  
+      // update state
+      setWallets(newWallets)
+      saveVaultToLocalStorage()
+    }
+  }
+
+  const updateAccountName = async (walletId: string, accountId:string, newAccountName: string) => {
+    if (wallets[walletId] && wallets[walletId].accounts[accountId]) {
+      await vaultMessenger.current!.sendRequest(VAULT_SERVICE_WORKER_ID, {
+        command: 'updateAccountName',
+        arguments: {
+          walletId,
+          accountId,
+          newAccountName
+        } as UpdateAccountNameArguments
+      })
+  
+      const newWallets = { ...wallets }
+      wallets[walletId].accounts[accountId].public.name = newAccountName
+  
+      // update state
+      setWallets(newWallets)
+      saveVaultToLocalStorage()
+    }
   }
 
   const importAccount = async (walletId: string, accountName: string, accountAddress: string, accountPrivateKey?: string) => {
@@ -437,7 +520,11 @@ export const WalletsProvider = ({
       unlock,
       lock,
       addWallet,
+      removeWallet,
+      updateWalletName,
       addAccount,
+      removeAccount,
+      updateAccountName,
       importAccount,
       saveVaultToLocalStorage,
       tryDecrypt,

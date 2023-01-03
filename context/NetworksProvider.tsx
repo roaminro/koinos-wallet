@@ -2,6 +2,7 @@ import { Provider } from 'koilib'
 import { ReactNode, useContext, useState, createContext, useEffect } from 'react'
 import appConfig from '../app.config'
 import { NETWORKS_KEY, SELECTED_NETWORK_KEY } from '../util/Constants'
+import { randomUUID } from '../util/Utils'
 
 export type Network = {
   id?: string
@@ -105,7 +106,7 @@ export const NetworksProvider = ({
   }
 
   const addNetwork = (network: Network) => {
-    const id = crypto.randomUUID()
+    const id = randomUUID()
     network.id = id
     const newNetworks = { ...networks, [id]: network }
 
