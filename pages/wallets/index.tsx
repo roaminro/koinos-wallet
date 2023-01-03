@@ -1,9 +1,8 @@
-import { Button, Card, CardBody, CardHeader, Center, Divider, Stack, Table, TableContainer, Tbody, Td, Th, Thead, Tr, useToast, IconButton, Tooltip, useDisclosure } from '@chakra-ui/react'
+import { Button, Card, CardBody, CardHeader, Center, Divider, Stack, useToast, IconButton, Tooltip, useDisclosure, Heading } from '@chakra-ui/react'
 import { useWallets } from '../../context/WalletsProvider'
 import { useRouter } from 'next/router'
-import NextLink from 'next/link'
 import RevealSecretRecoveryPhraseModal from '../../components/RevealSecretRecoveryPhraseModal'
-import { useRef, useState } from 'react'
+import { useRef, useState, MouseEvent } from 'react'
 import { FiEdit, FiEye, FiTrash, FiUsers } from 'react-icons/fi'
 import { BackButton } from '../../components/BackButton'
 import { ConfirmationDialog } from '../../components/ConfirmationDialog'
@@ -27,17 +26,20 @@ export default function Wallets() {
   const [isRenameWalletModalOpen, setIsRenameWalletModalOpen] = useState(false)
   const [walletIdToRename, setWalletIdToRename] = useState('')
 
-  const handleDeleteClick = (walletId: string) => {
+  const handleDeleteClick = (e: MouseEvent, walletId: string) => {
+    e.stopPropagation()
     setWalletIdToDelete(walletId)
     onOpen()
   }
 
-  const revealSecretRecoveryPhrase = (walletId: string) => {
+  const revealSecretRecoveryPhrase = (e: MouseEvent, walletId: string) => {
+    e.stopPropagation()
     setWalletIdToReveal(walletId)
     setIsRevealSecretRecoveryPhraseModalOpen(true)
   }
 
-  const renameWallet = (walletId: string) => {
+  const renameWallet = (e: MouseEvent, walletId: string) => {
+    e.stopPropagation()
     setWalletIdToRename(walletId)
     setIsRenameWalletModalOpen(true)
   }
@@ -48,6 +50,7 @@ export default function Wallets() {
         <CardHeader>
           <Stack spacing={8} direction='row'>
             <BackButton />
+            <Heading size='md'>Wallets</Heading>
             <Button colorScheme='blue' onClick={() => router.push('/wallets/create')}>
               Create wallet
             </Button>
@@ -58,96 +61,89 @@ export default function Wallets() {
         </CardHeader>
         <Divider />
         <CardBody>
-          <TableContainer overflowX='auto'>
-            <Table variant='striped' colorScheme='blue'>
-              <Thead>
-                <Tr>
-                  <Th>Wallet Name</Th>
-                  <Th>Actions</Th>
-                </Tr>
-              </Thead>
-              <Tbody>
-                {
-                  Object.keys(wallets).map((walletId) => {
-                    const wallet = wallets[walletId]
-                    return (
-                      <Tr key={walletId}>
-                        <Td cursor='pointer' onClick={() => router.push({ pathname: '/wallets/[walletId]/accounts', query: { walletId } })}>
-                          <NextLink href={{
-                            pathname: '/wallets/[walletId]/accounts',
-                            query: { walletId },
-                          }}>{wallet.name}</NextLink>
-                        </Td>
-                        <Td>
-                          <Stack spacing={4} direction='row'>
-                            <Tooltip
-                              label="manage accounts"
-                              placement="top"
-                              hasArrow
-                            >
-                              <IconButton colorScheme='blue' aria-label='manage accounts' icon={<FiUsers />} onClick={() => router.push({ pathname: '/wallets/[walletId]/accounts', query: { walletId } })} />
-                            </Tooltip>
-                            <Tooltip
-                              label="reveal Secret Recovery Phrase"
-                              placement="top"
-                              hasArrow
-                            >
-                              <IconButton colorScheme='blue' aria-label='reveal Secret Recovery Phrase' icon={<FiEye />} onClick={() => revealSecretRecoveryPhrase(wallet.id)} />
-                            </Tooltip>
-                            <Tooltip
-                              label="rename wallet"
-                              placement="top"
-                              hasArrow
-                            >
-                              <IconButton colorScheme='blue' aria-label='rename wallet' icon={<FiEdit />} onClick={() => renameWallet(wallet.id)} />
-                            </Tooltip>
-                            <Tooltip
-                              label="delete wallet"
-                              placement="top"
-                              hasArrow
-                            >
-                              <IconButton
-                                aria-label='delete wallet'
-                                colorScheme='red'
-                                icon={<FiTrash />}
-                                onClick={() => handleDeleteClick(walletId)}
-                              />
-                            </Tooltip>
-                          </Stack>
-                        </Td>
-                      </Tr>
-                    )
-                  })
-                }
-              </Tbody>
-            </Table>
-          </TableContainer>
-          <RevealSecretRecoveryPhraseModal
-            isOpen={isRevealSecretRecoveryPhraseModalOpen}
-            onClose={() => setIsRevealSecretRecoveryPhraseModalOpen(false)}
-            walletId={walletIdToReveal}
-          />
-          <RenameWalletModal
-            isOpen={isRenameWalletModalOpen}
-            onClose={() => setIsRenameWalletModalOpen(false)}
-            walletId={walletIdToRename}
-          />
-          <ConfirmationDialog
-            modalRef={confirmDialogRef}
-            onClose={onClose}
-            body='Are you sure you want to delete this wallet? Make sure you have a copy of the Secret Recovery Phrase before confirming.'
-            onAccept={async () => {
-              await removeWallet(walletIdToDelete!)
-              setWalletIdToDelete(null)
-              toast({
-                title: 'Wallet successfully removed',
-                description: 'The wallet was successfully removed!',
-                status: 'success',
-                isClosable: true,
+          <Stack>
+            {
+              Object.keys(wallets).map((walletId) => {
+                const wallet = wallets[walletId]
+                return (
+                  <Card key={walletId}>
+                    <CardBody cursor='pointer'
+                        onClick={() => router.push({ pathname: '/wallets/[walletId]/accounts', query: { walletId } })}
+                        >
+                      <Heading
+                        size='md'>
+                        {wallet.name}
+                      </Heading>
+
+                      {Object.keys(wallet.accounts).length} accounts
+
+                      <Stack spacing={4} direction='row'>
+                        <Tooltip
+                          label="manage accounts"
+                          placement="top"
+                          hasArrow
+                        >
+                          <IconButton colorScheme='blue' aria-label='manage accounts' icon={<FiUsers />} onClick={() => router.push({ pathname: '/wallets/[walletId]/accounts', query: { walletId } })} />
+                        </Tooltip>
+                        <Tooltip
+                          label="reveal Secret Recovery Phrase"
+                          placement="top"
+                          hasArrow
+                        >
+                          <IconButton colorScheme='blue' aria-label='reveal Secret Recovery Phrase' icon={<FiEye />} onClick={(e) => revealSecretRecoveryPhrase(e, wallet.id)} />
+                        </Tooltip>
+                        <Tooltip
+                          label="rename wallet"
+                          placement="top"
+                          hasArrow
+                        >
+                          <IconButton colorScheme='blue' aria-label='rename wallet' icon={<FiEdit />} onClick={(e) => renameWallet(e, wallet.id)} />
+                        </Tooltip>
+                        <Tooltip
+                          label="delete wallet"
+                          placement="top"
+                          hasArrow
+                        >
+                          <IconButton
+                            aria-label='delete wallet'
+                            colorScheme='red'
+                            icon={<FiTrash />}
+                            onClick={(e) => handleDeleteClick(e, walletId)}
+                          />
+                        </Tooltip>
+                      </Stack>
+                    </CardBody>
+                  </Card>
+                )
               })
-            }}
-            isOpen={isOpen}
-          />
+            }
+            <RevealSecretRecoveryPhraseModal
+              isOpen={isRevealSecretRecoveryPhraseModalOpen}
+              onClose={() => setIsRevealSecretRecoveryPhraseModalOpen(false)}
+              walletId={walletIdToReveal}
+            />
+            <RenameWalletModal
+              isOpen={isRenameWalletModalOpen}
+              onClose={() => setIsRenameWalletModalOpen(false)}
+              walletId={walletIdToRename}
+            />
+            <ConfirmationDialog
+              modalRef={confirmDialogRef}
+              onClose={onClose}
+              body='Are you sure you want to delete this wallet? Make sure you have a copy of the Secret Recovery Phrase before confirming.'
+              onAccept={async () => {
+                await removeWallet(walletIdToDelete!)
+                setWalletIdToDelete(null)
+                toast({
+                  title: 'Wallet successfully removed',
+                  description: 'The wallet was successfully removed!',
+                  status: 'success',
+                  isClosable: true,
+                })
+              }}
+              isOpen={isOpen}
+            />
+          </Stack>
         </CardBody>
       </Card>
     </Center>
