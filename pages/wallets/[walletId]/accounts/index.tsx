@@ -1,4 +1,4 @@
-import { Button, Card, CardBody, CardHeader, Center, Divider, Stack, Table, TableContainer, Tbody, Td, Th, Thead, Tr, useClipboard, useToast, Skeleton, IconButton, Tooltip, useDisclosure } from '@chakra-ui/react'
+import { Button, Card, CardBody, CardHeader, Center, Divider, Stack, Table, TableContainer, Tbody, Td, Th, Thead, Tr, useClipboard, useToast, Skeleton, IconButton, Tooltip, useDisclosure, Heading, Text, Badge } from '@chakra-ui/react'
 import { useWallets } from '../../../../context/WalletsProvider'
 import { useRouter } from 'next/router'
 import { useRef, useState } from 'react'
@@ -19,7 +19,7 @@ export default function Wallets() {
 
   const [isRevealPrivateKeyModalOpen, setIsRevealPrivateKeyModalOpen] = useState(false)
   const [accountIdToReveal, setAccountIdToReveal] = useState('')
-  
+
   const [accountIdToDelete, setAccountIdToDelete] = useState<string | null>(null)
   const confirmDialogRef = useRef(null)
 
@@ -43,7 +43,7 @@ export default function Wallets() {
     setIsRenameAccountModalOpen(true)
   }
 
-  if (isLocked) return <></>
+  if (isLocked || !walletId) return <></>
 
   return (
     <Center>
@@ -51,6 +51,10 @@ export default function Wallets() {
         <CardHeader>
           <Stack spacing={8} direction='row'>
             <BackButton />
+            <Heading size='md'>Accounts for {wallets[walletId as string].name}</Heading>
+          </Stack>
+          <br />
+          <Stack spacing={8} direction='row'>
             <Button colorScheme='blue' onClick={() => router.push({ pathname: '/wallets/[walletId]/accounts/add', query: { walletId } })}>
               Add account
             </Button>
@@ -61,96 +65,84 @@ export default function Wallets() {
         </CardHeader>
         <Divider />
         <CardBody>
-          <TableContainer overflowX='auto'>
-            <Table variant='striped' colorScheme='blue'>
-              <Thead>
-                <Tr>
-                  <Th>Account Name</Th>
-                  <Th>Address</Th>
-                  <Th>Key Path</Th>
-                  <Th>Actions</Th>
-                </Tr>
-              </Thead>
-              <Tbody>
-                {
-                  walletId && wallets[walletId as string] && Object.keys(wallets[walletId as string].accounts).map((accountId) => {
-                    const account = wallets[walletId as string].accounts[accountId]
-                    return (
-                      <Tr key={accountId}>
-                        <Td>
+          <Stack>
+            {
+              walletId && wallets[walletId as string] && Object.keys(wallets[walletId as string].accounts).map((accountId) => {
+                const account = wallets[walletId as string].accounts[accountId]
+                return (
+                  <Card key={accountId}>
+                    <CardBody>
+                      <Stack>
+                        <Heading size='md'>
                           {account.public.name}
-                        </Td>
-                        <Td>
-                          {account.public.address}
-                        </Td>
-                        <Td>
-                          {account.public.keyPath}
-                        </Td>
-                        <Td>
-                          <Stack spacing={4} direction='row'>
-                            <Tooltip
-                              label="reveal Private Key"
-                              placement="top"
-                              hasArrow
-                            >
-                              <IconButton colorScheme='blue' aria-label='reveal Private Key' icon={<FiEye />} onClick={() => revealPrivateKey(account.public.id)} />
-                            </Tooltip>
-                            <Tooltip
-                              label="rename account"
-                              placement="top"
-                              hasArrow
-                            >
-                              <IconButton colorScheme='blue' aria-label='rename account' icon={<FiEdit />} onClick={() => renameAccount(accountId)} />
-                            </Tooltip>
-                            <Tooltip
-                              label="delete account"
-                              placement="top"
-                              hasArrow
-                            >
-                              <IconButton
-                                aria-label='delete account'
-                                colorScheme='red'
-                                icon={<FiTrash />}
-                                onClick={() => handleDeleteClick(accountId)}
-                              />
-                            </Tooltip>
-                          </Stack>
-                        </Td>
-                      </Tr>
-                    )
-                  })
-                }
-              </Tbody>
-            </Table>
-          </TableContainer>
-          <RevealPrivateKeyModal
-            isOpen={isRevealPrivateKeyModalOpen}
-            onClose={() => setIsRevealPrivateKeyModalOpen(false)}
-            walletId={walletId as string}
-            accountId={accountIdToReveal}
-          />
-          <RenameAccountModal
-            isOpen={isRenameAccountModalOpen}
-            onClose={() => setIsRenameAccountModalOpen(false)}
-            walletId={walletId as string}
-            accountId={accountIdToRename}
-          />
-          <ConfirmationDialog
-            modalRef={confirmDialogRef}
-            onClose={onClose}
-            body='Are you sure you want to delete this account? Make sure you have a copy of the Private Key before confirming.'
-            onAccept={async () => {
-              await removeAccount(walletId as string, accountIdToDelete!)
-              setAccountIdToDelete(null)
-              toast({
-                title: 'Account successfully removed',
-                description: 'The account was successfully removed!',
-                status: 'success',
-                isClosable: true,
+                          {' '}
+                          <Badge colorScheme='blue'>{account.public.keyPath}</Badge>
+                        </Heading>
+
+                        <Text>{account.public.address}</Text>
+                        <Stack spacing={4} direction='row'>
+                          <Tooltip
+                            label="reveal Private Key"
+                            placement="top"
+                            hasArrow
+                          >
+                            <IconButton colorScheme='blue' aria-label='reveal Private Key' icon={<FiEye />} onClick={() => revealPrivateKey(account.public.id)} />
+                          </Tooltip>
+                          <Tooltip
+                            label="rename account"
+                            placement="top"
+                            hasArrow
+                          >
+                            <IconButton colorScheme='blue' aria-label='rename account' icon={<FiEdit />} onClick={() => renameAccount(accountId)} />
+                          </Tooltip>
+                          <Tooltip
+                            label="delete account"
+                            placement="top"
+                            hasArrow
+                          >
+                            <IconButton
+                              aria-label='delete account'
+                              colorScheme='red'
+                              icon={<FiTrash />}
+                              onClick={() => handleDeleteClick(accountId)}
+                            />
+                          </Tooltip>
+                        </Stack>
+                      </Stack>
+                    </CardBody>
+                  </Card>
+                )
               })
-            }}
-            isOpen={isOpen}
-          />
+            }
+            <RevealPrivateKeyModal
+              isOpen={isRevealPrivateKeyModalOpen}
+              onClose={() => setIsRevealPrivateKeyModalOpen(false)}
+              walletId={walletId as string}
+              accountId={accountIdToReveal}
+            />
+            <RenameAccountModal
+              isOpen={isRenameAccountModalOpen}
+              onClose={() => setIsRenameAccountModalOpen(false)}
+              walletId={walletId as string}
+              accountId={accountIdToRename}
+            />
+            <ConfirmationDialog
+              modalRef={confirmDialogRef}
+              onClose={onClose}
+              body='Are you sure you want to delete this account? Make sure you have a copy of the Private Key before confirming.'
+              onAccept={async () => {
+                await removeAccount(walletId as string, accountIdToDelete!)
+                setAccountIdToDelete(null)
+                toast({
+                  title: 'Account successfully removed',
+                  description: 'The account was successfully removed!',
+                  status: 'success',
+                  isClosable: true,
+                })
+              }}
+              isOpen={isOpen}
+            />
+          </Stack>
         </CardBody>
       </Card>
     </Center>
