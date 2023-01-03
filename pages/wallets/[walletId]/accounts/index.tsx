@@ -1,4 +1,4 @@
-import { Button, Card, CardBody, CardHeader, Center, Divider, Stack, Table, TableContainer, Tbody, Td, Th, Thead, Tr, useClipboard, useToast, Skeleton, IconButton, Tooltip, useDisclosure, Heading, Text, Badge } from '@chakra-ui/react'
+import { Button, Card, CardBody, CardHeader, Center, Divider, Stack, useToast, IconButton, Tooltip, useDisclosure, Heading, Text, Badge } from '@chakra-ui/react'
 import { useWallets } from '../../../../context/WalletsProvider'
 import { useRouter } from 'next/router'
 import { useRef, useState } from 'react'
