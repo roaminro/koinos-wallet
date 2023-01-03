@@ -135,14 +135,15 @@ export default function WalletCreator({ importingSecretRecoveryPhrase = false }:
 
   return (
     <Center>
-      <Card maxW='sm'>
+      <Card width='100%'>
         <CardHeader>
-          <Heading size='md'>
+          <Stack spacing={8} direction='row'>
             <BackButton />
-            {
-              importingSecretRecoveryPhrase ? 'Import a wallet' : 'Create a new wallet'
-            }
-          </Heading>
+            <Heading size='md'>
+              {
+                importingSecretRecoveryPhrase ? 'Import a wallet' : 'Create a new wallet'
+              }</Heading>
+          </Stack>
         </CardHeader>
         <Divider />
         <CardBody>

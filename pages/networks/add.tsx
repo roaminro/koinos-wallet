@@ -190,11 +190,12 @@ export default function Add() {
 
   return (
     <Center>
-      <Card maxW='sm'>
+      <Card width='100%'>
         <CardHeader>
-          <Heading size='md'>
-            <BackButton /> Add network
-          </Heading>
+          <Stack spacing={8} direction='row'>
+            <BackButton />
+            <Heading size='md'>Add network</Heading>
+          </Stack>
         </CardHeader>
         <Divider />
         <CardBody>

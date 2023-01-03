@@ -21,7 +21,6 @@ type AppPropsWithLayout = AppProps & {
 }
 
 export default function App({ Component, pageProps }: AppPropsWithLayout) {
-
   const getLayout = Component.getLayout ?? ((page) => <Sidebar>{page}</Sidebar>)
 
   return (
@@ -36,6 +35,7 @@ export default function App({ Component, pageProps }: AppPropsWithLayout) {
                   name="viewport"
                   content="width=device-width, height=device-height, initial-scale=1.0, minimum-scale=1.0"
                 />
+                <link rel='manifest' href='/manifest.json' />
               </Head>
               <RouteGuard>
                 {

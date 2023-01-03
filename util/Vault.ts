@@ -2,6 +2,7 @@ import { decrypt, encrypt } from '@metamask/browser-passworder'
 import { Signer as KoilibSigner } from 'koilib'
 import { TransactionJson } from 'koilib/lib/interface'
 import HDKoinos from './HDKoinos'
+import { randomUUID } from './Utils'
 
 export interface Signer {
   public: {
@@ -198,7 +199,7 @@ export class Vault {
   addWallet(walletName: string, secretRecoveryPhrase?: string) {
     this.checkVaultUnlocked()
 
-    const walletId = crypto.randomUUID()
+    const walletId = randomUUID()
 
     this.vault[walletId] = {
       id: walletId,
@@ -259,7 +260,7 @@ export class Vault {
 
     const hdKoinos = new HDKoinos(this.vault[walletId].secretRecoveryPhrase!)
     const account = hdKoinos.deriveKeyAccount(accountKeyIndex, accountName)
-    const accountId = crypto.randomUUID()
+    const accountId = randomUUID()
 
     this.vault[walletId].accounts[accountId] = {
       public: {
@@ -326,7 +327,7 @@ export class Vault {
       throw new Error(`no wallet with id ${walletId}`)
     }
 
-    const accountId = crypto.randomUUID()
+    const accountId = randomUUID()
 
     this.vault[walletId].accounts[accountId] = {
       public: {

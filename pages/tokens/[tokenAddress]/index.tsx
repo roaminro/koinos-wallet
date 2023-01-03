@@ -1,7 +1,7 @@
 import {
   FiRepeat,
 } from 'react-icons/fi'
-import { Stack, Card, CardHeader, Heading, Divider, CardBody, FormControl, FormLabel, Input, FormHelperText, Button, useToast, IconButton, NumberDecrementStepper, NumberIncrementStepper, NumberInput, NumberInputField, NumberInputStepper, InputGroup, InputRightElement, Tooltip, Center } from '@chakra-ui/react'
+import { Text, Stack, Card, CardHeader, Heading, Divider, CardBody, FormControl, FormLabel, Input, FormHelperText, Button, useToast, IconButton, NumberDecrementStepper, NumberIncrementStepper, NumberInput, NumberInputField, NumberInputStepper, InputGroup, InputRightElement, Tooltip, Center } from '@chakra-ui/react'
 import { Contract, Provider, utils } from 'koilib'
 import { ChangeEvent, useEffect, useState } from 'react'
 import { useRouter } from 'next/router'
@@ -140,12 +140,12 @@ export default function Edit() {
 
   return (
     <Center>
-      <Card>
+      <Card width='100%'>
         <CardHeader>
-          <Heading size='md'>
+          <Stack spacing={8} direction='row'>
             <BackButton />
-            Edit token
-          </Heading>
+            <Heading size='md'>Edit token</Heading>
+          </Stack>
         </CardHeader>
         <Divider />
         <CardBody>
