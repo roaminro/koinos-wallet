@@ -69,7 +69,7 @@ export default function Wallets() {
               Object.keys(wallets).map((walletId) => {
                 const wallet = wallets[walletId]
                 return (
-                  <Card key={walletId}>
+                  <Card key={walletId} variant='outline'>
                     <CardBody cursor='pointer'
                       onClick={() => router.push({ pathname: '/wallets/[walletId]/accounts', query: { walletId } })}
                     >

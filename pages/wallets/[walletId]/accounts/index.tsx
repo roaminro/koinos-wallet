@@ -70,7 +70,7 @@ export default function Wallets() {
               walletId && wallets[walletId as string] && Object.keys(wallets[walletId as string].accounts).map((accountId) => {
                 const account = wallets[walletId as string].accounts[accountId]
                 return (
-                  <Card key={accountId}>
+                  <Card key={accountId} variant='outline'>
                     <CardBody>
                       <Stack>
                         <Heading size='md'>
