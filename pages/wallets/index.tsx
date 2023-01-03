@@ -1,18 +1,31 @@
-import { Button, Card, CardBody, CardHeader, Center, Divider, Stack, Table, TableContainer, Tbody, Td, Th, Thead, Tr, useClipboard, useToast, Skeleton, IconButton, Tooltip } from '@chakra-ui/react'
+import { Button, Card, CardBody, CardHeader, Center, Divider, Stack, Table, TableContainer, Tbody, Td, Th, Thead, Tr, useToast, IconButton, Tooltip, useDisclosure } from '@chakra-ui/react'
 import { useWallets } from '../../context/WalletsProvider'
 import { useRouter } from 'next/router'
 import NextLink from 'next/link'
 import RevealSecretRecoveryPhraseModal from '../../components/RevealSecretRecoveryPhraseModal'
-import { useState } from 'react'
-import { FiEye, FiUsers } from 'react-icons/fi'
+import { useRef, useState } from 'react'
+import { FiEye, FiTrash, FiUsers } from 'react-icons/fi'
 import { BackButton } from '../../components/BackButton'
+import { ConfirmationDialog } from '../../components/ConfirmationDialog'
 
 
 export default function Wallets() {
   const router = useRouter()
-  const { wallets } = useWallets()
+  const toast = useToast()
+
+  const { isOpen, onOpen, onClose } = useDisclosure()
+
+  const { wallets, removeWallet } = useWallets()
+
   const [isRevealSecretRecoveryPhraseModalOpen, setIsRevealSecretRecoveryPhraseModalOpen] = useState(false)
   const [walletIdToReveal, setWalletIdToReveal] = useState('')
+  const [walletIdToDelete, setWalletIdToDelete] = useState<string | null>(null)
+  const confirmDialogRef = useRef(null)
+
+  const handleDeleteClick = (walletId: string) => {
+    setWalletIdToDelete(walletId)
+    onOpen()
+  }
 
   const revealSecretRecoveryPhrase = (walletId: string) => {
     setWalletIdToReveal(walletId)
@@ -49,7 +62,7 @@ export default function Wallets() {
                     const wallet = wallets[walletId]
                     return (
                       <Tr key={walletId}>
-                        <Td onClick={() => router.push({ pathname: '/wallets/[walletId]/accounts', query: { walletId } })}>
+                        <Td cursor='pointer' onClick={() => router.push({ pathname: '/wallets/[walletId]/accounts', query: { walletId } })}>
                           <NextLink href={{
                             pathname: '/wallets/[walletId]/accounts',
                             query: { walletId },
@@ -62,14 +75,26 @@ export default function Wallets() {
                               placement="top"
                               hasArrow
                             >
-                              <IconButton aria-label='manage accounts' icon={<FiUsers />} onClick={() => router.push({ pathname: '/wallets/[walletId]/accounts', query: { walletId } })} />
+                              <IconButton colorScheme='blue' aria-label='manage accounts' icon={<FiUsers />} onClick={() => router.push({ pathname: '/wallets/[walletId]/accounts', query: { walletId } })} />
                             </Tooltip>
                             <Tooltip
                               label="reveal Secret Recovery Phrase"
                               placement="top"
                               hasArrow
                             >
-                              <IconButton aria-label='reveal Secret Recovery Phrase' icon={<FiEye />} onClick={() => revealSecretRecoveryPhrase(wallet.id)} />
+                              <IconButton colorScheme='blue' aria-label='reveal Secret Recovery Phrase' icon={<FiEye />} onClick={() => revealSecretRecoveryPhrase(wallet.id)} />
+                            </Tooltip>
+                            <Tooltip
+                              label="delete wallet"
+                              placement="top"
+                              hasArrow
+                            >
+                              <IconButton
+                                aria-label='delete wallet'
+                                colorScheme='red'
+                                icon={<FiTrash />}
+                                onClick={() => handleDeleteClick(walletId)}
+                              />
                             </Tooltip>
                           </Stack>
                         </Td>
@@ -84,6 +109,22 @@ export default function Wallets() {
             isOpen={isRevealSecretRecoveryPhraseModalOpen}
             onClose={() => setIsRevealSecretRecoveryPhraseModalOpen(false)}
             walletId={walletIdToReveal}
+          />
+          <ConfirmationDialog
+            modalRef={confirmDialogRef}
+            onClose={onClose}
+            body='Are you sure you want to delete this wallet? Make sure you have a copy of the Secret Recovery Phrase before confirming.'
+            onAccept={async () => {
+              await removeWallet(walletIdToDelete!)
+              setWalletIdToDelete(null)
+              toast({
+                title: 'Wallet successfully removed',
+                description: 'The wallet was successfully removed!',
+                status: 'success',
+                isClosable: true,
+              })
+            }}
+            isOpen={isOpen}
           />
         </CardBody>
       </Card>

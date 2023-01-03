@@ -1,20 +1,32 @@
-import { Button, Card, CardBody, CardHeader, Center, Divider, Stack, Table, TableContainer, Tbody, Td, Th, Thead, Tr, useClipboard, useToast, Skeleton, IconButton, Tooltip } from '@chakra-ui/react'
+import { Button, Card, CardBody, CardHeader, Center, Divider, Stack, Table, TableContainer, Tbody, Td, Th, Thead, Tr, useClipboard, useToast, Skeleton, IconButton, Tooltip, useDisclosure } from '@chakra-ui/react'
 import { useWallets } from '../../../../context/WalletsProvider'
 import { useRouter } from 'next/router'
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import RevealPrivateKeyModal from '../../../../components/RevealPrivateKeyModal'
-import { FiEye } from 'react-icons/fi'
+import { FiEye, FiTrash } from 'react-icons/fi'
 import { BackButton } from '../../../../components/BackButton'
+import { ConfirmationDialog } from '../../../../components/ConfirmationDialog'
 
 
 export default function Wallets() {
   const router = useRouter()
-  const { wallets, isLocked } = useWallets()
+  const toast = useToast()
+
+  const { isOpen, onOpen, onClose } = useDisclosure()
+
+  const { wallets, isLocked, removeAccount } = useWallets()
 
   const [isRevealPrivateKeyModalOpen, setIsRevealPrivateKeyModalOpen] = useState(false)
   const [accountIdToReveal, setAccountIdToReveal] = useState('')
+  const [accountIdToDelete, setAccountIdToDelete] = useState<string | null>(null)
+  const confirmDialogRef = useRef(null)
 
   const { walletId } = router.query
+
+  const handleDeleteClick = (accountId: string) => {
+    setAccountIdToDelete(accountId)
+    onOpen()
+  }
 
   const revealPrivateKey = (accountId: string) => {
     setAccountIdToReveal(accountId)
@@ -71,7 +83,19 @@ export default function Wallets() {
                               placement="top"
                               hasArrow
                             >
-                              <IconButton aria-label='reveal Private Key' icon={<FiEye />} onClick={() => revealPrivateKey(account.public.id)} />
+                              <IconButton colorScheme='blue' aria-label='reveal Private Key' icon={<FiEye />} onClick={() => revealPrivateKey(account.public.id)} />
+                            </Tooltip>
+                            <Tooltip
+                              label="delete account"
+                              placement="top"
+                              hasArrow
+                            >
+                              <IconButton
+                                aria-label='delete account'
+                                colorScheme='red'
+                                icon={<FiTrash />}
+                                onClick={() => handleDeleteClick(accountId)}
+                              />
                             </Tooltip>
                           </Stack>
                         </Td>
@@ -87,6 +111,22 @@ export default function Wallets() {
             onClose={() => setIsRevealPrivateKeyModalOpen(false)}
             walletId={walletId as string}
             accountId={accountIdToReveal}
+          />
+          <ConfirmationDialog
+            modalRef={confirmDialogRef}
+            onClose={onClose}
+            body='Are you sure you want to delete this account? Make sure you have a copy of the Private Key before confirming.'
+            onAccept={async () => {
+              await removeAccount(walletId as string, accountIdToDelete!)
+              setAccountIdToDelete(null)
+              toast({
+                title: 'Account successfully removed',
+                description: 'The account was successfully removed!',
+                status: 'success',
+                isClosable: true,
+              })
+            }}
+            isOpen={isOpen}
           />
         </CardBody>
       </Card>

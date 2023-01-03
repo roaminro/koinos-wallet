@@ -392,7 +392,8 @@ export const WalletsProvider = ({
       await vaultMessenger.current!.sendRequest(VAULT_SERVICE_WORKER_ID, {
         command: 'removeAccount',
         arguments: {
-          walletId
+          walletId,
+          accountId
         } as RemoveAccountArguments
       })
   
