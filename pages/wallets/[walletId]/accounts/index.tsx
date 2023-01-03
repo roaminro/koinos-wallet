@@ -3,9 +3,10 @@ import { useWallets } from '../../../../context/WalletsProvider'
 import { useRouter } from 'next/router'
 import { useRef, useState } from 'react'
 import RevealPrivateKeyModal from '../../../../components/RevealPrivateKeyModal'
-import { FiEye, FiTrash } from 'react-icons/fi'
+import { FiEdit, FiEye, FiTrash } from 'react-icons/fi'
 import { BackButton } from '../../../../components/BackButton'
 import { ConfirmationDialog } from '../../../../components/ConfirmationDialog'
+import RenameAccountModal from '../../../../components/RenameAccountModal'
 
 
 export default function Wallets() {
@@ -18,8 +19,12 @@ export default function Wallets() {
 
   const [isRevealPrivateKeyModalOpen, setIsRevealPrivateKeyModalOpen] = useState(false)
   const [accountIdToReveal, setAccountIdToReveal] = useState('')
+  
   const [accountIdToDelete, setAccountIdToDelete] = useState<string | null>(null)
   const confirmDialogRef = useRef(null)
+
+  const [isRenameAccountModalOpen, setIsRenameAccountModalOpen] = useState(false)
+  const [accountIdToRename, setAccountIdToRename] = useState('')
 
   const { walletId } = router.query
 
@@ -31,6 +36,11 @@ export default function Wallets() {
   const revealPrivateKey = (accountId: string) => {
     setAccountIdToReveal(accountId)
     setIsRevealPrivateKeyModalOpen(true)
+  }
+
+  const renameAccount = (accountId: string) => {
+    setAccountIdToRename(accountId)
+    setIsRenameAccountModalOpen(true)
   }
 
   if (isLocked) return <></>
@@ -86,6 +96,13 @@ export default function Wallets() {
                               <IconButton colorScheme='blue' aria-label='reveal Private Key' icon={<FiEye />} onClick={() => revealPrivateKey(account.public.id)} />
                             </Tooltip>
                             <Tooltip
+                              label="rename account"
+                              placement="top"
+                              hasArrow
+                            >
+                              <IconButton colorScheme='blue' aria-label='rename account' icon={<FiEdit />} onClick={() => renameAccount(accountId)} />
+                            </Tooltip>
+                            <Tooltip
                               label="delete account"
                               placement="top"
                               hasArrow
@@ -111,6 +128,12 @@ export default function Wallets() {
             onClose={() => setIsRevealPrivateKeyModalOpen(false)}
             walletId={walletId as string}
             accountId={accountIdToReveal}
+          />
+          <RenameAccountModal
+            isOpen={isRenameAccountModalOpen}
+            onClose={() => setIsRenameAccountModalOpen(false)}
+            walletId={walletId as string}
+            accountId={accountIdToRename}
           />
           <ConfirmationDialog
             modalRef={confirmDialogRef}

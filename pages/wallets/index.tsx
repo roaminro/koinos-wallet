@@ -4,9 +4,10 @@ import { useRouter } from 'next/router'
 import NextLink from 'next/link'
 import RevealSecretRecoveryPhraseModal from '../../components/RevealSecretRecoveryPhraseModal'
 import { useRef, useState } from 'react'
-import { FiEye, FiTrash, FiUsers } from 'react-icons/fi'
+import { FiEdit, FiEye, FiTrash, FiUsers } from 'react-icons/fi'
 import { BackButton } from '../../components/BackButton'
 import { ConfirmationDialog } from '../../components/ConfirmationDialog'
+import RenameWalletModal from '../../components/RenameWalletModal'
 
 
 export default function Wallets() {
@@ -19,8 +20,12 @@ export default function Wallets() {
 
   const [isRevealSecretRecoveryPhraseModalOpen, setIsRevealSecretRecoveryPhraseModalOpen] = useState(false)
   const [walletIdToReveal, setWalletIdToReveal] = useState('')
+
   const [walletIdToDelete, setWalletIdToDelete] = useState<string | null>(null)
   const confirmDialogRef = useRef(null)
+
+  const [isRenameWalletModalOpen, setIsRenameWalletModalOpen] = useState(false)
+  const [walletIdToRename, setWalletIdToRename] = useState('')
 
   const handleDeleteClick = (walletId: string) => {
     setWalletIdToDelete(walletId)
@@ -30,6 +35,11 @@ export default function Wallets() {
   const revealSecretRecoveryPhrase = (walletId: string) => {
     setWalletIdToReveal(walletId)
     setIsRevealSecretRecoveryPhraseModalOpen(true)
+  }
+
+  const renameWallet = (walletId: string) => {
+    setWalletIdToRename(walletId)
+    setIsRenameWalletModalOpen(true)
   }
 
   return (
@@ -85,6 +95,13 @@ export default function Wallets() {
                               <IconButton colorScheme='blue' aria-label='reveal Secret Recovery Phrase' icon={<FiEye />} onClick={() => revealSecretRecoveryPhrase(wallet.id)} />
                             </Tooltip>
                             <Tooltip
+                              label="rename wallet"
+                              placement="top"
+                              hasArrow
+                            >
+                              <IconButton colorScheme='blue' aria-label='rename wallet' icon={<FiEdit />} onClick={() => renameWallet(wallet.id)} />
+                            </Tooltip>
+                            <Tooltip
                               label="delete wallet"
                               placement="top"
                               hasArrow
@@ -109,6 +126,11 @@ export default function Wallets() {
             isOpen={isRevealSecretRecoveryPhraseModalOpen}
             onClose={() => setIsRevealSecretRecoveryPhraseModalOpen(false)}
             walletId={walletIdToReveal}
+          />
+          <RenameWalletModal
+            isOpen={isRenameWalletModalOpen}
+            onClose={() => setIsRenameWalletModalOpen(false)}
+            walletId={walletIdToRename}
           />
           <ConfirmationDialog
             modalRef={confirmDialogRef}

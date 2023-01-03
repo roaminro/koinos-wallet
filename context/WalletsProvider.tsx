@@ -362,6 +362,10 @@ export const WalletsProvider = ({
       // update state
       setWallets(newWallets)
       saveVaultToLocalStorage()
+
+      if (selectedAccount?.walletId === walletId) {
+        selectAccount(walletId, newWalletName, selectedAccount.account)
+      }
     }
   }
 
@@ -423,6 +427,10 @@ export const WalletsProvider = ({
       // update state
       setWallets(newWallets)
       saveVaultToLocalStorage()
+
+      if (selectedAccount?.walletId === walletId && selectedAccount.account.public.id === accountId) {
+        selectAccount(walletId, selectedAccount.walletName, wallets[walletId].accounts[accountId])
+      }
     }
   }
 
