@@ -62,7 +62,6 @@ export default function SendTokensModal({ isOpen, onClose }: SendTokensModalProp
         const token = tokens[tokenAddress]
         if (token.chainId === selectedNetwork.chainId) {
           tkns[token.address] = token
-          break
         }
       }
 
