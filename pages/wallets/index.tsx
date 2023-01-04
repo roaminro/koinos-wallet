@@ -1,35 +1,35 @@
-import { Button, Card, CardBody, CardHeader, Center, Divider, Stack, useToast, IconButton, Tooltip, useDisclosure, Heading, Text } from '@chakra-ui/react'
+import { Button, Card, CardBody, CardHeader, Center, Divider, Stack, useToast, IconButton, Tooltip, Heading, Text } from '@chakra-ui/react'
 import { useWallets } from '../../context/WalletsProvider'
 import { useRouter } from 'next/router'
 import RevealSecretRecoveryPhraseModal from '../../components/RevealSecretRecoveryPhraseModal'
-import { useRef, useState, MouseEvent } from 'react'
+import { MouseEvent } from 'react'
 import { FiEdit, FiEye, FiTrash, FiUsers } from 'react-icons/fi'
 import { BackButton } from '../../components/BackButton'
-import { ConfirmationDialog } from '../../components/ConfirmationDialog'
 import RenameWalletModal from '../../components/RenameWalletModal'
 import NiceModal from '@ebay/nice-modal-react'
+import ConfirmationDialog from '../../components/ConfirmationDialog'
 
 export default function Wallets() {
-  const router = useRouter()
   const toast = useToast()
-
-  const { isOpen, onOpen, onClose } = useDisclosure()
+  const router = useRouter()
 
   const { wallets, removeWallet } = useWallets()
 
-  const [isRevealSecretRecoveryPhraseModalOpen, setIsRevealSecretRecoveryPhraseModalOpen] = useState(false)
-  const [walletIdToReveal, setWalletIdToReveal] = useState('')
-
-  const [walletIdToDelete, setWalletIdToDelete] = useState<string | null>(null)
-  const confirmDialogRef = useRef(null)
-
-  const [isRenameWalletModalOpen, setIsRenameWalletModalOpen] = useState(false)
-  const [walletIdToRename, setWalletIdToRename] = useState('')
-
   const handleDeleteClick = (e: MouseEvent, walletId: string) => {
     e.stopPropagation()
-    setWalletIdToDelete(walletId)
-    onOpen()
+    
+    NiceModal.show(ConfirmationDialog, {
+      body: 'Are you sure you want to delete this wallet? Make sure you have a copy of the Secret Recovery Phrase before confirming.',
+      onAccept: async () => {
+        await removeWallet(walletId)
+        toast({
+          title: 'Wallet successfully removed',
+          description: 'The wallet was successfully removed!',
+          status: 'success',
+          isClosable: true,
+        })
+      }
+    })
   }
 
   const revealSecretRecoveryPhrase = (e: MouseEvent, walletId: string) => {
@@ -120,22 +120,6 @@ export default function Wallets() {
                 )
               })
             }
-            <ConfirmationDialog
-              modalRef={confirmDialogRef}
-              onClose={onClose}
-              body='Are you sure you want to delete this wallet? Make sure you have a copy of the Secret Recovery Phrase before confirming.'
-              onAccept={async () => {
-                await removeWallet(walletIdToDelete!)
-                setWalletIdToDelete(null)
-                toast({
-                  title: 'Wallet successfully removed',
-                  description: 'The wallet was successfully removed!',
-                  status: 'success',
-                  isClosable: true,
-                })
-              }}
-              isOpen={isOpen}
-            />
           </Stack>
         </CardBody>
       </Card>

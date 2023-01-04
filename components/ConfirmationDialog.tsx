@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useRef } from 'react'
 import {
   AlertDialog,
   AlertDialogOverlay,
@@ -8,18 +8,15 @@ import {
   AlertDialogHeader,
   Button
 } from '@chakra-ui/react'
-import { FocusableElement } from '@chakra-ui/utils'
+import NiceModal, { useModal } from '@ebay/nice-modal-react'
 
 interface ConfirmationDialogProps {
-  title?: string;
-  body?: string;
-  declineText?: string | null;
-  onDecline?: () => void;
-  acceptText?: string;
-  onAccept?: () => void;
-  isOpen: boolean;
-  modalRef: React.RefObject<FocusableElement>;
-  onClose: () => void;
+  title?: string
+  body?: string
+  declineText?: string | null
+  onDecline?: () => void
+  acceptText?: string
+  onAccept?: () => void
 }
 
 const mapText = (text: string): JSX.Element[] => {
@@ -34,23 +31,24 @@ const mapText = (text: string): JSX.Element[] => {
   })
 }
 
-export const ConfirmationDialog = ({
+export default NiceModal.create(({
   title = 'Are you sure?',
   body = 'Are you sure you want to perform this action?',
   declineText = 'No',
   acceptText = 'Yes',
   onDecline,
-  onAccept,
-  isOpen,
-  modalRef,
-  onClose
+  onAccept
 }: ConfirmationDialogProps): JSX.Element => {
+  const modal = useModal()
+  const modalRef = useRef(null)
+
   const bodyTxt = mapText(body)
+
   return (
     <AlertDialog
-      isOpen={isOpen}
+      isOpen={modal.visible}
       leastDestructiveRef={modalRef}
-      onClose={() => onClose()}
+      onClose={modal.hide}
     >
       <AlertDialogOverlay>
         <AlertDialogContent>
@@ -69,7 +67,7 @@ export const ConfirmationDialog = ({
               ref={modalRef as React.LegacyRef<HTMLButtonElement> | undefined}
               onClick={() => {
                 if (onAccept) onAccept()
-                onClose()
+                modal.hide()
               }}
             >
               {acceptText}
@@ -80,7 +78,7 @@ export const ConfirmationDialog = ({
                   ref={modalRef as React.LegacyRef<HTMLButtonElement> | undefined}
                   onClick={() => {
                     if (onDecline) onDecline()
-                    onClose()
+                    modal.hide()
                   }}
                 >
                   {declineText}
@@ -92,4 +90,4 @@ export const ConfirmationDialog = ({
       </AlertDialogOverlay>
     </AlertDialog>
   )
-}
+})

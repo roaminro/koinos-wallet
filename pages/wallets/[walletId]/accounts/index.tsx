@@ -2,29 +2,33 @@ import { Button, Card, CardBody, CardHeader, Center, Divider, Stack, useToast, I
 import NiceModal from '@ebay/nice-modal-react'
 import { useWallets } from '../../../../context/WalletsProvider'
 import { useRouter } from 'next/router'
-import { useRef, useState } from 'react'
 import RevealPrivateKeyModal from '../../../../components/RevealPrivateKeyModal'
 import RenameAccountModal from '../../../../components/RenameAccountModal'
 import { FiEdit, FiEye, FiTrash } from 'react-icons/fi'
 import { BackButton } from '../../../../components/BackButton'
-import { ConfirmationDialog } from '../../../../components/ConfirmationDialog'
+import ConfirmationDialog from '../../../../components/ConfirmationDialog'
 
 export default function Wallets() {
   const router = useRouter()
   const toast = useToast()
 
-  const { isOpen, onOpen, onClose } = useDisclosure()
-
   const { wallets, isLocked, removeAccount } = useWallets()
-
-  const [accountIdToDelete, setAccountIdToDelete] = useState<string | null>(null)
-  const confirmDialogRef = useRef(null)
 
   const { walletId } = router.query
 
   const handleDeleteClick = (accountId: string) => {
-    setAccountIdToDelete(accountId)
-    onOpen()
+    NiceModal.show(ConfirmationDialog, {
+      body: 'Are you sure you want to delete this account? Make sure you have a copy of the Private Key before confirming.',
+      onAccept: async () => {
+        await removeAccount(walletId as string, accountId)
+        toast({
+          title: 'Account successfully removed',
+          description: 'The account was successfully removed!',
+          status: 'success',
+          isClosable: true,
+        })
+      }
+    })
   }
 
   const revealPrivateKey = (accountId: string) => {
@@ -106,22 +110,6 @@ export default function Wallets() {
                 )
               })
             }
-            <ConfirmationDialog
-              modalRef={confirmDialogRef}
-              onClose={onClose}
-              body='Are you sure you want to delete this account? Make sure you have a copy of the Private Key before confirming.'
-              onAccept={async () => {
-                await removeAccount(walletId as string, accountIdToDelete!)
-                setAccountIdToDelete(null)
-                toast({
-                  title: 'Account successfully removed',
-                  description: 'The account was successfully removed!',
-                  status: 'success',
-                  isClosable: true,
-                })
-              }}
-              isOpen={isOpen}
-            />
           </Stack>
         </CardBody>
       </Card>

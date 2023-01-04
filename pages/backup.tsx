@@ -1,18 +1,14 @@
-import { Stack, Card, CardHeader, Heading, Divider, CardBody, FormControl, FormLabel, Input, FormHelperText, FormErrorMessage, Button, useToast, useDisclosure, Text } from '@chakra-ui/react'
-import { useRouter } from 'next/router'
-import { ChangeEvent, useRef, useState } from 'react'
+import { Stack, Card, CardHeader, Heading, Divider, CardBody, FormControl, FormLabel, Input, FormHelperText, FormErrorMessage, Button, useToast, Text } from '@chakra-ui/react'
+import { ChangeEvent, useState } from 'react'
+import NiceModal from '@ebay/nice-modal-react'
 import { useWallets } from '../context/WalletsProvider'
 import { NETWORKS_KEY, PERMISSIONS_KEY, SELECTED_ACCOUNT_KEY, SELECTED_NETWORK_KEY, SETTINGS_KEY, TOKENS_KEY, VAULT_KEY } from '../util/Constants'
 import { generateString, saveFile } from '../util/Utils'
-import { ConfirmationDialog } from '../components/ConfirmationDialog'
+import ConfirmationDialog from '../components/ConfirmationDialog'
 import { BackButton } from '../components/BackButton'
-
 
 export default function Vault() {
   const toast = useToast()
-  const { isOpen, onOpen, onClose } = useDisclosure()
-
-  const confirmDialogRef = useRef(null)
 
   const { isVaultSetup, unlock, tryDecrypt } = useWallets()
 
@@ -31,7 +27,6 @@ export default function Vault() {
       setBackup(await backupFile.text())
     }
   }
-
 
   const generateBackup = async () => {
     setIsLoading(true)
@@ -134,7 +129,12 @@ export default function Vault() {
 
   const restoreBackup = async () => {
     if (isVaultSetup) {
-      onOpen()
+      NiceModal.show(ConfirmationDialog, {
+        body: 'Restoring a backup vault will destroy the current wallets, accounts, tokens, networks and settings, are you sure you want to restore this backup?',
+        onAccept: async () => {
+          await restoreNewBackup()
+        }
+      })
     } else {
       await restoreNewBackup()
     }
@@ -205,15 +205,6 @@ export default function Vault() {
               Restore backup
             </Button>
           </Stack>
-          <ConfirmationDialog
-            modalRef={confirmDialogRef}
-            body='Restoring a backup vault will destroy the current wallets, accounts, tokens, networks and settings, are you sure you want to restore this backup?'
-            onClose={onClose}
-            onAccept={async () => {
-              await restoreNewBackup()
-            }}
-            isOpen={isOpen}
-          />
         </CardBody>
       </Card>
     </Stack>

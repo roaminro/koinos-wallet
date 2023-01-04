@@ -1,24 +1,33 @@
-import { Text, Button, Card, CardBody, CardHeader, Center, Divider, Stack, useToast, IconButton, Tooltip, useDisclosure, Heading } from '@chakra-ui/react'
+import { Text, Button, Card, CardBody, CardHeader, Center, Divider, Stack, useToast, IconButton, Tooltip, Heading } from '@chakra-ui/react'
 import { useRouter } from 'next/router'
 import { FiEdit, FiTrash } from 'react-icons/fi'
 import { BackButton } from '../../components/BackButton'
-import { ConfirmationDialog } from '../../components/ConfirmationDialog'
-import { useRef, useState, MouseEvent } from 'react'
+import ConfirmationDialog from '../../components/ConfirmationDialog'
+import { MouseEvent } from 'react'
 import { Network, useNetworks } from '../../context/NetworksProvider'
+import NiceModal from '@ebay/nice-modal-react'
 
 export default function Networks() {
   const toast = useToast()
   const router = useRouter()
-  const { isOpen, onOpen, onClose } = useDisclosure()
 
   const { networks, removeNetwork } = useNetworks()
-  const confirmDialogRef = useRef(null)
-  const [networkToDelete, setNetworkToDelete] = useState<Network | null>(null)
 
   const handleDeleteClick = (e: MouseEvent, network: Network) => {
     e.stopPropagation()
-    setNetworkToDelete(network)
-    onOpen()
+    
+    NiceModal.show(ConfirmationDialog, {
+      body: 'Are you sure you want to delete this network?',
+      onAccept: async () => {
+        removeNetwork(network)
+        toast({
+          title: 'Network successfully removed',
+          description: 'The network was successfully removed!',
+          status: 'success',
+          isClosable: true,
+        })
+      }
+    })
   }
 
   return (
@@ -87,22 +96,6 @@ export default function Networks() {
                 )
               })
             }
-            <ConfirmationDialog
-              modalRef={confirmDialogRef}
-              onClose={onClose}
-              body='Are you sure you want to delete this network?'
-              onAccept={() => {
-                removeNetwork(networkToDelete!)
-                setNetworkToDelete(null)
-                toast({
-                  title: 'Network successfully removed',
-                  description: 'The network was successfully removed!',
-                  status: 'success',
-                  isClosable: true,
-                })
-              }}
-              isOpen={isOpen}
-            />
           </Stack>
         </CardBody>
       </Card>

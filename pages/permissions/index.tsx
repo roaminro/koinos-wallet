@@ -1,24 +1,33 @@
-import { Card, CardBody, CardHeader, Center, Divider, Stack, useToast, IconButton, Tooltip, useDisclosure, Heading } from '@chakra-ui/react'
+import { Card, CardBody, CardHeader, Center, Divider, Stack, useToast, IconButton, Tooltip, Heading } from '@chakra-ui/react'
 import { useRouter } from 'next/router'
 import { FiEye, FiTrash } from 'react-icons/fi'
 import { BackButton } from '../../components/BackButton'
-import { ConfirmationDialog } from '../../components/ConfirmationDialog'
-import { useRef, useState, MouseEvent } from 'react'
+import ConfirmationDialog from '../../components/ConfirmationDialog'
+import { MouseEvent } from 'react'
 import { AppPermissions, usePermissions } from '../../context/PermissionsProvider'
+import NiceModal from '@ebay/nice-modal-react'
 
 export default function Networks() {
   const toast = useToast()
   const router = useRouter()
-  const { isOpen, onOpen, onClose } = useDisclosure()
 
   const { permissions, removeAppPermissions } = usePermissions()
-  const confirmDialogRef = useRef(null)
-  const [appPermissionsToDelete, setAppPermissionsToDelete] = useState<AppPermissions | null>(null)
 
   const handleDeleteClick = (e: MouseEvent, appPermissions: AppPermissions) => {
     e.stopPropagation()
-    setAppPermissionsToDelete(appPermissions)
-    onOpen()
+    
+    NiceModal.show(ConfirmationDialog, {
+      body: 'Are you sure you want to revoke the permissions for this app?',
+      onAccept: async () => {
+        removeAppPermissions(appPermissions)
+        toast({
+          title: 'Permissions successfully revoked',
+          description: 'The permissions were successfully revoked!',
+          status: 'success',
+          isClosable: true,
+        })
+      }
+    })
   }
 
   return (
@@ -80,22 +89,6 @@ export default function Networks() {
                 )
               })
             }
-            <ConfirmationDialog
-              modalRef={confirmDialogRef}
-              onClose={onClose}
-              body='Are you sure you want to revoke the permissions for this app?'
-              onAccept={() => {
-                removeAppPermissions(appPermissionsToDelete!)
-                setAppPermissionsToDelete(null)
-                toast({
-                  title: 'Permissions successfully revoked',
-                  description: 'The permissions were successfully revoked!',
-                  status: 'success',
-                  isClosable: true,
-                })
-              }}
-              isOpen={isOpen}
-            />
           </Stack>
         </CardBody>
       </Card>
