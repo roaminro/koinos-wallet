@@ -1,4 +1,4 @@
-import { Button, Card, CardBody, CardHeader, Center, Divider, Stack, useToast, IconButton, Tooltip, Heading, Text } from '@chakra-ui/react'
+import { Button, Card, CardBody, CardHeader, Center, Divider, Stack, useToast, IconButton, Tooltip, Heading, Text, HStack, VStack } from '@chakra-ui/react'
 import { useWallets } from '../../context/WalletsProvider'
 import { useRouter } from 'next/router'
 import RevealSecretRecoveryPhraseModal from '../../components/RevealSecretRecoveryPhraseModal'
@@ -17,7 +17,7 @@ export default function Wallets() {
 
   const handleDeleteClick = (e: MouseEvent, walletId: string) => {
     e.stopPropagation()
-    
+
     NiceModal.show(ConfirmationDialog, {
       body: 'Are you sure you want to delete this wallet? Make sure you have a copy of the Secret Recovery Phrase before confirming.',
       onAccept: async () => {
@@ -71,13 +71,15 @@ export default function Wallets() {
                     <CardBody cursor='pointer'
                       onClick={() => router.push({ pathname: '/wallets/[walletId]/accounts', query: { walletId } })}
                     >
-                      <Stack>
-                        <Heading
-                          size='md'>
-                          {wallet.name}
-                        </Heading>
+                      <HStack justifyContent='space-between' flexWrap='wrap'>
+                        <Stack marginBottom='10px'>
+                          <Heading
+                            size='md'>
+                            {wallet.name}
+                          </Heading>
 
-                        <Text>{Object.keys(wallet.accounts).length} accounts</Text>
+                          <Text>{Object.keys(wallet.accounts).length} accounts</Text>
+                        </Stack>
 
                         <Stack spacing={4} direction='row'>
                           <Tooltip
@@ -114,7 +116,7 @@ export default function Wallets() {
                             />
                           </Tooltip>
                         </Stack>
-                      </Stack>
+                      </HStack>
                     </CardBody>
                   </Card>
                 )

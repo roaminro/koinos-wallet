@@ -1,4 +1,4 @@
-import { Button, Card, CardBody, CardHeader, Center, Divider, Stack, useToast, IconButton, Tooltip, Heading, Text } from '@chakra-ui/react'
+import { Button, Card, CardBody, CardHeader, Center, Divider, Stack, useToast, IconButton, Tooltip, Heading, Text, HStack } from '@chakra-ui/react'
 import { useRouter } from 'next/router'
 import { FiEdit, FiTrash } from 'react-icons/fi'
 import { BackButton } from '../../components/BackButton'
@@ -57,13 +57,15 @@ export default function Tokens() {
                       cursor='pointer'
                       onClick={() => router.push({ pathname: '/tokens/[tokenAddress]', query: { tokenAddress: token.address } })}
                     >
-                      <Stack>
-                        <Heading size='md'>
-                          {token.name}
-                        </Heading>
-                        <Text>
-                          {token.symbol}
-                        </Text>
+                      <HStack justifyContent='space-between' flexWrap='wrap'>
+                        <Stack marginBottom='10px'>
+                          <Heading size='md'>
+                            {token.name}
+                          </Heading>
+                          <Text>
+                            {token.symbol}
+                          </Text>
+                        </Stack>
                         <Stack spacing={4} direction='row'>
                           <Tooltip
                             label="edit token"
@@ -90,7 +92,7 @@ export default function Tokens() {
                             />
                           </Tooltip>
                         </Stack>
-                      </Stack>
+                      </HStack>
                     </CardBody>
                   </Card>
                 )

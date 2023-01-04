@@ -1,4 +1,4 @@
-import { Card, CardBody, CardHeader, Center, Divider, Stack, useToast, IconButton, Tooltip, Heading } from '@chakra-ui/react'
+import { Card, CardBody, CardHeader, Center, Divider, Stack, useToast, IconButton, Tooltip, Heading, HStack } from '@chakra-ui/react'
 import { useRouter } from 'next/router'
 import { FiEye, FiTrash } from 'react-icons/fi'
 import { BackButton } from '../../components/BackButton'
@@ -15,7 +15,7 @@ export default function Networks() {
 
   const handleDeleteClick = (e: MouseEvent, appPermissions: AppPermissions) => {
     e.stopPropagation()
-    
+
     NiceModal.show(ConfirmationDialog, {
       body: 'Are you sure you want to revoke the permissions for this app?',
       onAccept: async () => {
@@ -53,10 +53,12 @@ export default function Networks() {
                       cursor='pointer'
                       onClick={() => router.push({ pathname: '/permissions/[appPermissionsId]', query: { appPermissionsId } })}
                     >
-                      <Stack>
-                        <Heading size='md'>
-                          {appPermissions.url}
-                        </Heading>
+                      <HStack justifyContent='space-between' flexWrap='wrap'>
+                        <Stack marginBottom='10px'>
+                          <Heading size='md'>
+                            {appPermissions.url}
+                          </Heading>
+                        </Stack>
                         <Stack spacing={4} direction='row'>
                           <Tooltip
                             label="view app permissions"
@@ -83,7 +85,7 @@ export default function Networks() {
                             />
                           </Tooltip>
                         </Stack>
-                      </Stack>
+                      </HStack>
                     </CardBody>
                   </Card>
                 )

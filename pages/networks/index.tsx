@@ -1,4 +1,4 @@
-import { Text, Button, Card, CardBody, CardHeader, Center, Divider, Stack, useToast, IconButton, Tooltip, Heading } from '@chakra-ui/react'
+import { Text, Button, Card, CardBody, CardHeader, Center, Divider, Stack, useToast, IconButton, Tooltip, Heading, HStack } from '@chakra-ui/react'
 import { useRouter } from 'next/router'
 import { FiEdit, FiTrash } from 'react-icons/fi'
 import { BackButton } from '../../components/BackButton'
@@ -15,7 +15,7 @@ export default function Networks() {
 
   const handleDeleteClick = (e: MouseEvent, network: Network) => {
     e.stopPropagation()
-    
+
     NiceModal.show(ConfirmationDialog, {
       body: 'Are you sure you want to delete this network?',
       onAccept: async () => {
@@ -57,13 +57,15 @@ export default function Networks() {
                       cursor='pointer'
                       onClick={() => router.push({ pathname: '/networks/[networkId]', query: { networkId } })}
                     >
-                      <Stack>
-                        <Heading size='md'>
-                          {network.name}
-                        </Heading>
-                        <Text>
-                          {network.rpcUrl}
-                        </Text>
+                      <HStack justifyContent='space-between' flexWrap='wrap'>
+                        <Stack marginBottom='10px'>
+                          <Heading size='md'>
+                            {network.name}
+                          </Heading>
+                          <Text>
+                            {network.rpcUrl}
+                          </Text>
+                        </Stack>
                         <Stack spacing={4} direction='row'>
                           <Tooltip
                             label="edit network"
@@ -90,7 +92,7 @@ export default function Networks() {
                             />
                           </Tooltip>
                         </Stack>
-                      </Stack>
+                      </HStack>
                     </CardBody>
                   </Card>
                 )
