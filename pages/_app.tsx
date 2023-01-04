@@ -2,6 +2,7 @@ import '../styles/globals.css'
 import type { AppProps } from 'next/app'
 import { ChakraProvider } from '@chakra-ui/react'
 import Head from 'next/head'
+import NiceModal from '@ebay/nice-modal-react'
 import RouteGuard from '../components/RouteGuard'
 import { WalletsProvider } from '../context/WalletsProvider'
 import { NetworksProvider } from '../context/NetworksProvider'
@@ -21,7 +22,6 @@ type AppPropsWithLayout = AppProps & {
 }
 
 export default function App({ Component, pageProps }: AppPropsWithLayout) {
-
   const getLayout = Component.getLayout ?? ((page) => <Sidebar>{page}</Sidebar>)
 
   return (
@@ -30,18 +30,21 @@ export default function App({ Component, pageProps }: AppPropsWithLayout) {
         <NetworksProvider>
           <WalletsProvider>
             <TokensProvider>
-              <Head>
-                <title>My Koinos Wallet</title>
-                <meta
-                  name="viewport"
-                  content="width=device-width, height=device-height, initial-scale=1.0, minimum-scale=1.0"
-                />
-              </Head>
-              <RouteGuard>
-                {
-                  getLayout(<Component {...pageProps} />)
-                }
-              </RouteGuard>
+              <NiceModal.Provider>
+                <Head>
+                  <title>My Koinos Wallet</title>
+                  <meta
+                    name="viewport"
+                    content="width=device-width, height=device-height, initial-scale=1.0, minimum-scale=1.0"
+                  />
+                  <link rel='manifest' href='/manifest.json' />
+                </Head>
+                <RouteGuard>
+                  {
+                    getLayout(<Component {...pageProps} />)
+                  }
+                </RouteGuard>
+              </NiceModal.Provider>
             </TokensProvider>
           </WalletsProvider>
         </NetworksProvider>

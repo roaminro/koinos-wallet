@@ -1,6 +1,6 @@
 {
   "name": "my-koinos-wallet",
-  "version": "0.1.0",
+  "version": "0.2.12",
   "private": true,
   "scripts": {
     "dev": "next dev",
@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@chakra-ui/react": "^2.4.1",
+    "@ebay/nice-modal-react": "^1.2.8",
     "@emotion/react": "^11",
     "@emotion/styled": "^11",
     "@koinos/proto-js": "^1.0.3",
@@ -23,6 +24,7 @@
     "framer-motion": "^6",
     "koilib": "^5.3.1",
     "next": "13.0.4",
+    "next-pwa": "^5.6.0",
     "react": "18.2.0",
     "react-dom": "18.2.0",
     "react-icons": "^4.7.1",

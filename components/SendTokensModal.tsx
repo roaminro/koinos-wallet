@@ -1,6 +1,7 @@
 import { Text, Modal, ModalOverlay, ModalContent, ModalHeader, ModalCloseButton, ModalBody, ModalFooter, Button, FormControl, FormErrorMessage, FormHelperText, FormLabel, Input, NumberDecrementStepper, NumberIncrementStepper, NumberInput, NumberInputField, NumberInputStepper, Select, useToast, Link, Tooltip } from '@chakra-ui/react'
 import { Contract, utils, Signer } from 'koilib'
 import { ChangeEvent, useEffect, useState } from 'react'
+import NiceModal, { useModal } from '@ebay/nice-modal-react'
 import { useNetworks } from '../context/NetworksProvider'
 import { useWallets } from '../context/WalletsProvider'
 import { TransactionJson } from 'koilib/lib/interface'
@@ -10,12 +11,12 @@ import { Token, useTokens } from '../context/TokensProvider'
 import { useTokenBalance } from './BalanceUtils'
 
 interface SendTokensModalProps {
-  isOpen: boolean
-  onClose: () => void
+  defaultTokenAddress: string
 }
 
+export default NiceModal.create(({ defaultTokenAddress }: SendTokensModalProps) => {
+  const modal = useModal()
 
-export default function SendTokensModal({ isOpen, onClose }: SendTokensModalProps) {
   const toast = useToast()
   const { mutate } = useSWRConfig()
 
@@ -43,7 +44,6 @@ export default function SendTokensModal({ isOpen, onClose }: SendTokensModalProp
     }
   }
 
-
   useEffect(() => {
     if (tokens && selectedNetwork) {
       const tkns: Record<string, Token> = {}
@@ -58,19 +58,25 @@ export default function SendTokensModal({ isOpen, onClose }: SendTokensModalProp
 
       tkns[initialToken.address] = initialToken
 
+      if (initialToken.address === defaultTokenAddress) {
+        setSelectedToken(initialToken)
+      }
+
       for (const tokenAddress in tokens) {
         const token = tokens[tokenAddress]
+
         if (token.chainId === selectedNetwork.chainId) {
           tkns[token.address] = token
-          break
+        }
+
+        if (token.address === defaultTokenAddress) {
+          setSelectedToken(token)
         }
       }
 
       setAvailableTokens({ ...tkns })
-
-      setSelectedToken(initialToken)
     }
-  }, [selectedNetwork, tokens])
+  }, [defaultTokenAddress, selectedNetwork, tokens])
 
   const sendTokens = async () => {
     setIsSending(true)
@@ -147,7 +153,7 @@ export default function SendTokensModal({ isOpen, onClose }: SendTokensModalProp
   const canSendTokens = !isRecipientAddressInvalid && !!selectedToken && parseFloat(amount) > 0
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose}>
+    <Modal isOpen={modal.visible} onClose={modal.hide}>
       <ModalOverlay />
       <ModalContent>
         <ModalHeader>Send tokens</ModalHeader>
@@ -207,7 +213,7 @@ export default function SendTokensModal({ isOpen, onClose }: SendTokensModalProp
         </ModalBody>
 
         <ModalFooter>
-          <Button mr={3} onClick={onClose}>
+          <Button mr={3} onClick={modal.hide}>
             Close
           </Button>
           <Button isDisabled={!canSendTokens} isLoading={isSending} colorScheme='blue' onClick={sendTokens}>Send</Button>
@@ -215,4 +221,4 @@ export default function SendTokensModal({ isOpen, onClose }: SendTokensModalProp
       </ModalContent>
     </Modal>
   )
-}
+})

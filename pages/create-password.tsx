@@ -59,7 +59,7 @@ export default function CreatePassword() {
 
   return (
     <Center>
-      <Card maxW='sm'>
+      <Card width='100%'>
         <CardHeader>
           <Heading size='md'>
             Setup password

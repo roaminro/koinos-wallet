@@ -1,0 +1,17 @@
+{
+  "id": "my-koinos-waller",
+  "name": "My Koinos Wallet",
+  "short_name": "MKW",
+  "display": "standalone",
+  "orientation": "portrait",
+  "theme_color": "#FFFFFF",
+  "background_color": "#FFFFFF",
+  "start_url": "/",
+  "icons": [
+    {
+      "src": "logo.png",
+      "sizes": "567x567",
+      "type": "image/png"
+    }
+  ]
+}

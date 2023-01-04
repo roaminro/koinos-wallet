@@ -6,7 +6,7 @@ import { Contract, Serializer, Signer, utils } from 'koilib'
 import { OperationJson, SendTransactionOptions, TransactionJson, TransactionReceipt } from 'koilib/lib/interface'
 import { useNetworks } from '../../context/NetworksProvider'
 import { SignSendTransactionArguments, SignSendTransactionResult } from '../../wallet_connector_handlers/signerHandler'
-import { getErrorMessage } from '../../util/Utils'
+import { debug, getErrorMessage } from '../../util/Utils'
 import type { NextPageWithLayout } from '../_app'
 
 const SignSendTransaction: NextPageWithLayout = () => {
@@ -37,7 +37,8 @@ const SignSendTransaction: NextPageWithLayout = () => {
 
     const setupMessenger = async () => {
       await msgr.ping('sign-send-transaction-popup-parent')
-      console.log('connected to parent iframe')
+      debug('connected to parent iframe')
+      
       const { requester, send, signerAddress, transaction, options } = await msgr.sendRequest('sign-send-transaction-popup-parent', null)
 
       setRequester(requester)
@@ -214,7 +215,7 @@ const SignSendTransaction: NextPageWithLayout = () => {
               receipt.events[index].data = eventData
             } catch (error) {
               // ignore deserialization errors
-              console.log(error)
+              console.error(error)
             }
           }
         }
