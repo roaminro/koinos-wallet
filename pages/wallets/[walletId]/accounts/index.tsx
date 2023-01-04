@@ -1,4 +1,4 @@
-import { Button, Card, CardBody, CardHeader, Center, Divider, Stack, useToast, IconButton, Tooltip, useDisclosure, Heading, Text, Badge } from '@chakra-ui/react'
+import { Button, Card, CardBody, CardHeader, Center, Divider, Stack, useToast, IconButton, Tooltip, useDisclosure, Heading, Text, Badge, HStack } from '@chakra-ui/react'
 import NiceModal from '@ebay/nice-modal-react'
 import { useWallets } from '../../../../context/WalletsProvider'
 import { useRouter } from 'next/router'
@@ -68,14 +68,16 @@ export default function Wallets() {
                 return (
                   <Card key={accountId} variant='outline'>
                     <CardBody>
-                      <Stack>
-                        <Heading size='md'>
-                          {account.public.name}
-                          {' '}
-                          <Badge colorScheme='blue'>{account.public.keyPath}</Badge>
-                        </Heading>
+                      <HStack justifyContent='space-between' flexWrap='wrap'>
+                        <Stack marginBottom='10px'>
+                          <Heading size='md'>
+                            {account.public.name}
+                            {' '}
+                            <Badge colorScheme='blue'>{account.public.keyPath}</Badge>
+                          </Heading>
 
-                        <Text>{account.public.address}</Text>
+                          <Text>{account.public.address}</Text>
+                        </Stack>
                         <Stack spacing={4} direction='row'>
                           <Tooltip
                             label="reveal Private Key"
@@ -104,7 +106,7 @@ export default function Wallets() {
                             />
                           </Tooltip>
                         </Stack>
-                      </Stack>
+                      </HStack>
                     </CardBody>
                   </Card>
                 )
