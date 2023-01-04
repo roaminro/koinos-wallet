@@ -1,15 +1,16 @@
 import { Modal, ModalOverlay, ModalContent, ModalHeader, ModalCloseButton, ModalBody, ModalFooter, Button, FormControl, FormHelperText, FormLabel, Input, useToast, FormErrorMessage } from '@chakra-ui/react'
 import { ChangeEvent, useEffect, useState } from 'react'
+import NiceModal, { useModal } from '@ebay/nice-modal-react'
 import { useWallets } from '../context/WalletsProvider'
 import { isAlphanumeric } from '../util/Utils'
 
 interface RenameWalletModalProps {
-  isOpen: boolean
-  onClose: () => void
   walletId: string
 }
 
-export default function RenameWalletModal({ isOpen, onClose, walletId }: RenameWalletModalProps) {
+export default NiceModal.create(({ walletId }: RenameWalletModalProps) => {
+  const modal = useModal()
+
   const toast = useToast()
 
   const { wallets, updateWalletName } = useWallets()
@@ -25,7 +26,7 @@ export default function RenameWalletModal({ isOpen, onClose, walletId }: RenameW
     setIsLoading(true)
     try {
       await updateWalletName(walletId, walletName)
-      onClose()
+      modal.hide()
 
       toast({
         title: 'Wallet successfully renamed',
@@ -56,7 +57,7 @@ export default function RenameWalletModal({ isOpen, onClose, walletId }: RenameW
   const isWalletNameInvalid = walletName.length < 1 || !isAlphanumeric(walletName)
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose}>
+    <Modal isOpen={modal.visible} onClose={modal.hide}>
       <ModalOverlay />
       <ModalContent>
         <ModalHeader>Rename wallet</ModalHeader>
@@ -83,7 +84,7 @@ export default function RenameWalletModal({ isOpen, onClose, walletId }: RenameW
         </ModalBody>
 
         <ModalFooter>
-          <Button mr={3} onClick={onClose}>
+          <Button mr={3} onClick={modal.hide}>
             Close
           </Button>
           <Button isDisabled={isWalletNameInvalid} isLoading={isLoading} colorScheme='blue' onClick={onRenameClick}>Rename</Button>
@@ -91,4 +92,4 @@ export default function RenameWalletModal({ isOpen, onClose, walletId }: RenameW
       </ModalContent>
     </Modal>
   )
-}
+})

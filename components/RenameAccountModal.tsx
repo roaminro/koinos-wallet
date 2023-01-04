@@ -1,16 +1,17 @@
 import { Modal, ModalOverlay, ModalContent, ModalHeader, ModalCloseButton, ModalBody, ModalFooter, Button, FormControl, FormHelperText, FormLabel, Input, useToast, FormErrorMessage } from '@chakra-ui/react'
 import { ChangeEvent, useEffect, useState } from 'react'
+import NiceModal, { useModal } from '@ebay/nice-modal-react'
 import { useWallets } from '../context/WalletsProvider'
 import { isAlphanumeric } from '../util/Utils'
 
 interface RenameAccountModalProps {
-  isOpen: boolean
-  onClose: () => void
   walletId: string
   accountId: string
 }
 
-export default function RenameAccountModal({ isOpen, onClose, walletId, accountId }: RenameAccountModalProps) {
+export default NiceModal.create(({ walletId, accountId }: RenameAccountModalProps) => {
+  const modal = useModal()
+
   const toast = useToast()
 
   const { wallets, updateAccountName } = useWallets()
@@ -26,7 +27,7 @@ export default function RenameAccountModal({ isOpen, onClose, walletId, accountI
     setIsLoading(true)
     try {
       await updateAccountName(walletId, accountId, accountName)
-      onClose()
+      modal.hide()
 
       toast({
         title: 'Account successfully renamed',
@@ -57,7 +58,7 @@ export default function RenameAccountModal({ isOpen, onClose, walletId, accountI
   const isAccountNameInvalid = accountName.length < 1 || !isAlphanumeric(accountName)
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose}>
+    <Modal isOpen={modal.visible} onClose={modal.hide}>
       <ModalOverlay />
       <ModalContent>
         <ModalHeader>Rename wallet</ModalHeader>
@@ -84,7 +85,7 @@ export default function RenameAccountModal({ isOpen, onClose, walletId, accountI
         </ModalBody>
 
         <ModalFooter>
-          <Button mr={3} onClick={onClose}>
+          <Button mr={3} onClick={modal.hide}>
             Close
           </Button>
           <Button isDisabled={isAccountNameInvalid} isLoading={isLoading} colorScheme='blue' onClick={onRenameClick}>Rename</Button>
@@ -92,4 +93,4 @@ export default function RenameAccountModal({ isOpen, onClose, walletId, accountI
       </ModalContent>
     </Modal>
   )
-}
+})

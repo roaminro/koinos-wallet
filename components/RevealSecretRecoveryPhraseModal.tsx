@@ -1,15 +1,16 @@
 import { Modal, ModalOverlay, ModalContent, ModalHeader, ModalCloseButton, ModalBody, ModalFooter, Button, FormControl, FormHelperText, FormLabel, Input, useToast, IconButton, Textarea, Tooltip, useClipboard } from '@chakra-ui/react'
+import NiceModal, { useModal } from '@ebay/nice-modal-react'
 import { ChangeEvent, useState } from 'react'
 import { FiClipboard } from 'react-icons/fi'
 import { useWallets } from '../context/WalletsProvider'
 
 interface RevealSecretRecoveryPhraseModalProps {
-  isOpen: boolean
-  onClose: () => void
   walletId: string
 }
 
-export default function RevealSecretRecoveryPhraseModal({ isOpen, onClose, walletId }: RevealSecretRecoveryPhraseModalProps) {
+export default NiceModal.create(({ walletId }: RevealSecretRecoveryPhraseModalProps) => {
+  const modal = useModal()
+
   const toast = useToast()
   const { onCopy, setValue } = useClipboard('')
 
@@ -56,13 +57,13 @@ export default function RevealSecretRecoveryPhraseModal({ isOpen, onClose, walle
   const onCloseClick = () => {
     setPassword('')
     setSecretRecoveryPhrase('')
-    onClose()
+    modal.hide()
   }
 
   const isPasswordInvalid = password.length < 8
 
   return (
-    <Modal isOpen={isOpen} onClose={onCloseClick}>
+    <Modal isOpen={modal.visible} onClose={onCloseClick}>
       <ModalOverlay />
       <ModalContent>
         <ModalHeader>Reveal Secret Recovery Phrase</ModalHeader>
@@ -110,4 +111,4 @@ export default function RevealSecretRecoveryPhraseModal({ isOpen, onClose, walle
       </ModalContent>
     </Modal>
   )
-}
+})

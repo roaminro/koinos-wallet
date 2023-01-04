@@ -1,46 +1,42 @@
 import { Button, Card, CardBody, CardHeader, Center, Divider, Stack, useToast, IconButton, Tooltip, useDisclosure, Heading, Text, Badge } from '@chakra-ui/react'
+import NiceModal from '@ebay/nice-modal-react'
 import { useWallets } from '../../../../context/WalletsProvider'
 import { useRouter } from 'next/router'
-import { useRef, useState } from 'react'
 import RevealPrivateKeyModal from '../../../../components/RevealPrivateKeyModal'
+import RenameAccountModal from '../../../../components/RenameAccountModal'
 import { FiEdit, FiEye, FiTrash } from 'react-icons/fi'
 import { BackButton } from '../../../../components/BackButton'
-import { ConfirmationDialog } from '../../../../components/ConfirmationDialog'
-import RenameAccountModal from '../../../../components/RenameAccountModal'
-
+import ConfirmationDialog from '../../../../components/ConfirmationDialog'
 
 export default function Wallets() {
   const router = useRouter()
   const toast = useToast()
 
-  const { isOpen, onOpen, onClose } = useDisclosure()
-
   const { wallets, isLocked, removeAccount } = useWallets()
-
-  const [isRevealPrivateKeyModalOpen, setIsRevealPrivateKeyModalOpen] = useState(false)
-  const [accountIdToReveal, setAccountIdToReveal] = useState('')
-
-  const [accountIdToDelete, setAccountIdToDelete] = useState<string | null>(null)
-  const confirmDialogRef = useRef(null)
-
-  const [isRenameAccountModalOpen, setIsRenameAccountModalOpen] = useState(false)
-  const [accountIdToRename, setAccountIdToRename] = useState('')
 
   const { walletId } = router.query
 
   const handleDeleteClick = (accountId: string) => {
-    setAccountIdToDelete(accountId)
-    onOpen()
+    NiceModal.show(ConfirmationDialog, {
+      body: 'Are you sure you want to delete this account? Make sure you have a copy of the Private Key before confirming.',
+      onAccept: async () => {
+        await removeAccount(walletId as string, accountId)
+        toast({
+          title: 'Account successfully removed',
+          description: 'The account was successfully removed!',
+          status: 'success',
+          isClosable: true,
+        })
+      }
+    })
   }
 
   const revealPrivateKey = (accountId: string) => {
-    setAccountIdToReveal(accountId)
-    setIsRevealPrivateKeyModalOpen(true)
+    NiceModal.show(RevealPrivateKeyModal, { walletId, accountId })
   }
 
   const renameAccount = (accountId: string) => {
-    setAccountIdToRename(accountId)
-    setIsRenameAccountModalOpen(true)
+    NiceModal.show(RenameAccountModal, { walletId, accountId })
   }
 
   if (isLocked || !walletId) return <></>
@@ -114,34 +110,6 @@ export default function Wallets() {
                 )
               })
             }
-            <RevealPrivateKeyModal
-              isOpen={isRevealPrivateKeyModalOpen}
-              onClose={() => setIsRevealPrivateKeyModalOpen(false)}
-              walletId={walletId as string}
-              accountId={accountIdToReveal}
-            />
-            <RenameAccountModal
-              isOpen={isRenameAccountModalOpen}
-              onClose={() => setIsRenameAccountModalOpen(false)}
-              walletId={walletId as string}
-              accountId={accountIdToRename}
-            />
-            <ConfirmationDialog
-              modalRef={confirmDialogRef}
-              onClose={onClose}
-              body='Are you sure you want to delete this account? Make sure you have a copy of the Private Key before confirming.'
-              onAccept={async () => {
-                await removeAccount(walletId as string, accountIdToDelete!)
-                setAccountIdToDelete(null)
-                toast({
-                  title: 'Account successfully removed',
-                  description: 'The account was successfully removed!',
-                  status: 'success',
-                  isClosable: true,
-                })
-              }}
-              isOpen={isOpen}
-            />
           </Stack>
         </CardBody>
       </Card>

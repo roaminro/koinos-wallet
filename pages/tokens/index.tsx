@@ -1,24 +1,33 @@
-import { Button, Card, CardBody, CardHeader, Center, Divider, Stack, useToast, IconButton, Tooltip, useDisclosure, Heading, Text } from '@chakra-ui/react'
+import { Button, Card, CardBody, CardHeader, Center, Divider, Stack, useToast, IconButton, Tooltip, Heading, Text } from '@chakra-ui/react'
 import { useRouter } from 'next/router'
 import { FiEdit, FiTrash } from 'react-icons/fi'
 import { BackButton } from '../../components/BackButton'
 import { Token, useTokens } from '../../context/TokensProvider'
-import { ConfirmationDialog } from '../../components/ConfirmationDialog'
-import { useRef, useState, MouseEvent } from 'react'
+import ConfirmationDialog from '../../components/ConfirmationDialog'
+import { MouseEvent } from 'react'
+import NiceModal from '@ebay/nice-modal-react'
 
 export default function Tokens() {
   const toast = useToast()
   const router = useRouter()
-  const { isOpen, onOpen, onClose } = useDisclosure()
 
   const { tokens, removeToken } = useTokens()
-  const confirmDialogRef = useRef(null)
-  const [tokenToDelete, setTokenToDelete] = useState<Token | null>(null)
 
   const handleDeleteClick = (e: MouseEvent, token: Token) => {
     e.stopPropagation()
-    setTokenToDelete(token)
-    onOpen()
+
+    NiceModal.show(ConfirmationDialog, {
+      body: 'Are you sure you want to delete this token?',
+      onAccept: async () => {
+        removeToken(token)
+        toast({
+          title: 'Token successfully removed',
+          description: 'The token was successfully removed!',
+          status: 'success',
+          isClosable: true,
+        })
+      }
+    })
   }
 
   return (
@@ -87,22 +96,6 @@ export default function Tokens() {
                 )
               })
             }
-            <ConfirmationDialog
-              modalRef={confirmDialogRef}
-              onClose={onClose}
-              body='Are you sure you want to delete this token?'
-              onAccept={() => {
-                removeToken(tokenToDelete!)
-                setTokenToDelete(null)
-                toast({
-                  title: 'Token successfully removed',
-                  description: 'The token was successfully removed!',
-                  status: 'success',
-                  isClosable: true,
-                })
-              }}
-              isOpen={isOpen}
-            />
           </Stack>
         </CardBody>
       </Card>

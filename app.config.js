@@ -1,5 +1,5 @@
 const appConfig = {
-  logLevel: 'debug',
+  logLevel: 'info',
   vaultWorkerLogLevel: 'info',
   defaultNetworks: {
     'b0a8e5bb-0572-4ea7-b927-eefac512290c': {

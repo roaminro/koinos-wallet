@@ -1,7 +1,8 @@
 import { FiClipboard, FiSend } from 'react-icons/fi'
-import { Box, Button, Card, CardBody, CardHeader, Center, Divider, Heading, IconButton, Menu, MenuButton, MenuItemOption, MenuList, MenuOptionGroup, Skeleton, Stat, StatHelpText, StatNumber, Tab, TabList, TabPanel, TabPanels, Tabs, Tooltip, useClipboard, useToast, VStack } from '@chakra-ui/react'
-import { useEffect, useState } from 'react'
+import { Button, Card, CardBody, CardHeader, Center, Divider, Heading, IconButton, Menu, MenuButton, MenuItemOption, MenuList, MenuOptionGroup, Skeleton, Stat, StatHelpText, StatNumber, Tab, TabList, TabPanel, TabPanels, Tabs, Tooltip, useClipboard, useToast, VStack } from '@chakra-ui/react'
+import { useEffect } from 'react'
 import { FiChevronDown } from 'react-icons/fi'
+import NiceModal from '@ebay/nice-modal-react'
 import { useWallets } from '../context/WalletsProvider'
 import { truncateAccount } from '../util/Utils'
 import { asFloat, useManaBalance, useTokenBalance } from '../components/BalanceUtils'
@@ -18,8 +19,6 @@ export default function Home() {
 
   const { balance: koinBalance, isLoading: isLoadingKoinBalance } = useTokenBalance(selectedAccount?.account?.public.address, selectedNetwork?.tokenAddress)
   const { mana, isLoading: isLoadingManaBalance } = useManaBalance(selectedAccount?.account?.public.address)
-
-  const [isSendTokensModalOpen, setIsSendTokensModalOpen] = useState(false)
 
   useEffect(() => {
     if (!selectedAccount) {
@@ -52,6 +51,10 @@ export default function Home() {
       status: 'success',
       isClosable: true,
     })
+  }
+
+  const openSendTokensModal = (defaultTokenAddress: string) => {
+    NiceModal.show(SendTokensModal, { defaultTokenAddress })
   }
 
   return (
@@ -139,7 +142,7 @@ export default function Home() {
               placement="bottom"
               hasArrow
             >
-              <IconButton bg='brand.blue' aria-label='send tokens' icon={<FiSend />} onClick={() => setIsSendTokensModalOpen(true)} />
+              <IconButton bg='brand.blue' aria-label='send tokens' icon={<FiSend />} onClick={() => openSendTokensModal(selectedNetwork?.tokenAddress!)} />
             </Tooltip>
           </VStack>
         </CardHeader>
@@ -161,10 +164,6 @@ export default function Home() {
           </Tabs>
         </CardBody>
       </Card>
-      <SendTokensModal
-        isOpen={isSendTokensModalOpen}
-        onClose={() => { setIsSendTokensModalOpen(false) }}
-      />
     </Center>
   )
 }

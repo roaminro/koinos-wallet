@@ -1,16 +1,17 @@
 import { Modal, ModalOverlay, ModalContent, ModalHeader, ModalCloseButton, ModalBody, ModalFooter, Button, FormControl, FormHelperText, FormLabel, Input, useToast, IconButton, Textarea, Tooltip, useClipboard, InputGroup, InputRightElement } from '@chakra-ui/react'
 import { ChangeEvent, useState } from 'react'
+import NiceModal, { useModal } from '@ebay/nice-modal-react'
 import { FiClipboard } from 'react-icons/fi'
 import { useWallets } from '../context/WalletsProvider'
 
 interface RevealPrivateKeyModalProps {
-  isOpen: boolean
-  onClose: () => void
   walletId: string
   accountId: string
 }
 
-export default function RevealPrivateKeyModal({ isOpen, onClose, walletId, accountId }: RevealPrivateKeyModalProps) {
+export default NiceModal.create(({ walletId, accountId }: RevealPrivateKeyModalProps) => {
+  const modal = useModal()
+
   const toast = useToast()
   const { onCopy, setValue } = useClipboard('')
 
@@ -57,13 +58,13 @@ export default function RevealPrivateKeyModal({ isOpen, onClose, walletId, accou
   const onCloseClick = () => {
     setPassword('')
     setPrivateKey('')
-    onClose()
+    modal.hide()
   }
 
   const isPasswordInvalid = password.length < 8
 
   return (
-    <Modal isOpen={isOpen} onClose={onCloseClick}>
+    <Modal isOpen={modal.visible} onClose={onCloseClick}>
       <ModalOverlay />
       <ModalContent>
         <ModalHeader>Reveal Private Key</ModalHeader>
@@ -111,4 +112,4 @@ export default function RevealPrivateKeyModal({ isOpen, onClose, walletId, accou
       </ModalContent>
     </Modal>
   )
-}
+})

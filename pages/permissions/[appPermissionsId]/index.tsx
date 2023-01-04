@@ -4,15 +4,15 @@ import {
   FiGlobe,
   FiUsers,
 } from 'react-icons/fi'
-import { Card, CardHeader, Heading, Divider, CardBody, Button, useToast, Center, List, ListIcon, ListItem, useDisclosure, Stack } from '@chakra-ui/react'
-import { useRef, useState } from 'react'
+import { Card, CardHeader, Heading, Divider, CardBody, Button, useToast, Center, List, ListIcon, ListItem, Stack } from '@chakra-ui/react'
 
 import { BackButton } from '../../../components/BackButton'
 import { useRouter } from 'next/router'
 import { AppPermissions, usePermissions } from '../../../context/PermissionsProvider'
 import { PERMISSIONS } from '../../../util/Permissions'
 import { IconType } from 'react-icons'
-import { ConfirmationDialog } from '../../../components/ConfirmationDialog'
+import ConfirmationDialog from '../../../components/ConfirmationDialog'
+import NiceModal from '@ebay/nice-modal-react'
 
 interface DisplayPermission {
   scope: string
@@ -23,19 +23,25 @@ interface DisplayPermission {
 export default function Edit() {
   const toast = useToast()
   const router = useRouter()
-  const { isOpen, onOpen, onClose } = useDisclosure()
 
   const { permissions, removeAppPermissions } = usePermissions()
 
   const { appPermissionsId } = router.query
 
-  const confirmDialogRef = useRef(null)
-  const [appPermissionsToDelete, setAppPermissionsToDelete] = useState<AppPermissions | null>(null)
-
-
   const handleDeleteClick = (appPermissions: AppPermissions) => {
-    setAppPermissionsToDelete(appPermissions)
-    onOpen()
+    NiceModal.show(ConfirmationDialog, {
+      body: 'Are you sure you want to revoke the permissions for this app?',
+      onAccept: async () => {
+        removeAppPermissions(appPermissions)
+        router.push('/permissions')
+        toast({
+          title: 'Permissions successfully revoked',
+          description: 'The permissions were successfully revoked!',
+          status: 'success',
+          isClosable: true,
+        })
+      }
+    })
   }
 
   if (!appPermissionsId || !permissions[appPermissionsId as string]) return <></>
@@ -110,23 +116,6 @@ export default function Edit() {
           </Button>
         </CardBody>
       </Card>
-      <ConfirmationDialog
-        modalRef={confirmDialogRef}
-        onClose={onClose}
-        body='Are you sure you want to revoke the permissions for this app?'
-        onAccept={() => {
-          removeAppPermissions(appPermissionsToDelete!)
-          setAppPermissionsToDelete(null)
-          router.push('/permissions')
-          toast({
-            title: 'Permissions successfully revoked',
-            description: 'The permissions were successfully revoked!',
-            status: 'success',
-            isClosable: true,
-          })
-        }}
-        isOpen={isOpen}
-      />
     </Center>
   )
 }
