@@ -1,13 +1,13 @@
 import { Button, Card, CardBody, CardHeader, Center, Divider, Stack, useToast, IconButton, Tooltip, useDisclosure, Heading, Text, Badge } from '@chakra-ui/react'
+import NiceModal from '@ebay/nice-modal-react'
 import { useWallets } from '../../../../context/WalletsProvider'
 import { useRouter } from 'next/router'
 import { useRef, useState } from 'react'
 import RevealPrivateKeyModal from '../../../../components/RevealPrivateKeyModal'
+import RenameAccountModal from '../../../../components/RenameAccountModal'
 import { FiEdit, FiEye, FiTrash } from 'react-icons/fi'
 import { BackButton } from '../../../../components/BackButton'
 import { ConfirmationDialog } from '../../../../components/ConfirmationDialog'
-import RenameAccountModal from '../../../../components/RenameAccountModal'
-
 
 export default function Wallets() {
   const router = useRouter()
@@ -17,14 +17,8 @@ export default function Wallets() {
 
   const { wallets, isLocked, removeAccount } = useWallets()
 
-  const [isRevealPrivateKeyModalOpen, setIsRevealPrivateKeyModalOpen] = useState(false)
-  const [accountIdToReveal, setAccountIdToReveal] = useState('')
-
   const [accountIdToDelete, setAccountIdToDelete] = useState<string | null>(null)
   const confirmDialogRef = useRef(null)
-
-  const [isRenameAccountModalOpen, setIsRenameAccountModalOpen] = useState(false)
-  const [accountIdToRename, setAccountIdToRename] = useState('')
 
   const { walletId } = router.query
 
@@ -34,13 +28,11 @@ export default function Wallets() {
   }
 
   const revealPrivateKey = (accountId: string) => {
-    setAccountIdToReveal(accountId)
-    setIsRevealPrivateKeyModalOpen(true)
+    NiceModal.show(RevealPrivateKeyModal, { walletId, accountId })
   }
 
   const renameAccount = (accountId: string) => {
-    setAccountIdToRename(accountId)
-    setIsRenameAccountModalOpen(true)
+    NiceModal.show(RenameAccountModal, { walletId, accountId })
   }
 
   if (isLocked || !walletId) return <></>
@@ -114,18 +106,6 @@ export default function Wallets() {
                 )
               })
             }
-            <RevealPrivateKeyModal
-              isOpen={isRevealPrivateKeyModalOpen}
-              onClose={() => setIsRevealPrivateKeyModalOpen(false)}
-              walletId={walletId as string}
-              accountId={accountIdToReveal}
-            />
-            <RenameAccountModal
-              isOpen={isRenameAccountModalOpen}
-              onClose={() => setIsRenameAccountModalOpen(false)}
-              walletId={walletId as string}
-              accountId={accountIdToRename}
-            />
             <ConfirmationDialog
               modalRef={confirmDialogRef}
               onClose={onClose}

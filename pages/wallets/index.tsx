@@ -7,7 +7,7 @@ import { FiEdit, FiEye, FiTrash, FiUsers } from 'react-icons/fi'
 import { BackButton } from '../../components/BackButton'
 import { ConfirmationDialog } from '../../components/ConfirmationDialog'
 import RenameWalletModal from '../../components/RenameWalletModal'
-
+import NiceModal from '@ebay/nice-modal-react'
 
 export default function Wallets() {
   const router = useRouter()
@@ -34,14 +34,12 @@ export default function Wallets() {
 
   const revealSecretRecoveryPhrase = (e: MouseEvent, walletId: string) => {
     e.stopPropagation()
-    setWalletIdToReveal(walletId)
-    setIsRevealSecretRecoveryPhraseModalOpen(true)
+    NiceModal.show(RevealSecretRecoveryPhraseModal, { walletId })
   }
 
   const renameWallet = (e: MouseEvent, walletId: string) => {
     e.stopPropagation()
-    setWalletIdToRename(walletId)
-    setIsRenameWalletModalOpen(true)
+    NiceModal.show(RenameWalletModal, { walletId })
   }
 
   return (
@@ -122,16 +120,6 @@ export default function Wallets() {
                 )
               })
             }
-            <RevealSecretRecoveryPhraseModal
-              isOpen={isRevealSecretRecoveryPhraseModalOpen}
-              onClose={() => setIsRevealSecretRecoveryPhraseModalOpen(false)}
-              walletId={walletIdToReveal}
-            />
-            <RenameWalletModal
-              isOpen={isRenameWalletModalOpen}
-              onClose={() => setIsRenameWalletModalOpen(false)}
-              walletId={walletIdToRename}
-            />
             <ConfirmationDialog
               modalRef={confirmDialogRef}
               onClose={onClose}
