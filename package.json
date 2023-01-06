@@ -1,6 +1,6 @@
 {
   "name": "my-koinos-wallet",
-  "version": "0.2.13",
+  "version": "0.2.14",
   "private": true,
   "scripts": {
     "dev": "next dev",
@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@chakra-ui/react": "^2.4.1",
+    "@choc-ui/chakra-autocomplete": "^5.1.4",
     "@ebay/nice-modal-react": "^1.2.8",
     "@emotion/react": "^11",
     "@emotion/styled": "^11",
