@@ -26,6 +26,18 @@ export interface PrepareTransactionResult {
   transaction: TransactionJson
 }
 
+export interface SignMessageArguments {
+  requester: string
+  signerAddress: string
+  message: string
+}
+
+export interface SignHashArguments {
+  requester: string
+  signerAddress: string
+  hash: string
+}
+
 export const handler = (sender: string, data: IncomingMessage, sendData: SendDataFn<OutgoingMessage>, sendError: SendErrorFn, provider: Provider) => {
   switch (data.command) {
     case 'signTransaction': {
@@ -34,6 +46,14 @@ export const handler = (sender: string, data: IncomingMessage, sendData: SendDat
 
     case 'signAndSendTransaction': {
       return signSendTransaction(true, sender, data, sendData, sendError)
+    }
+
+    case 'signMessage': {
+      return signMessage(sender, data, sendData, sendError)
+    }
+
+    case 'signHash': {
+      return signHash(sender, data, sendData, sendError)
     }
 
     case 'prepareTransaction': {
@@ -112,6 +132,104 @@ const signSendTransaction = (send: boolean, requester: string, data: IncomingMes
       popupMsgr.onRequest(({ sendData }) => {
         args.requester = requester
         args.send = send
+        sendData(args)
+      })
+    } catch (error) {
+      sendError(getErrorMessage(error))
+      resolve()
+    }
+
+    newWindow.resizeTo(450, 550)
+
+    newWindow.focus()
+  })
+}
+
+const signMessage = (requester: string, data: IncomingMessage, sendData: SendDataFn<OutgoingMessage>, sendError: SendErrorFn) => {
+  const args = JSON.parse(data.arguments!) as SignMessageArguments
+
+  if (!args.signerAddress) {
+    sendError('missing "signerAddress" argument')
+    return
+  }
+
+  if (!args.message) {
+    sendError('missing "message" argument')
+    return
+  }
+
+  return new Promise<void>((resolve) => {
+    const params = 'popup=yes,scrollbars=no,resizable=yes,status=no,location=no,toolbar=no,menubar=no,width=450,height=550'
+    const newWindow = window.open('/embed/signMessage', 'Message Signature', params)!
+    const popupMsgr = new Messenger<string, SignMessageArguments>(newWindow, 'sign-message-popup-parent', true, window.location.origin)
+
+    newWindow.onload = () => {
+      newWindow.onunload = () => {
+        popupMsgr.removeListener()
+        sendError('request was cancelled')
+        resolve()
+      }
+    }
+
+    try {
+      popupMsgr.onMessage(({ data }) => {
+        sendData({ result: data })
+        popupMsgr.removeListener()
+        newWindow.close()
+        resolve()
+      })
+
+      popupMsgr.onRequest(({ sendData }) => {
+        args.requester = requester
+        sendData(args)
+      })
+    } catch (error) {
+      sendError(getErrorMessage(error))
+      resolve()
+    }
+
+    newWindow.resizeTo(450, 550)
+
+    newWindow.focus()
+  })
+}
+
+const signHash = (requester: string, data: IncomingMessage, sendData: SendDataFn<OutgoingMessage>, sendError: SendErrorFn) => {
+  const args = JSON.parse(data.arguments!) as SignHashArguments
+
+  if (!args.signerAddress) {
+    sendError('missing "signerAddress" argument')
+    return
+  }
+
+  if (!args.hash) {
+    sendError('missing "hash" argument')
+    return
+  }
+
+  return new Promise<void>((resolve) => {
+    const params = 'popup=yes,scrollbars=no,resizable=yes,status=no,location=no,toolbar=no,menubar=no,width=450,height=550'
+    const newWindow = window.open('/embed/signHash', 'Hash Signature', params)!
+    const popupMsgr = new Messenger<string, SignHashArguments>(newWindow, 'sign-hash-popup-parent', true, window.location.origin)
+
+    newWindow.onload = () => {
+      newWindow.onunload = () => {
+        popupMsgr.removeListener()
+        sendError('request was cancelled')
+        resolve()
+      }
+    }
+
+    try {
+      popupMsgr.onMessage(({ data }) => {
+        sendData({ result: data })
+        popupMsgr.removeListener()
+        newWindow.close()
+        resolve()
+      })
+
+      popupMsgr.onRequest(({ sendData }) => {
+        args.requester = requester
         sendData(args)
       })
     } catch (error) {

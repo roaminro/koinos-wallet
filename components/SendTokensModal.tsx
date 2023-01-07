@@ -1,4 +1,4 @@
-import { Text, Modal, ModalOverlay, ModalContent, ModalHeader, ModalCloseButton, ModalBody, ModalFooter, Button, FormControl, FormErrorMessage, FormHelperText, FormLabel, Input, NumberDecrementStepper, NumberIncrementStepper, NumberInput, NumberInputField, NumberInputStepper, Select, useToast, Link, Tooltip, Stack } from '@chakra-ui/react'
+import { useColorModeValue, Text, Modal, ModalOverlay, ModalContent, ModalHeader, ModalCloseButton, ModalBody, ModalFooter, Button, FormControl, FormErrorMessage, FormHelperText, FormLabel, Input, NumberDecrementStepper, NumberIncrementStepper, NumberInput, NumberInputField, NumberInputStepper, Select, useToast, Tooltip, Stack, HStack, InputGroup, InputRightElement, IconButton } from '@chakra-ui/react'
 import { Contract, utils, Signer } from 'koilib'
 import { ChangeEvent, useEffect, useState } from 'react'
 import NiceModal, { useModal } from '@ebay/nice-modal-react'
@@ -8,9 +8,7 @@ import {
   AutoCompleteGroupTitle,
   AutoCompleteInput,
   AutoCompleteItem,
-  AutoCompleteList,
-  AutoCompleteCreatable
-} from '@choc-ui/chakra-autocomplete'
+  AutoCompleteList} from '@choc-ui/chakra-autocomplete'
 import { useNetworks } from '../context/NetworksProvider'
 import { useWallets } from '../context/WalletsProvider'
 import { TransactionJson } from 'koilib/lib/interface'
@@ -18,6 +16,7 @@ import { getErrorMessage } from '../util/Utils'
 import { useSWRConfig } from 'swr'
 import { Token, useTokens } from '../context/TokensProvider'
 import { useTokenBalance } from './BalanceUtils'
+import { FiX } from 'react-icons/fi'
 
 interface SendTokensModalProps {
   defaultTokenAddress: string
@@ -35,6 +34,7 @@ export default NiceModal.create(({ defaultTokenAddress }: SendTokensModalProps) 
 
   const [amount, setAmount] = useState('0')
   const [recipientAddress, setRecipientAddress] = useState('')
+  const [recipientAccountName, setRecipientAccountName] = useState('')
   const [availableTokens, setAvailableTokens] = useState<Record<string, Token>>()
   const [selectedToken, setSelectedToken] = useState<Token>()
   const [isSending, setIsSending] = useState(false)
@@ -193,16 +193,27 @@ export default NiceModal.create(({ defaultTokenAddress }: SendTokensModalProps) 
             <FormControl isRequired isInvalid={isRecipientAddressInvalid}>
               <FormLabel>Recipient</FormLabel>
               <AutoComplete
-              restoreOnBlurIfEmpty={false}
+                restoreOnBlurIfEmpty={false}
                 openOnFocus
                 emptyState={<Text align='center'>no recipient found</Text>}
                 onSelectOption={(selection) => {
                   setRecipientAddress(selection.item.value)
                 }}
               >
-                <AutoCompleteInput
-                  placeholder='Choose from wallets accounts...'
-                />
+                <InputGroup>
+                  <AutoCompleteInput
+                    placeholder='Choose from wallets accounts...'
+                  />
+                  <InputRightElement>
+                    <Tooltip
+                      label='clear account name'
+                      placement="bottom"
+                      hasArrow
+                    >
+                      <IconButton aria-label='clear account name' icon={<FiX />} onClick={() => setRecipientAccountName('sdfdfs')} />
+                    </Tooltip>
+                  </InputRightElement>
+                </InputGroup>
                 <AutoCompleteList>
                   {Object.entries(wallets).map(([walletId, wallet], _) => (
                     <AutoCompleteGroup key={walletId} showDivider>
@@ -222,7 +233,18 @@ export default NiceModal.create(({ defaultTokenAddress }: SendTokensModalProps) 
                   ))}
                 </AutoCompleteList>
               </AutoComplete>
-              <Input value={recipientAddress} onChange={handleRecipientAddressChange} />
+              <InputGroup>
+                <Input value={recipientAddress} onChange={handleRecipientAddressChange} />
+                <InputRightElement>
+                  <Tooltip
+                    label='clear recipient'
+                    placement="bottom"
+                    hasArrow
+                  >
+                    <IconButton aria-label='clear recipient' icon={<FiX />} onClick={() => setRecipientAddress('')} />
+                  </Tooltip>
+                </InputRightElement>
+              </InputGroup>
               <FormHelperText>The address of the recipient.</FormHelperText>
               {
                 isRecipientAddressInvalid && <FormErrorMessage>The recipient address entered is invalid.</FormErrorMessage>
@@ -239,22 +261,37 @@ export default NiceModal.create(({ defaultTokenAddress }: SendTokensModalProps) 
                 </NumberInputStepper>
               </NumberInput>
               <FormHelperText>
-                <Tooltip
-                  label='set amount with balance'
-                  placement="bottom"
-                  hasArrow
-                >
-                  <Link onClick={() => setAmount(formattedBalance)}>Balance: {formattedBalance}</Link>
-                </Tooltip>
                 <Text>Amount of tokens to send.</Text>
+                <HStack justifyContent='space-between'>
+                  <Tooltip
+                    label='send max amount'
+                    placement="bottom"
+                    hasArrow
+                  >
+                    <Text
+                      cursor='pointer'
+                      color={useColorModeValue('blue.500', 'blue.200')}
+                      onClick={() => setAmount(formattedBalance)}
+                    >
+                      Balance {formattedBalance}
+                    </Text>
+                  </Tooltip>
+                  <Tooltip
+                    label='send max amount'
+                    placement="bottom"
+                    hasArrow
+                  >
+                    <Button size='xs' onClick={() => setAmount(formattedBalance)}>MAX</Button>
+                  </Tooltip>
+                </HStack>
               </FormHelperText>
             </FormControl>
           </Stack>
         </ModalBody>
 
-        <ModalFooter>
+        <ModalFooter justifyContent='space-between'>
           <Button mr={3} onClick={modal.hide}>
-            Close
+            Cancel
           </Button>
           <Button isDisabled={!canSendTokens} isLoading={isSending} colorScheme='blue' onClick={sendTokens}>Send</Button>
         </ModalFooter>

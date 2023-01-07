@@ -8,6 +8,7 @@ import { debounce, debug } from '../util/Utils'
 import { Messenger } from '../util/Messenger'
 import { AddAccountArguments, AddAccountResult, AddWalletArguments, AddWalletResult, GetAccountPrivateKeyArguments, GetAccountsResult, GetWalletSecretRecoveryPhraseArguments, ImportAccountArguments, ImportAccountResult, IncomingMessage, IsLockedResult, OutgoingMessage, RemoveAccountArguments, RemoveWalletArguments, SerializeResult, SignHashArguments, SignTransactionArguments, TryDecryptArguments, UnlockArguments, UnlockResult, UpdateAccountNameArguments, UpdateWalletNameArguments } from '../workers/Vault-Worker-Interfaces'
 import { TransactionJson } from 'koilib/lib/interface'
+import { base64DecodeURL, base64EncodeURL } from '../util/Base64'
 
 
 type WalletContextType = {
@@ -476,11 +477,11 @@ export const WalletsProvider = ({
       command: 'signHash',
       arguments: {
         signerAddress,
-        hash
+        hash: base64EncodeURL(hash)
       } as SignHashArguments
     })
 
-    return signedHash as Uint8Array
+    return base64DecodeURL(signedHash as string)
   }
 
   const getWalletSecretRecoveryPhrase = async (walletId: string, password: string) => {

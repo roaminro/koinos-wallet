@@ -5,6 +5,8 @@ export const PERMISSIONS: Record<string, Record<string, string>> = {
   'signer': {
     'signTransaction': 'Can request to sign a transaction',
     'signAndSendTransaction': 'Can request to sign and send a transaction',
+    'signMessage': 'Can request to sign a message',
+    'signHash': 'Can request to sign a hash',
     'prepareTransaction': 'Can use My Koinos Wallet to prepare a transaction'
   },
   'provider': {

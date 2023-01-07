@@ -2,6 +2,7 @@ import { Messenger } from '../util/Messenger'
 import { Vault } from '../util/Vault'
 import { vaultWorkerLogLevel } from '../app.config'
 import { IncomingMessage, OutgoingMessage, UnlockArguments, AddWalletArguments, AddAccountArguments, ImportAccountArguments, CheckPasswordArguments, GetWalletSecretRecoveryPhraseArguments, GetAccountPrivateKeyArguments, UpdateWalletNameArguments, RemoveWalletArguments, UpdateAccountNameArguments, RemoveAccountArguments, AddAccountSignersArguments, RemoveAccountSignerArguments, TryDecryptArguments, SignTransactionArguments, SignHashArguments } from './Vault-Worker-Interfaces'
+import { base64DecodeURL, base64EncodeURL } from '../util/Base64'
 
 const debug = (...args: any) => {
   if (vaultWorkerLogLevel === 'debug') {
@@ -146,7 +147,7 @@ messenger.onRequest(async ({ data, sender, sendData, sendError }) => {
 
       case 'signHash': {
         const { signerAddress, hash } = data.arguments as SignHashArguments
-        sendData({ result: await vault.signHash(signerAddress, hash) })
+        sendData({ result: base64EncodeURL(await vault.signHash(signerAddress, base64DecodeURL(hash))) })
         break
       }
 
@@ -157,6 +158,7 @@ messenger.onRequest(async ({ data, sender, sendData, sendError }) => {
 
     debug('vault-state', vault)
   } catch (error) {
+    debug(error)
     sendError((error as Error).message)
   }
 })
