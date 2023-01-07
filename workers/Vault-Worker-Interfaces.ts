@@ -161,7 +161,7 @@ export type SignTransactionResult = TransactionJson
 
 export type SignHashArguments = {
   signerAddress: string
-  hash: Uint8Array
+  hash: string
 }
 
-export type SignHashResult = Uint8Array
+export type SignHashResult = string
