@@ -43,6 +43,7 @@ interface LinkItemProps {
   name: string
   href: string
   icon: IconType
+  showWhenLocked?: boolean
   hideWhenVaultNotSetup?: boolean
 }
 const LinkItems: Array<LinkItemProps> = [
@@ -50,8 +51,8 @@ const LinkItems: Array<LinkItemProps> = [
   { name: 'Tokens', icon: FiDatabase, href: '/tokens', hideWhenVaultNotSetup: true },
   { name: 'Wallets', icon: FiCreditCard, href: '/wallets', hideWhenVaultNotSetup: true },
   { name: 'Apps Permissions', icon: FiFileText, href: '/permissions', hideWhenVaultNotSetup: true },
-  { name: 'Networks', icon: FiGlobe, href: '/networks' },
-  { name: 'Backup', icon: FiHardDrive, href: '/backup' },
+  { name: 'Networks', icon: FiGlobe, href: '/networks', hideWhenVaultNotSetup: true },
+  { name: 'Backup', icon: FiHardDrive, href: '/backup', showWhenLocked: true },
 ]
 
 export default function SidebarWithHeader({
@@ -93,7 +94,7 @@ interface SidebarProps extends BoxProps {
 }
 
 const SidebarContent = ({ onClose, ...rest }: SidebarProps) => {
-  const { isVaultSetup } = useWallets()
+  const { isVaultSetup, isLocked } = useWallets()
   const { publicRuntimeConfig } = getConfig()
 
   return (
@@ -116,7 +117,7 @@ const SidebarContent = ({ onClose, ...rest }: SidebarProps) => {
         <CloseButton display={{ base: 'flex', md: 'none' }} onClick={onClose} />
       </Flex>
       {LinkItems.map((link) => (
-        ((!isVaultSetup && !link.hideWhenVaultNotSetup) || isVaultSetup) &&
+        ((!isVaultSetup && !link.hideWhenVaultNotSetup) || (isVaultSetup && !isLocked) || (isLocked && link.showWhenLocked)) &&
         <NavItem key={link.name} href={link.href} icon={link.icon} onClick={onClose}>
           {link.name}
         </NavItem>
