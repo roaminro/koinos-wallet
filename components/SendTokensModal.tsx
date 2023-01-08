@@ -222,6 +222,7 @@ export default NiceModal.create(({ defaultTokenAddress }: SendTokensModalProps) 
               <FormLabel>Recipient</FormLabel>
               <Select<Account, false, GroupBase<Account>>
                 useBasicStyles
+                selectedOptionStyle="check"
                 isClearable
                 options={accountOptions}
                 placeholder="Select recipient from wallets accounts..."
