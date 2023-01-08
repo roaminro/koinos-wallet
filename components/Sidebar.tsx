@@ -20,6 +20,11 @@ import {
   Hide,
   AlertIcon,
   Alert,
+  Accordion,
+  AccordionButton,
+  AccordionIcon,
+  AccordionItem,
+  AccordionPanel,
 } from '@chakra-ui/react'
 import {
   FiHome,
@@ -32,7 +37,8 @@ import {
   FiHardDrive,
   FiDatabase,
   FiGithub,
-  FiFileText
+  FiFileText,
+  FiSettings
 } from 'react-icons/fi'
 import { IconType } from 'react-icons'
 import { useWallets } from '../context/WalletsProvider'
@@ -41,18 +47,24 @@ import Logo from './Logo'
 
 interface LinkItemProps {
   name: string
-  href: string
+  href?: string
   icon: IconType
   showWhenLocked?: boolean
   hideWhenVaultNotSetup?: boolean
+  children?: Array<LinkItemProps>
 }
 const LinkItems: Array<LinkItemProps> = [
   { name: 'Home', icon: FiHome, href: '/home', hideWhenVaultNotSetup: true },
-  { name: 'Tokens', icon: FiDatabase, href: '/tokens', hideWhenVaultNotSetup: true },
-  { name: 'Wallets', icon: FiCreditCard, href: '/wallets', hideWhenVaultNotSetup: true },
-  { name: 'Apps Permissions', icon: FiFileText, href: '/permissions', hideWhenVaultNotSetup: true },
-  { name: 'Networks', icon: FiGlobe, href: '/networks', hideWhenVaultNotSetup: true },
-  { name: 'Backup', icon: FiHardDrive, href: '/backup', showWhenLocked: true },
+  {
+    name: 'Settings', icon: FiSettings, showWhenLocked: true,
+    children: [
+      { name: 'Tokens', icon: FiDatabase, href: '/tokens', hideWhenVaultNotSetup: true },
+      { name: 'Wallets', icon: FiCreditCard, href: '/wallets', hideWhenVaultNotSetup: true },
+      { name: 'Apps Permissions', icon: FiFileText, href: '/permissions', hideWhenVaultNotSetup: true },
+      { name: 'Networks', icon: FiGlobe, href: '/networks', hideWhenVaultNotSetup: true },
+      { name: 'Backup', icon: FiHardDrive, href: '/backup', showWhenLocked: true },
+    ]
+  },
 ]
 
 export default function SidebarWithHeader({
@@ -116,12 +128,49 @@ const SidebarContent = ({ onClose, ...rest }: SidebarProps) => {
         </Link>
         <CloseButton display={{ base: 'flex', md: 'none' }} onClick={onClose} />
       </Flex>
-      {LinkItems.map((link) => (
-        ((!isVaultSetup && !link.hideWhenVaultNotSetup) || (isVaultSetup && !isLocked) || (isLocked && link.showWhenLocked)) &&
-        <NavItem key={link.name} href={link.href} icon={link.icon} onClick={onClose}>
-          {link.name}
-        </NavItem>
-      ))}
+      <Accordion allowMultiple>
+        {LinkItems.map((link, id) => (
+          ((!isVaultSetup && !link.hideWhenVaultNotSetup) || (isVaultSetup && !isLocked) || (isLocked && link.showWhenLocked)) &&
+          <AccordionItem key={id}>
+            <AccordionButton>
+              {
+                !link.children ?
+                  <NavItem
+                    href={link.href!}
+                    icon={link.icon}
+                    onClick={onClose}
+                  >
+                    {link.name}
+                  </NavItem>
+                  :
+                  <HStack
+                    p="4"
+                    mx="4"
+                  >
+                    <HStack>
+                      <Icon as={link.icon} />
+                      <Text >{link.name}</Text>
+                    </HStack>
+                    <AccordionIcon />
+                  </HStack>
+              }
+            </AccordionButton>
+            {
+              link.children &&
+              <AccordionPanel>
+                {
+                  link.children.map((childLink, cId) => (
+                    ((!isVaultSetup && !childLink.hideWhenVaultNotSetup) || (isVaultSetup && !isLocked) || (isLocked && childLink.showWhenLocked)) &&
+                    <NavItem key={cId} href={childLink.href!} icon={childLink.icon} onClick={onClose}>
+                      {childLink.name}
+                    </NavItem>
+                  ))
+                }
+              </AccordionPanel>
+            }
+          </AccordionItem>
+        ))}
+      </Accordion>
       <Alert status='warning'>
         <AlertIcon />
         My Koinos Wallet is still a work in progress and breaking changes may happen. Make sure to generate a backup everytime you add a new wallet.
@@ -146,28 +195,31 @@ interface NavItemProps extends FlexProps {
 }
 const NavItem = ({ icon, href, children, ...rest }: NavItemProps) => {
   return (
-    <Link href={href} style={{ textDecoration: 'none' }}>
-      <Flex
-        align="center"
-        p="4"
-        mx="4"
-        borderRadius="lg"
-        role="group"
-        cursor="pointer"
-        _hover={{
-          bg: useColorModeValue('gray.400', 'gray.600'),
-        }}
-        {...rest}>
-        {icon && (
-          <Icon
-            mr="4"
-            fontSize="16"
-            as={icon}
-          />
-        )}
-        {children}
-      </Flex>
-    </Link>
+    <Box width='100%'>
+      <Link href={href} style={{ textDecoration: 'none' }}>
+        <Flex
+          width='100%'
+          align="center"
+          p="4"
+          mx="4"
+          borderRadius="lg"
+          role="group"
+          cursor="pointer"
+          _hover={{
+            bg: useColorModeValue('gray.400', 'gray.600'),
+          }}
+          {...rest}>
+          {icon && (
+            <Icon
+              mr="4"
+              fontSize="16"
+              as={icon}
+            />
+          )}
+          <Text>{children}</Text>
+        </Flex>
+      </Link>
+    </Box>
   )
 }
 
