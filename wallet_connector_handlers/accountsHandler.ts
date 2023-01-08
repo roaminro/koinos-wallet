@@ -1,4 +1,5 @@
 import { IncomingMessage, OutgoingMessage } from '../pages/embed/wallet-connector'
+import { ACCOUNTS_PARENT_ID } from '../util/Constants'
 import { Messenger, SendDataFn, SendErrorFn } from '../util/Messenger'
 import { getErrorMessage } from '../util/Utils'
 
@@ -31,7 +32,7 @@ const getAccounts = (requester: string, _: IncomingMessage, sendData: SendDataFn
   return new Promise<void>((resolve) => {
     const params = 'popup=yes,scrollbars=no,resizable=yes,status=no,location=no,toolbar=no,menubar=no,width=400,height=500'
     const newWindow = window.open('/embed/getAccounts', 'Accounts', params)!
-    const popupMsgr = new Messenger<GetAccountsResult, GetAccountsArguments>(newWindow, 'accounts-popup-parent', true, window.location.origin)
+    const popupMsgr = new Messenger<GetAccountsResult, GetAccountsArguments>(newWindow, ACCOUNTS_PARENT_ID, true, window.location.origin)
 
     newWindow.onload = () => {
       newWindow.onunload = () => {

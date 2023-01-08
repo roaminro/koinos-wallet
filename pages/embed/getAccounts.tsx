@@ -5,6 +5,7 @@ import { useWallets } from '../../context/WalletsProvider'
 import { debug, truncateAccount } from '../../util/Utils'
 import { GetAccountsArguments, GetAccountsResult, IAccount } from '../../wallet_connector_handlers/accountsHandler'
 import type { NextPageWithLayout } from '../_app'
+import { ACCOUNTS_CHILD_ID, ACCOUNTS_PARENT_ID } from '../../util/Constants'
 
 
 const GetAccounts: NextPageWithLayout = () => {
@@ -16,15 +17,15 @@ const GetAccounts: NextPageWithLayout = () => {
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    const msgr = new Messenger<GetAccountsArguments, GetAccountsResult | null>(window.opener, 'accounts-popup-child', true, window.location.origin)
+    const msgr = new Messenger<GetAccountsArguments, GetAccountsResult | null>(window.opener, ACCOUNTS_CHILD_ID, true, window.location.origin)
     setMessenger(msgr)
 
     const setupMessenger = async () => {
 
-      await msgr.ping('accounts-popup-parent')
+      await msgr.ping(ACCOUNTS_PARENT_ID)
       debug('connected to parent iframe')
 
-      const { requester } = await msgr.sendRequest('accounts-popup-parent', null)
+      const { requester } = await msgr.sendRequest(ACCOUNTS_PARENT_ID, null)
       setRequester(requester)
       setIsLoading(false)
     }
@@ -85,7 +86,7 @@ const GetAccounts: NextPageWithLayout = () => {
       }
     }
 
-    messenger!.sendMessage('accounts-popup-parent', accounts)
+    messenger!.sendMessage(ACCOUNTS_PARENT_ID, accounts)
   }
 
   const close = () => {

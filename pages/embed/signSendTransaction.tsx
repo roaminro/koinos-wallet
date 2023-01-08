@@ -8,6 +8,7 @@ import { useNetworks } from '../../context/NetworksProvider'
 import { SignSendTransactionArguments, SignSendTransactionResult } from '../../wallet_connector_handlers/signerHandler'
 import { debug, getErrorMessage } from '../../util/Utils'
 import type { NextPageWithLayout } from '../_app'
+import { SIGN_SEND_TRANSACTION_CHILD_ID, SIGN_SEND_TRANSACTION_PARENT_ID } from '../../util/Constants'
 
 const SignSendTransaction: NextPageWithLayout = () => {
   const toast = useToast()
@@ -32,14 +33,14 @@ const SignSendTransaction: NextPageWithLayout = () => {
   const [hasDecodingError, setHasDecodingError] = useState(false)
 
   useEffect(() => {
-    const msgr = new Messenger<SignSendTransactionArguments, SignSendTransactionResult | null>(window.opener, 'sign-send-transaction-popup-child', true, window.location.origin)
+    const msgr = new Messenger<SignSendTransactionArguments, SignSendTransactionResult | null>(window.opener, SIGN_SEND_TRANSACTION_CHILD_ID, true, window.location.origin)
     setMessenger(msgr)
 
     const setupMessenger = async () => {
-      await msgr.ping('sign-send-transaction-popup-parent')
+      await msgr.ping(SIGN_SEND_TRANSACTION_PARENT_ID)
       debug('connected to parent iframe')
       
-      const { requester, send, signerAddress, transaction, options } = await msgr.sendRequest('sign-send-transaction-popup-parent', null)
+      const { requester, send, signerAddress, transaction, options } = await msgr.sendRequest(SIGN_SEND_TRANSACTION_PARENT_ID, null)
 
       setRequester(requester)
       setSend(send)
@@ -167,12 +168,12 @@ const SignSendTransaction: NextPageWithLayout = () => {
       const signedTransaction = await signTransaction(signerAddress, tempTransaction)
 
       if (!send) {
-        messenger!.sendMessage('sign-send-transaction-popup-parent', {
+        messenger!.sendMessage(SIGN_SEND_TRANSACTION_PARENT_ID, {
           transaction: signedTransaction
         })
       } else {
         const sentTransaction = await provider!.sendTransaction(signedTransaction)
-        messenger!.sendMessage('sign-send-transaction-popup-parent', sentTransaction)
+        messenger!.sendMessage(SIGN_SEND_TRANSACTION_PARENT_ID, sentTransaction)
       }
     } catch (error) {
       console.error(error)

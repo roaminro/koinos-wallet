@@ -7,6 +7,7 @@ import { SignMessageArguments } from '../../wallet_connector_handlers/signerHand
 import { debug } from '../../util/Utils'
 import type { NextPageWithLayout } from '../_app'
 import { base64EncodeURL } from '../../util/Base64'
+import { SIGN_MESSAGE_CHILD_ID, SIGN_MESSAGE_PARENT_ID } from '../../util/Constants'
 
 const SignMessage: NextPageWithLayout = () => {
   const toast = useToast()
@@ -22,14 +23,14 @@ const SignMessage: NextPageWithLayout = () => {
   const [isSigning, setIsSigning] = useState(false)
 
   useEffect(() => {
-    const msgr = new Messenger<SignMessageArguments, string | null>(window.opener, 'sign-message-popup-child', true, window.location.origin)
+    const msgr = new Messenger<SignMessageArguments, string | null>(window.opener, SIGN_MESSAGE_CHILD_ID, true, window.location.origin)
     setMessenger(msgr)
 
     const setupMessenger = async () => {
-      await msgr.ping('sign-message-popup-parent')
+      await msgr.ping(SIGN_MESSAGE_PARENT_ID)
       debug('connected to parent iframe')
       
-      const { requester, signerAddress, message } = await msgr.sendRequest('sign-message-popup-parent', null)
+      const { requester, signerAddress, message } = await msgr.sendRequest(SIGN_MESSAGE_PARENT_ID, null)
 
       setRequester(requester)
       setSignerAddress(signerAddress)
@@ -51,7 +52,7 @@ const SignMessage: NextPageWithLayout = () => {
     try {
       const signature = await signHash(signerAddress, sha256(message))
 
-      messenger!.sendMessage('sign-message-popup-parent', base64EncodeURL(signature))
+      messenger!.sendMessage(SIGN_MESSAGE_PARENT_ID, base64EncodeURL(signature))
     } catch (error) {
       console.error(error)
       toast({
