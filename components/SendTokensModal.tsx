@@ -1,14 +1,7 @@
-import { useColorModeValue, Text, Modal, ModalOverlay, ModalContent, ModalHeader, ModalCloseButton, ModalBody, ModalFooter, Button, FormControl, FormErrorMessage, FormHelperText, FormLabel, Input, NumberDecrementStepper, NumberIncrementStepper, NumberInput, NumberInputField, NumberInputStepper, Select, useToast, Tooltip, Stack, HStack, InputGroup, InputRightElement, IconButton } from '@chakra-ui/react'
+import { useColorModeValue, Text, Modal, ModalOverlay, ModalContent, ModalHeader, ModalCloseButton, ModalBody, ModalFooter, Button, FormControl, FormErrorMessage, FormHelperText, FormLabel, Input, NumberDecrementStepper, NumberIncrementStepper, NumberInput, NumberInputField, useToast, Tooltip, Stack, HStack, InputGroup, InputRightElement, IconButton } from '@chakra-ui/react'
 import { Contract, utils, Signer } from 'koilib'
 import { ChangeEvent, useEffect, useState } from 'react'
 import NiceModal, { useModal } from '@ebay/nice-modal-react'
-import {
-  AutoComplete,
-  AutoCompleteGroup,
-  AutoCompleteGroupTitle,
-  AutoCompleteInput,
-  AutoCompleteItem,
-  AutoCompleteList} from '@choc-ui/chakra-autocomplete'
 import { useNetworks } from '../context/NetworksProvider'
 import { useWallets } from '../context/WalletsProvider'
 import { TransactionJson } from 'koilib/lib/interface'
@@ -17,6 +10,9 @@ import { useSWRConfig } from 'swr'
 import { Token, useTokens } from '../context/TokensProvider'
 import { useTokenBalance } from './BalanceUtils'
 import { FiX } from 'react-icons/fi'
+import { GroupBase, Select, SingleValue } from 'chakra-react-select'
+
+import { Account } from '../util/Vault'
 
 interface SendTokensModalProps {
   defaultTokenAddress: string
@@ -34,9 +30,10 @@ export default NiceModal.create(({ defaultTokenAddress }: SendTokensModalProps) 
 
   const [amount, setAmount] = useState('0')
   const [recipientAddress, setRecipientAddress] = useState('')
-  const [recipientAccountName, setRecipientAccountName] = useState('')
-  const [availableTokens, setAvailableTokens] = useState<Record<string, Token>>()
-  const [selectedToken, setSelectedToken] = useState<Token>()
+  const [recipientAccount, setRecipientAccount] = useState<Account | null>()
+
+  const [availableTokens, setAvailableTokens] = useState<Token[]>()
+  const [selectedToken, setSelectedToken] = useState<Token | null>()
   const [isSending, setIsSending] = useState(false)
 
   const handleRecipientAddressChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -47,15 +44,29 @@ export default NiceModal.create(({ defaultTokenAddress }: SendTokensModalProps) 
     setAmount(amount)
   }
 
-  const handleTokenChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    if (availableTokens) {
-      setSelectedToken(availableTokens[event.target.value])
+  const clearAmount = () => {
+    setAmount('0')
+  }
+
+  const handleRecipientAccountChange = (newVal: SingleValue<Account>) => {
+    setRecipientAccount(newVal)
+    if (newVal) {
+      setRecipientAddress(newVal.public.address)
     }
+  }
+
+  const handleTokenChange = (newVal: SingleValue<Token>) => {
+    setSelectedToken(newVal)
+  }
+
+  const clearRecipient = () => {
+    setRecipientAddress('')
+    setRecipientAccount(null)
   }
 
   useEffect(() => {
     if (tokens && selectedNetwork) {
-      const tkns: Record<string, Token> = {}
+      const tkns: Token[] = []
 
       const initialToken: Token = {
         chainId: selectedNetwork.chainId,
@@ -65,7 +76,7 @@ export default NiceModal.create(({ defaultTokenAddress }: SendTokensModalProps) 
         decimals: selectedNetwork.tokenDecimals,
       }
 
-      tkns[initialToken.address] = initialToken
+      tkns.push(initialToken)
 
       if (initialToken.address === defaultTokenAddress) {
         setSelectedToken(initialToken)
@@ -75,7 +86,7 @@ export default NiceModal.create(({ defaultTokenAddress }: SendTokensModalProps) 
         const token = tokens[tokenAddress]
 
         if (token.chainId === selectedNetwork.chainId) {
-          tkns[token.address] = token
+          tkns.push(token)
         }
 
         if (token.address === defaultTokenAddress) {
@@ -83,7 +94,7 @@ export default NiceModal.create(({ defaultTokenAddress }: SendTokensModalProps) 
         }
       }
 
-      setAvailableTokens({ ...tkns })
+      setAvailableTokens(tkns)
     }
   }, [defaultTokenAddress, selectedNetwork, tokens])
 
@@ -161,6 +172,23 @@ export default NiceModal.create(({ defaultTokenAddress }: SendTokensModalProps) 
 
   const canSendTokens = !isRecipientAddressInvalid && !!selectedToken && parseFloat(amount) > 0
 
+  const accountOptions: GroupBase<Account>[] = []
+
+  Object.entries(wallets).map(([walletId, wallet]) => {
+    const walletOption: { label: string, options: Account[] } = {
+      label: wallet.name,
+      options: []
+    }
+
+    Object.entries(wallet.accounts).map(([accountId, account]) => {
+      walletOption.options.push(account)
+    })
+
+    accountOptions.push(walletOption)
+  })
+
+
+
   return (
     <Modal isOpen={modal.visible} onClose={modal.hide}>
       <ModalOverlay />
@@ -171,16 +199,16 @@ export default NiceModal.create(({ defaultTokenAddress }: SendTokensModalProps) 
           <Stack>
             <FormControl>
               <FormLabel>Token</FormLabel>
-              <Select
-                value={selectedToken?.address}
+              <Select<Token>
+                useBasicStyles
+                options={availableTokens}
+                getOptionLabel={(token: Token) => `${token.name} (${token.symbol})`}
+                getOptionValue={(token: Token) => token.address}
+                placeholder="Select the token to send..."
+                closeMenuOnSelect={true}
+                value={selectedToken}
                 onChange={handleTokenChange}
-              >
-                {
-                  availableTokens && Object.keys(availableTokens).map((tknAddr) => (
-                    <option key={tknAddr} value={tknAddr} >{availableTokens[tknAddr].name} ({availableTokens[tknAddr].symbol})</option>
-                  ))
-                }
-              </Select>
+              />
               <FormHelperText>Select the token to send.</FormHelperText>
             </FormControl>
 
@@ -192,56 +220,27 @@ export default NiceModal.create(({ defaultTokenAddress }: SendTokensModalProps) 
 
             <FormControl isRequired isInvalid={isRecipientAddressInvalid}>
               <FormLabel>Recipient</FormLabel>
-              <AutoComplete
-                restoreOnBlurIfEmpty={false}
-                openOnFocus
-                emptyState={<Text align='center'>no recipient found</Text>}
-                onSelectOption={(selection) => {
-                  setRecipientAddress(selection.item.value)
-                }}
-              >
-                <InputGroup>
-                  <AutoCompleteInput
-                    placeholder='Choose from wallets accounts...'
-                  />
-                  <InputRightElement>
-                    <Tooltip
-                      label='clear account name'
-                      placement="bottom"
-                      hasArrow
-                    >
-                      <IconButton aria-label='clear account name' icon={<FiX />} onClick={() => setRecipientAccountName('sdfdfs')} />
-                    </Tooltip>
-                  </InputRightElement>
-                </InputGroup>
-                <AutoCompleteList>
-                  {Object.entries(wallets).map(([walletId, wallet], _) => (
-                    <AutoCompleteGroup key={walletId} showDivider>
-                      <AutoCompleteGroupTitle>
-                        {wallet.name}
-                      </AutoCompleteGroupTitle>
-                      {Object.entries(wallet.accounts).map(([accountId, account], _) => (
-                        <AutoCompleteItem
-                          key={accountId}
-                          value={account.public.address}
-                          label={account.public.name}
-                        >
-                          {account.public.name}
-                        </AutoCompleteItem>
-                      ))}
-                    </AutoCompleteGroup>
-                  ))}
-                </AutoCompleteList>
-              </AutoComplete>
+              <Select<Account, false, GroupBase<Account>>
+                useBasicStyles
+                isClearable
+                options={accountOptions}
+                placeholder="Select recipient from wallets accounts..."
+                backspaceRemovesValue={true}
+                closeMenuOnSelect={true}
+                getOptionLabel={(account: Account) => account.public.name}
+                getOptionValue={(account: Account) => account.public.address}
+                value={recipientAccount}
+                onChange={handleRecipientAccountChange}
+              />
               <InputGroup>
                 <Input value={recipientAddress} onChange={handleRecipientAddressChange} />
-                <InputRightElement>
+                <InputRightElement zIndex='0'>
                   <Tooltip
                     label='clear recipient'
                     placement="bottom"
                     hasArrow
                   >
-                    <IconButton aria-label='clear recipient' icon={<FiX />} onClick={() => setRecipientAddress('')} />
+                    <IconButton variant='ghost' aria-label='clear recipient' icon={<FiX />} onClick={clearRecipient} />
                   </Tooltip>
                 </InputRightElement>
               </InputGroup>
@@ -253,13 +252,20 @@ export default NiceModal.create(({ defaultTokenAddress }: SendTokensModalProps) 
 
             <FormControl>
               <FormLabel>Amount</FormLabel>
-              <NumberInput min={0} precision={selectedToken?.decimals} value={amount} onChange={handleAmountChange}>
-                <NumberInputField />
-                <NumberInputStepper>
-                  <NumberIncrementStepper />
-                  <NumberDecrementStepper />
-                </NumberInputStepper>
-              </NumberInput>
+              <InputGroup>
+                <NumberInput width='100%' min={0} precision={selectedToken?.decimals} value={amount} onChange={handleAmountChange}>
+                  <NumberInputField />
+                </NumberInput>
+                <InputRightElement  zIndex='0'>
+                  <Tooltip
+                    label='clear amount'
+                    placement="bottom"
+                    hasArrow
+                  >
+                    <IconButton variant='ghost' aria-label='clear amount' icon={<FiX />} onClick={clearAmount} />
+                  </Tooltip>
+                </InputRightElement>
+              </InputGroup>
               <FormHelperText>
                 <Text>Amount of tokens to send.</Text>
                 <HStack justifyContent='space-between'>
