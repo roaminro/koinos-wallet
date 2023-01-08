@@ -9,6 +9,7 @@ import getUuidByString from 'uuid-by-string'
 import { FiAlertCircle, FiEdit2, FiGlobe, FiUsers } from 'react-icons/fi'
 import { IconType } from 'react-icons'
 import { debug } from '../../util/Utils'
+import { REQUEST_PERMISSIONS_CHILD_ID, REQUEST_PERMISSIONS_PARENT_ID } from '../../util/Constants'
 
 interface DisplayPermission {
   scope: string
@@ -25,15 +26,15 @@ const RequestPermissions: NextPageWithLayout = () => {
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    const msgr = new Messenger<RequestPermissionsArguments, RequestPermissionsResult | null>(window.opener, 'request-permissions-popup-child', true, window.location.origin)
+    const msgr = new Messenger<RequestPermissionsArguments, RequestPermissionsResult | null>(window.opener, REQUEST_PERMISSIONS_CHILD_ID, true, window.location.origin)
     setMessenger(msgr)
 
     const setupMessenger = async () => {
 
-      await msgr.ping('request-permissions-popup-parent')
+      await msgr.ping(REQUEST_PERMISSIONS_PARENT_ID)
       debug('connected to parent iframe')
 
-      const { requester, permissions } = await msgr.sendRequest('request-permissions-popup-parent', null)
+      const { requester, permissions } = await msgr.sendRequest(REQUEST_PERMISSIONS_PARENT_ID, null)
       setRequester(requester)
 
       const displayPermissions: DisplayPermission[] = []
@@ -86,7 +87,7 @@ const RequestPermissions: NextPageWithLayout = () => {
 
     updateAppPermissions(appPermissions)
 
-    messenger!.sendMessage('request-permissions-popup-parent', {
+    messenger!.sendMessage(REQUEST_PERMISSIONS_PARENT_ID, {
       permissions: appPermissions.permissions
     })
   }

@@ -1,7 +1,7 @@
 import { ReactNode, useContext, useState, createContext, useEffect, useRef, useCallback } from 'react'
 import { useRouter } from 'next/router'
 
-import { AUTOLOCK_DEADLINE_KEY, DEFAULT_AUTOLOCK_TIME_KEY, PUBLIC_PATHS, SELECTED_ACCOUNT_KEY, VAULT_KEY, VAULT_SERVICE_WORKER_ID } from '../util/Constants'
+import { AUTOLOCK_DEADLINE_KEY, DEFAULT_AUTOLOCK_TIME_KEY, PUBLIC_PATHS, SELECTED_ACCOUNT_KEY, VAULT_KEY, VAULT_CONNECTOR_PARENT_ID, VAULT_CONNECTOR_CHILD_ID } from '../util/Constants'
 import { Wallet, Account } from '../util/Vault'
 import { getSetting, setSetting } from '../util/Settings'
 import { debounce, debug } from '../util/Utils'
@@ -83,7 +83,7 @@ export const WalletsProvider = ({
   const vaultMessenger = useRef<Messenger<OutgoingMessage, IncomingMessage>>()
 
   const saveVaultToLocalStorage = async () => {
-    const { result: serializedVault } = await vaultMessenger.current!.sendRequest(VAULT_SERVICE_WORKER_ID, {
+    const { result: serializedVault } = await vaultMessenger.current!.sendRequest(VAULT_CONNECTOR_PARENT_ID, {
       command: 'serialize'
     })
 
@@ -109,7 +109,7 @@ export const WalletsProvider = ({
   const unlock = async (password: string) => {
     const encryptedVault = localStorage.getItem(VAULT_KEY)
 
-    const { result } = await vaultMessenger.current!.sendRequest(VAULT_SERVICE_WORKER_ID, {
+    const { result } = await vaultMessenger.current!.sendRequest(VAULT_CONNECTOR_PARENT_ID, {
       command: 'unlock',
       arguments: {
         password,
@@ -123,7 +123,7 @@ export const WalletsProvider = ({
   }
 
   const lock = useCallback(async () => {
-    await vaultMessenger.current!.sendRequest(VAULT_SERVICE_WORKER_ID, {
+    await vaultMessenger.current!.sendRequest(VAULT_CONNECTOR_PARENT_ID, {
       command: 'lock'
     })
     setIsLocked(true)
@@ -131,7 +131,7 @@ export const WalletsProvider = ({
   }, [])
 
   const tryDecrypt = async (password: string, encryptedVault: string) => {
-    await vaultMessenger.current!.sendRequest(VAULT_SERVICE_WORKER_ID, {
+    await vaultMessenger.current!.sendRequest(VAULT_CONNECTOR_PARENT_ID, {
       command: 'tryDecrypt',
       arguments: {
         password,
@@ -141,7 +141,7 @@ export const WalletsProvider = ({
   }
 
   const isVaultLocked = async () => {
-    const { result } = await vaultMessenger.current!.sendRequest(VAULT_SERVICE_WORKER_ID, {
+    const { result } = await vaultMessenger.current!.sendRequest(VAULT_CONNECTOR_PARENT_ID, {
       command: 'isLocked'
     })
 
@@ -149,7 +149,7 @@ export const WalletsProvider = ({
   }
 
   const getVaultAccounts = async () => {
-    const { result } = await vaultMessenger.current!.sendRequest(VAULT_SERVICE_WORKER_ID, {
+    const { result } = await vaultMessenger.current!.sendRequest(VAULT_CONNECTOR_PARENT_ID, {
       command: 'getAccounts'
     })
 
@@ -225,7 +225,7 @@ export const WalletsProvider = ({
     let timeout = window.setTimeout(async function cb() {
       try {
         debug('Vault worker ping')
-        await msgr?.ping(VAULT_SERVICE_WORKER_ID)
+        await msgr?.ping(VAULT_CONNECTOR_PARENT_ID)
         debug('Vault worker alive')
       } catch (error) {
         debug('Vault worker offline, reloading...')
@@ -253,14 +253,14 @@ export const WalletsProvider = ({
 
           vaultServiceWorker.current = registration
 
-          msgr = new Messenger<OutgoingMessage, IncomingMessage>(registration.active!, 'vault-connector-child', false)
+          msgr = new Messenger<OutgoingMessage, IncomingMessage>(registration.active!, VAULT_CONNECTOR_CHILD_ID, false)
           vaultMessenger.current = msgr
 
           if (registration.installing) {
             debug('Vault worker installing')
           } else if (registration.waiting) {
             debug('Vault worker installed')
-            msgr.sendMessage(VAULT_SERVICE_WORKER_ID, {
+            msgr.sendMessage(VAULT_CONNECTOR_PARENT_ID, {
               command: 'skipWaiting'
             })
           } else if (registration.active) {
@@ -311,7 +311,7 @@ export const WalletsProvider = ({
 
   const addWallet = async (walletName: string, secretRecoveryPhrase?: string) => {
     // add wallet to vault
-    const { result: addWalletResult } = await vaultMessenger.current!.sendRequest(VAULT_SERVICE_WORKER_ID, {
+    const { result: addWalletResult } = await vaultMessenger.current!.sendRequest(VAULT_CONNECTOR_PARENT_ID, {
       command: 'addWallet',
       arguments: {
         walletName,
@@ -331,7 +331,7 @@ export const WalletsProvider = ({
 
   const removeWallet = async (walletId: string) => {
     if (wallets[walletId]) {
-      await vaultMessenger.current!.sendRequest(VAULT_SERVICE_WORKER_ID, {
+      await vaultMessenger.current!.sendRequest(VAULT_CONNECTOR_PARENT_ID, {
         command: 'removeWallet',
         arguments: {
           walletId
@@ -349,7 +349,7 @@ export const WalletsProvider = ({
 
   const updateWalletName = async (walletId: string, newWalletName: string) => {
     if (wallets[walletId]) {
-      await vaultMessenger.current!.sendRequest(VAULT_SERVICE_WORKER_ID, {
+      await vaultMessenger.current!.sendRequest(VAULT_CONNECTOR_PARENT_ID, {
         command: 'updateWalletName',
         arguments: {
           walletId,
@@ -372,7 +372,7 @@ export const WalletsProvider = ({
 
   const addAccount = async (walletId: string, accountName: string) => {
     // add account to wallet
-    const { result: addAccountResult } = await vaultMessenger.current!.sendRequest(VAULT_SERVICE_WORKER_ID, {
+    const { result: addAccountResult } = await vaultMessenger.current!.sendRequest(VAULT_CONNECTOR_PARENT_ID, {
       command: 'addAccount',
       arguments: {
         walletId,
@@ -394,7 +394,7 @@ export const WalletsProvider = ({
 
   const removeAccount = async (walletId: string, accountId: string) => {
     if (wallets[walletId] && wallets[walletId].accounts[accountId]) {
-      await vaultMessenger.current!.sendRequest(VAULT_SERVICE_WORKER_ID, {
+      await vaultMessenger.current!.sendRequest(VAULT_CONNECTOR_PARENT_ID, {
         command: 'removeAccount',
         arguments: {
           walletId,
@@ -413,7 +413,7 @@ export const WalletsProvider = ({
 
   const updateAccountName = async (walletId: string, accountId:string, newAccountName: string) => {
     if (wallets[walletId] && wallets[walletId].accounts[accountId]) {
-      await vaultMessenger.current!.sendRequest(VAULT_SERVICE_WORKER_ID, {
+      await vaultMessenger.current!.sendRequest(VAULT_CONNECTOR_PARENT_ID, {
         command: 'updateAccountName',
         arguments: {
           walletId,
@@ -437,7 +437,7 @@ export const WalletsProvider = ({
 
   const importAccount = async (walletId: string, accountName: string, accountAddress: string, accountPrivateKey?: string) => {
     // add account to wallet
-    const { result: importAccountResult } = await vaultMessenger.current!.sendRequest(VAULT_SERVICE_WORKER_ID, {
+    const { result: importAccountResult } = await vaultMessenger.current!.sendRequest(VAULT_CONNECTOR_PARENT_ID, {
       command: 'importAccount',
       arguments: {
         walletId,
@@ -461,7 +461,7 @@ export const WalletsProvider = ({
   }
 
   const signTransaction = async (signerAddress: string, transaction: TransactionJson) => {
-    const { result: signedTransaction } = await vaultMessenger.current!.sendRequest(VAULT_SERVICE_WORKER_ID, {
+    const { result: signedTransaction } = await vaultMessenger.current!.sendRequest(VAULT_CONNECTOR_PARENT_ID, {
       command: 'signTransaction',
       arguments: {
         signerAddress,
@@ -473,7 +473,7 @@ export const WalletsProvider = ({
   }
 
   const signHash = async (signerAddress: string, hash: Uint8Array) => {
-    const { result: signedHash } = await vaultMessenger.current!.sendRequest(VAULT_SERVICE_WORKER_ID, {
+    const { result: signedHash } = await vaultMessenger.current!.sendRequest(VAULT_CONNECTOR_PARENT_ID, {
       command: 'signHash',
       arguments: {
         signerAddress,
@@ -485,7 +485,7 @@ export const WalletsProvider = ({
   }
 
   const getWalletSecretRecoveryPhrase = async (walletId: string, password: string) => {
-    const { result: secretRecoveryPhrase } = await vaultMessenger.current!.sendRequest(VAULT_SERVICE_WORKER_ID, {
+    const { result: secretRecoveryPhrase } = await vaultMessenger.current!.sendRequest(VAULT_CONNECTOR_PARENT_ID, {
       command: 'getWalletSecretRecoveryPhrase',
       arguments: {
         walletId,
@@ -497,7 +497,7 @@ export const WalletsProvider = ({
   }
 
   const getAccountPrivateKey = async (walletId: string, accountId: string, password: string) => {
-    const { result: privateKey } = await vaultMessenger.current!.sendRequest(VAULT_SERVICE_WORKER_ID, {
+    const { result: privateKey } = await vaultMessenger.current!.sendRequest(VAULT_CONNECTOR_PARENT_ID, {
       command: 'getAccountPrivateKey',
       arguments: {
         walletId,

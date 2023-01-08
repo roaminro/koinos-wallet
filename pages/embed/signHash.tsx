@@ -7,6 +7,7 @@ import { debug } from '../../util/Utils'
 import type { NextPageWithLayout } from '../_app'
 import { base64DecodeURL, base64EncodeURL } from '../../util/Base64'
 import { utils } from 'koilib'
+import { SIGN_HASH_CHILD_ID, SIGN_HASH_PARENT_ID } from '../../util/Constants'
 
 const SignHash: NextPageWithLayout = () => {
   const toast = useToast()
@@ -22,14 +23,14 @@ const SignHash: NextPageWithLayout = () => {
   const [isSigning, setIsSigning] = useState(false)
 
   useEffect(() => {
-    const msgr = new Messenger<SignHashArguments, string | null>(window.opener, 'sign-hash-popup-child', true, window.location.origin)
+    const msgr = new Messenger<SignHashArguments, string | null>(window.opener, SIGN_HASH_CHILD_ID, true, window.location.origin)
     setMessenger(msgr)
 
     const setupMessenger = async () => {
-      await msgr.ping('sign-hash-popup-parent')
+      await msgr.ping(SIGN_HASH_PARENT_ID)
       debug('connected to parent iframe')
       
-      const { requester, signerAddress, hash } = await msgr.sendRequest('sign-hash-popup-parent', null)
+      const { requester, signerAddress, hash } = await msgr.sendRequest(SIGN_HASH_PARENT_ID, null)
 
       setRequester(requester)
       setSignerAddress(signerAddress)
@@ -51,7 +52,7 @@ const SignHash: NextPageWithLayout = () => {
     try {
       const signature = await signHash(signerAddress, hash!)
 
-      messenger!.sendMessage('sign-hash-popup-parent', base64EncodeURL(signature))
+      messenger!.sendMessage(SIGN_HASH_PARENT_ID, base64EncodeURL(signature))
     } catch (error) {
       console.error(error)
       toast({

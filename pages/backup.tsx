@@ -10,7 +10,7 @@ import { BackButton } from '../components/BackButton'
 export default function Vault() {
   const toast = useToast()
 
-  const { isVaultSetup, unlock, tryDecrypt } = useWallets()
+  const { isVaultSetup, unlock, tryDecrypt, isLocked } = useWallets()
 
   const [password, setPassword] = useState('')
   const [backup, setBackup] = useState<string | null>(null)
@@ -147,7 +147,7 @@ export default function Vault() {
   return (
     <Stack mt='6' spacing='3' align='center'>
       {
-        isVaultSetup &&
+        isVaultSetup && !isLocked &&
         <Card width='100%'>
           <CardHeader>
             <Stack spacing={8} direction='row'>

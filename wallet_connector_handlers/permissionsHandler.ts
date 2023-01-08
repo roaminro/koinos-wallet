@@ -1,6 +1,7 @@
 import getUuidByString from 'uuid-by-string'
 import { AppPermissions, Permissions } from '../context/PermissionsProvider'
 import { IncomingMessage, OutgoingMessage } from '../pages/embed/wallet-connector'
+import { REQUEST_PERMISSIONS_PARENT_ID } from '../util/Constants'
 import { Messenger, SendDataFn, SendErrorFn } from '../util/Messenger'
 import { getErrorMessage } from '../util/Utils'
 
@@ -29,7 +30,7 @@ const requestPermissions = (requester: string, data: IncomingMessage, sendData: 
   return new Promise<void>((resolve) => {
     const params = 'popup=yes,scrollbars=no,resizable=yes,status=no,location=no,toolbar=no,menubar=no,width=450,height=550'
     const newWindow = window.open('/embed/requestPermissions', 'Permissions', params)!
-    const popupMsgr = new Messenger<RequestPermissionsResult, RequestPermissionsArguments>(newWindow, 'request-permissions-popup-parent', true, window.location.origin)
+    const popupMsgr = new Messenger<RequestPermissionsResult, RequestPermissionsArguments>(newWindow, REQUEST_PERMISSIONS_PARENT_ID, true, window.location.origin)
 
     newWindow.onload = () => {
       newWindow.onunload = () => {

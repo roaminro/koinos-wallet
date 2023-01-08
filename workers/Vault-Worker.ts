@@ -3,6 +3,7 @@ import { Vault } from '../util/Vault'
 import { vaultWorkerLogLevel } from '../app.config'
 import { IncomingMessage, OutgoingMessage, UnlockArguments, AddWalletArguments, AddAccountArguments, ImportAccountArguments, CheckPasswordArguments, GetWalletSecretRecoveryPhraseArguments, GetAccountPrivateKeyArguments, UpdateWalletNameArguments, RemoveWalletArguments, UpdateAccountNameArguments, RemoveAccountArguments, AddAccountSignersArguments, RemoveAccountSignerArguments, TryDecryptArguments, SignTransactionArguments, SignHashArguments } from './Vault-Worker-Interfaces'
 import { base64DecodeURL, base64EncodeURL } from '../util/Base64'
+import { VAULT_CONNECTOR_PARENT_ID } from '../util/Constants'
 
 const debug = (...args: any) => {
   if (vaultWorkerLogLevel === 'debug') {
@@ -10,7 +11,7 @@ const debug = (...args: any) => {
   }
 }
 
-const messenger = new Messenger<IncomingMessage, OutgoingMessage>(self, 'vault-connector-parent', false)
+const messenger = new Messenger<IncomingMessage, OutgoingMessage>(self, VAULT_CONNECTOR_PARENT_ID, false)
 
 const vault = new Vault()
 

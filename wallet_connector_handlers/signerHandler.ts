@@ -1,6 +1,7 @@
 import { Provider, Signer } from 'koilib'
 import { SendTransactionOptions, TransactionJson, TransactionReceipt } from 'koilib/lib/interface'
 import { IncomingMessage, OutgoingMessage } from '../pages/embed/wallet-connector'
+import { SIGN_HASH_PARENT_ID, SIGN_MESSAGE_PARENT_ID, SIGN_SEND_TRANSACTION_PARENT_ID } from '../util/Constants'
 import { Messenger, SendDataFn, SendErrorFn } from '../util/Messenger'
 import { getErrorMessage } from '../util/Utils'
 
@@ -111,7 +112,7 @@ const signSendTransaction = (send: boolean, requester: string, data: IncomingMes
   return new Promise<void>((resolve) => {
     const params = 'popup=yes,scrollbars=no,resizable=yes,status=no,location=no,toolbar=no,menubar=no,width=450,height=550'
     const newWindow = window.open('/embed/signSendTransaction', 'Transaction', params)!
-    const popupMsgr = new Messenger<SignSendTransactionResult, SignSendTransactionArguments>(newWindow, 'sign-send-transaction-popup-parent', true, window.location.origin)
+    const popupMsgr = new Messenger<SignSendTransactionResult, SignSendTransactionArguments>(newWindow, SIGN_SEND_TRANSACTION_PARENT_ID, true, window.location.origin)
 
     newWindow.onload = () => {
       newWindow.onunload = () => {
@@ -161,7 +162,7 @@ const signMessage = (requester: string, data: IncomingMessage, sendData: SendDat
   return new Promise<void>((resolve) => {
     const params = 'popup=yes,scrollbars=no,resizable=yes,status=no,location=no,toolbar=no,menubar=no,width=450,height=550'
     const newWindow = window.open('/embed/signMessage', 'Message Signature', params)!
-    const popupMsgr = new Messenger<string, SignMessageArguments>(newWindow, 'sign-message-popup-parent', true, window.location.origin)
+    const popupMsgr = new Messenger<string, SignMessageArguments>(newWindow, SIGN_MESSAGE_PARENT_ID, true, window.location.origin)
 
     newWindow.onload = () => {
       newWindow.onunload = () => {
@@ -210,7 +211,7 @@ const signHash = (requester: string, data: IncomingMessage, sendData: SendDataFn
   return new Promise<void>((resolve) => {
     const params = 'popup=yes,scrollbars=no,resizable=yes,status=no,location=no,toolbar=no,menubar=no,width=450,height=550'
     const newWindow = window.open('/embed/signHash', 'Hash Signature', params)!
-    const popupMsgr = new Messenger<string, SignHashArguments>(newWindow, 'sign-hash-popup-parent', true, window.location.origin)
+    const popupMsgr = new Messenger<string, SignHashArguments>(newWindow, SIGN_HASH_PARENT_ID, true, window.location.origin)
 
     newWindow.onload = () => {
       newWindow.onunload = () => {
