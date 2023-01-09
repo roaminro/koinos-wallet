@@ -28,7 +28,7 @@ export default NiceModal.create(({ defaultTokenAddress }: SendTokensModalProps) 
   const { selectedNetwork, provider } = useNetworks()
   const { tokens } = useTokens()
 
-  const [amount, setAmount] = useState('0')
+  const [amount, setAmount] = useState('')
   const [recipientAddress, setRecipientAddress] = useState('')
   const [recipientAccount, setRecipientAccount] = useState<Account | null>()
 
@@ -45,7 +45,7 @@ export default NiceModal.create(({ defaultTokenAddress }: SendTokensModalProps) 
   }
 
   const clearAmount = () => {
-    setAmount('0')
+    setAmount('')
   }
 
   const handleRecipientAccountChange = (newVal: SingleValue<Account>) => {
@@ -129,7 +129,18 @@ export default NiceModal.create(({ defaultTokenAddress }: SendTokensModalProps) 
         })
 
         // sign transaction
-        const signedTx = await signTransaction(selectedAccount.account.public.address!, transaction as TransactionJson)
+        let signedTx = await signTransaction(selectedAccount.account.public.address!, transaction as TransactionJson)
+        
+        // submit transaction without broadcasting to estimate mana used
+        const { receipt } = await provider!.sendTransaction(signedTx, false)
+        
+        // add 10% to estimated mana used
+        signedTx.header!.rc_limit = (BigInt(receipt.rc_used) * BigInt(110) / BigInt(100)).toString()
+        signedTx.signatures = []
+        signedTx = await dummySigner.prepareTransaction(signedTx)
+
+        // sign transaction with new header
+        signedTx = await signTransaction(selectedAccount.account.public.address!, signedTx)
 
         // send transaction
         const sendResult = await provider?.sendTransaction(signedTx)
