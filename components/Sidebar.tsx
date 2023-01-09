@@ -25,6 +25,8 @@ import {
   AccordionIcon,
   AccordionItem,
   AccordionPanel,
+  VStack,
+  Stack,
 } from '@chakra-ui/react'
 import {
   FiHome,
@@ -111,6 +113,7 @@ const SidebarContent = ({ onClose, ...rest }: SidebarProps) => {
 
   return (
     <Box
+      overflow='auto'
       transition="3s ease"
       bg={useColorModeValue('gray.300', 'gray.700')}
       borderRight="1px"
@@ -119,71 +122,77 @@ const SidebarContent = ({ onClose, ...rest }: SidebarProps) => {
       pos="fixed"
       h="full"
       {...rest}>
-      <Flex h="20" alignItems="center" mx="8" justifyContent="space-between">
-        <Logo display='flex' size='40px' />
-        <Link href='/home'>
-          <Text fontSize={['sm', 'md', 'md', 'md']} fontWeight="bold">
-            My Koinos Wallet
-          </Text>
-        </Link>
-        <CloseButton display={{ base: 'flex', md: 'none' }} onClick={onClose} />
-      </Flex>
-      <Accordion allowMultiple>
-        {LinkItems.map((link, id) => (
-          ((!isVaultSetup && !link.hideWhenVaultNotSetup) || (isVaultSetup && !isLocked) || (isLocked && link.showWhenLocked)) &&
-          <AccordionItem key={id}>
-            <AccordionButton>
-              {
-                !link.children ?
-                  <NavItem
-                    href={link.href!}
-                    icon={link.icon}
-                    onClick={onClose}
-                  >
-                    {link.name}
-                  </NavItem>
-                  :
-                  <HStack
-                    p="4"
-                    mx="4"
-                  >
-                    <HStack>
-                      <Icon as={link.icon} />
-                      <Text >{link.name}</Text>
-                    </HStack>
-                    <AccordionIcon />
-                  </HStack>
-              }
-            </AccordionButton>
-            {
-              link.children &&
-              <AccordionPanel>
+      <Stack height='100%' justifyContent='space-between'>
+        <Box>
+          <Flex h="20" alignItems="center" mx="8" justifyContent="space-between">
+            <Logo display='flex' size='40px' />
+            <Link href='/home'>
+              <Text fontSize={['sm', 'md', 'md', 'md']} fontWeight="bold">
+                My Koinos Wallet
+              </Text>
+            </Link>
+            <CloseButton display={{ base: 'flex', md: 'none' }} onClick={onClose} />
+          </Flex>
+          <Accordion allowMultiple>
+            {LinkItems.map((link, id) => (
+              ((!isVaultSetup && !link.hideWhenVaultNotSetup) || (isVaultSetup && !isLocked) || (isLocked && link.showWhenLocked)) &&
+              <AccordionItem key={id}>
+                <AccordionButton>
+                  {
+                    !link.children ?
+                      <NavItem
+                        href={link.href!}
+                        icon={link.icon}
+                        onClick={onClose}
+                      >
+                        {link.name}
+                      </NavItem>
+                      :
+                      <HStack
+                        p="4"
+                        mx="4"
+                      >
+                        <HStack>
+                          <Icon as={link.icon} />
+                          <Text >{link.name}</Text>
+                        </HStack>
+                        <AccordionIcon />
+                      </HStack>
+                  }
+                </AccordionButton>
                 {
-                  link.children.map((childLink, cId) => (
-                    ((!isVaultSetup && !childLink.hideWhenVaultNotSetup) || (isVaultSetup && !isLocked) || (isLocked && childLink.showWhenLocked)) &&
-                    <NavItem key={cId} href={childLink.href!} icon={childLink.icon} onClick={onClose}>
-                      {childLink.name}
-                    </NavItem>
-                  ))
+                  link.children &&
+                  <AccordionPanel>
+                    {
+                      link.children.map((childLink, cId) => (
+                        ((!isVaultSetup && !childLink.hideWhenVaultNotSetup) || (isVaultSetup && !isLocked) || (isLocked && childLink.showWhenLocked)) &&
+                        <NavItem key={cId} href={childLink.href!} icon={childLink.icon} onClick={onClose}>
+                          {childLink.name}
+                        </NavItem>
+                      ))
+                    }
+                  </AccordionPanel>
                 }
-              </AccordionPanel>
-            }
-          </AccordionItem>
-        ))}
-      </Accordion>
-      <Alert status='warning'>
-        <AlertIcon />
-        My Koinos Wallet is still a work in progress and breaking changes may happen. Make sure to generate a backup everytime you add a new wallet.
-      </Alert>
-      <HStack position='absolute' bottom='0px' justify='center' width='100%'>
-        <Text fontSize='xs'>Graphics by Karlos</Text>
-        <Link target='_blank' href='https://github.com/roaminro/my-koinos-wallet'>
-          <FiGithub />
-        </Link>
-        <Link target='_blank' href='https://github.com/roaminro/my-koinos-wallet'>
-          <Text fontSize='xs'>v{publicRuntimeConfig.version}</Text>
-        </Link>
-      </HStack>
+              </AccordionItem>
+            ))}
+          </Accordion>
+          <Alert status='warning'>
+            <AlertIcon />
+            My Koinos Wallet is still a work in progress and breaking changes may happen. Make sure to generate a backup everytime you add a new wallet.
+          </Alert>
+        </Box>
+        <HStack
+          // position='absolute' bottom='0px'
+          justify='center' width='100%'>
+          <Text fontSize='xs'>Graphics by Karlos</Text>
+          <Link target='_blank' href='https://github.com/roaminro/my-koinos-wallet'>
+            <FiGithub />
+          </Link>
+          <Link target='_blank' href='https://github.com/roaminro/my-koinos-wallet'>
+            <Text fontSize='xs'>v{publicRuntimeConfig.version}</Text>
+          </Link>
+        </HStack>
+      </Stack>
     </Box>
   )
 }
