@@ -223,6 +223,10 @@ const SignSendTransaction: NextPageWithLayout = () => {
       }
 
       setTransactionReceipt(receipt)
+
+      const estimatedMana = (BigInt(receipt.rc_used) * BigInt(110) / BigInt(100)).toString()
+      setRcLimit(Number(utils.formatUnits(estimatedMana, selectedNetwork!.tokenDecimals)))
+
       onOpen()
     } catch (error) {
       console.error(error)
