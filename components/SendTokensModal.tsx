@@ -5,7 +5,7 @@ import NiceModal, { useModal } from '@ebay/nice-modal-react'
 import { useNetworks } from '../context/NetworksProvider'
 import { useWallets } from '../context/WalletsProvider'
 import { TransactionJson } from 'koilib/lib/interface'
-import { getErrorMessage } from '../util/Utils'
+import { getErrorMessage, truncateAccount } from '../util/Utils'
 import { useSWRConfig } from 'swr'
 import { Token, useTokens } from '../context/TokensProvider'
 import { useTokenBalance } from './BalanceUtils'
@@ -239,7 +239,7 @@ export default NiceModal.create(({ defaultTokenAddress }: SendTokensModalProps) 
                 placeholder="Select recipient from wallets accounts..."
                 backspaceRemovesValue={true}
                 closeMenuOnSelect={true}
-                getOptionLabel={(account: Account) => account.public.name}
+                getOptionLabel={(account: Account) => `${account.public.name} (${truncateAccount(account.public.address)})`}
                 getOptionValue={(account: Account) => account.public.address}
                 value={recipientAccount}
                 onChange={handleRecipientAccountChange}
