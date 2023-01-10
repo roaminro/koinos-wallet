@@ -3,6 +3,7 @@ import { ChangeEvent, useState } from 'react'
 import NiceModal, { useModal } from '@ebay/nice-modal-react'
 import { FiClipboard } from 'react-icons/fi'
 import { useWallets } from '../context/WalletsProvider'
+import useTranslation from 'next-translate/useTranslation'
 
 interface RevealPrivateKeyModalProps {
   walletId: string
@@ -10,6 +11,7 @@ interface RevealPrivateKeyModalProps {
 }
 
 export default NiceModal.create(({ walletId, accountId }: RevealPrivateKeyModalProps) => {
+  const { t } = useTranslation()
   const modal = useModal()
 
   const toast = useToast()
@@ -29,8 +31,8 @@ export default NiceModal.create(({ walletId, accountId }: RevealPrivateKeyModalP
     onCopy()
 
     toast({
-      title: 'Private Key successfully copied',
-      description: 'The Private key was successfully copied!',
+      title: t('revealPrivateKeyModal:copyToast.title'),
+      description: t('revealPrivateKeyModal:copyToast.description'),
       status: 'success',
       isClosable: true,
     })
@@ -46,7 +48,7 @@ export default NiceModal.create(({ walletId, accountId }: RevealPrivateKeyModalP
     } catch (error) {
       console.error(error)
       toast({
-        title: 'An error occured while revealing the private key',
+        title: t('revealPrivateKeyModal:errorToast.title'),
         description: String(error),
         status: 'error',
         isClosable: true,
@@ -67,12 +69,12 @@ export default NiceModal.create(({ walletId, accountId }: RevealPrivateKeyModalP
     <Modal isOpen={modal.visible} onClose={onCloseClick}>
       <ModalOverlay />
       <ModalContent>
-        <ModalHeader>Reveal Private Key</ModalHeader>
+        <ModalHeader>{t('revealPrivateKeyModal:modal.header')}</ModalHeader>
         <ModalCloseButton />
         <ModalBody>
 
           <FormControl isRequired>
-            <FormLabel>Password</FormLabel>
+            <FormLabel>{t('common:password')}</FormLabel>
             <Input
               type='password'
               autoFocus={true}
@@ -84,20 +86,20 @@ export default NiceModal.create(({ walletId, accountId }: RevealPrivateKeyModalP
                 }
               }}
             />
-            <FormHelperText>Enter your password to reveal the Secret Recovery Phrase.</FormHelperText>
+            <FormHelperText>{t('revealPrivateKeyModal:passwordField.helper')}</FormHelperText>
           </FormControl>
 
           <FormControl isReadOnly={true}>
-            <FormLabel>Private Key</FormLabel>
+            <FormLabel>{t('revealPrivateKeyModal:privateKeyField.label')}</FormLabel>
             <InputGroup>
               <Input value={privateKey} />
               <InputRightElement>
                 <Tooltip
-                  label="copy Private Key to clipboard"
+                  label={t('revealPrivateKeyModal:privateKeyField.tooltip')}
                   placement="bottom"
                   hasArrow
                 >
-                  <IconButton aria-label='Copy private key' icon={<FiClipboard />} onClick={onCopyPrivateKey} />
+                  <IconButton aria-label={t('revealPrivateKeyModal:privateKeyField.tooltip')} icon={<FiClipboard />} onClick={onCopyPrivateKey} />
                 </Tooltip></InputRightElement>
             </InputGroup>
           </FormControl>
@@ -105,9 +107,9 @@ export default NiceModal.create(({ walletId, accountId }: RevealPrivateKeyModalP
 
         <ModalFooter>
           <Button mr={3} onClick={onCloseClick}>
-            Close
+            {t('common:close')}
           </Button>
-          <Button isDisabled={isPasswordInvalid} isLoading={isLoading} colorScheme='blue' onClick={onRevealClick}>Reveal</Button>
+          <Button isDisabled={isPasswordInvalid} isLoading={isLoading} colorScheme='blue' onClick={onRevealClick}>{t('revealPrivateKeyModal:modal.buttonLabel')}</Button>
         </ModalFooter>
       </ModalContent>
     </Modal>

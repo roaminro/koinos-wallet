@@ -1,0 +1,20 @@
+{
+  "copyToast": {
+    "title": "Private Key successfully copied",
+    "description": "The Private key was successfully copied!"
+  },
+  "errorToast": {
+    "title": "An error occured while revealing the private key"
+  },
+  "modal": {
+    "header": "Reveal Private Key",
+    "buttonLabel": "Reveal"
+  },
+  "passwordField": {
+    "helper": "Enter your password to reveal the Secret Recovery Phrase."
+  },
+  "privateKeyField": {
+    "label": "Private Key",
+    "tooltip": "copy Private Key to clipboard"
+  }
+}

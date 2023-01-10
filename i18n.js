@@ -5,7 +5,15 @@ module.exports = {
   defaultLocale: 'en',
   staticsHoc: hoistNonReactStatics,
   pages: {
-    '*': ['common', 'sidebar'],
+    '*': [
+      'common',
+      'sidebar',
+      'confirmDialog',
+      'networkSelector',
+      'renameAccountModal',
+      'renameWalletModal',
+      'revealPrivateKeyModal'
+    ],
     '/home': ['accountHistory'],
     '/language': ['language'],
     '/embed/getAccounts': ['getAccounts']
