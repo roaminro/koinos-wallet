@@ -6,6 +6,7 @@ module.exports = {
   staticsHoc: hoistNonReactStatics,
   pages: {
     '*': ['common', 'sidebar'],
+    '/home': ['accountHistory'],
     '/language': ['language'],
     '/embed/getAccounts': ['getAccounts']
   },

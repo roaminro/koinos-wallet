@@ -1,0 +1,20 @@
+{
+  "received": "Received",
+  "sent": "Sent",
+  "burned": "Burned",
+  "minted": "Minted",
+  "to": "to",
+  "from": "from",
+  "contractInteraction": "Contract Interaction",
+  "contractUpload": "Contract Upload",
+  "numberRecordsPerPage": "number of records per page",
+  "noActivityFound": "No Activity Found",
+  "manaUsed": " Mana used:",
+  "unparsedAmount": "(unparsed amount) tokens with contract id",
+  "sentMessage": "Sent {{amount}} {{symbol}} to",
+  "receivedMessage": "Received {{amount}} {{symbol}} from",
+  "mintedMessage": "{{amount}} {{symbol}} to your account",
+  "burnedMessage": "{{amount}} {{symbol}} from your account",
+  "interactedWithContractMessage": "Interacted with contract",
+  "uploadedContractMessage": "Uploaded contract"
+}
