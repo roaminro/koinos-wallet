@@ -1,9 +1,11 @@
 import { Menu, MenuButton, Button, MenuList, MenuOptionGroup, MenuItemOption, MenuDivider, MenuItem, Show, Hide } from '@chakra-ui/react'
+import useTranslation from 'next-translate/useTranslation'
 import { useRouter } from 'next/router'
 import { FiChevronDown, FiGlobe } from 'react-icons/fi'
 import { useNetworks } from '../context/NetworksProvider'
 
 export function NetworkSelector() {
+  const { t } = useTranslation()
   const router = useRouter()
 
   const { selectedNetwork, networks, selectNetwork } = useNetworks()
@@ -20,7 +22,7 @@ export function NetworkSelector() {
       </MenuButton>
       <MenuList>
         <MenuOptionGroup
-          title='Networks'
+          title={t('common:networks')}
           type='radio'
           value={selectedNetwork?.id}
         >
@@ -39,7 +41,7 @@ export function NetworkSelector() {
             })
           }
           <MenuDivider />
-          <MenuItem onClick={() => router.push('/networks/add')}>Add new network...</MenuItem>
+          <MenuItem onClick={() => router.push('/networks/add')}>{t('networkSelector:addNetwork')}</MenuItem>
         </MenuOptionGroup>
       </MenuList>
     </Menu>

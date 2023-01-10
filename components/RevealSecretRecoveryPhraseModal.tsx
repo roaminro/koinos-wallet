@@ -1,5 +1,6 @@
 import { Modal, ModalOverlay, ModalContent, ModalHeader, ModalCloseButton, ModalBody, ModalFooter, Button, FormControl, FormHelperText, FormLabel, Input, useToast, IconButton, Textarea, Tooltip, useClipboard } from '@chakra-ui/react'
 import NiceModal, { useModal } from '@ebay/nice-modal-react'
+import useTranslation from 'next-translate/useTranslation'
 import { ChangeEvent, useState } from 'react'
 import { FiClipboard } from 'react-icons/fi'
 import { useWallets } from '../context/WalletsProvider'
@@ -9,6 +10,7 @@ interface RevealSecretRecoveryPhraseModalProps {
 }
 
 export default NiceModal.create(({ walletId }: RevealSecretRecoveryPhraseModalProps) => {
+  const { t } = useTranslation()
   const modal = useModal()
 
   const toast = useToast()
@@ -28,8 +30,8 @@ export default NiceModal.create(({ walletId }: RevealSecretRecoveryPhraseModalPr
     onCopy()
 
     toast({
-      title: 'Secret Recovery Phrase successfully copied',
-      description: 'The Secret Recovery Phrase was successfully copied!',
+      title: t('revealSecretRecoveryPhraseModal:copyToast.title'),
+      description: t('revealSecretRecoveryPhraseModal:copyToast.description'),
       status: 'success',
       isClosable: true,
     })
@@ -45,7 +47,7 @@ export default NiceModal.create(({ walletId }: RevealSecretRecoveryPhraseModalPr
     } catch (error) {
       console.error(error)
       toast({
-        title: 'An error occured while revealing the secret recovery phrase',
+        title: t('revealSecretRecoveryPhraseModal:errorToast.title'),
         description: String(error),
         status: 'error',
         isClosable: true,
@@ -66,12 +68,12 @@ export default NiceModal.create(({ walletId }: RevealSecretRecoveryPhraseModalPr
     <Modal isOpen={modal.visible} onClose={onCloseClick}>
       <ModalOverlay />
       <ModalContent>
-        <ModalHeader>Reveal Secret Recovery Phrase</ModalHeader>
+        <ModalHeader>{t('revealSecretRecoveryPhraseModal:modal.header')}</ModalHeader>
         <ModalCloseButton />
         <ModalBody>
 
           <FormControl isRequired>
-            <FormLabel>Password</FormLabel>
+            <FormLabel>{t('common:password')}</FormLabel>
             <Input
               type='password'
               autoFocus={true}
@@ -83,30 +85,30 @@ export default NiceModal.create(({ walletId }: RevealSecretRecoveryPhraseModalPr
                 }
               }}
             />
-            <FormHelperText>Enter your password to reveal the Secret Recovery Phrase.</FormHelperText>
+            <FormHelperText>{t('revealSecretRecoveryPhraseModal:passwordField.helper')}</FormHelperText>
           </FormControl>
 
           <FormControl isReadOnly={true}>
             <FormLabel>
-              Secret Recovery Phrase {' '}
+            {t('revealSecretRecoveryPhraseModal:secretRecoveryPhraseField.label')} {' '}
               <Tooltip
-                label="copy Secret Recovery Phrase to clipboard"
+                label={t('revealSecretRecoveryPhraseModal:secretRecoveryPhraseField.tooltip')}
                 placement="bottom"
                 hasArrow
               >
-                <IconButton aria-label='Copy address' icon={<FiClipboard />} onClick={onCopySecretRecoveryPhrase} />
+                <IconButton aria-label={t('revealSecretRecoveryPhraseModal:secretRecoveryPhraseField.tooltip')} icon={<FiClipboard />} onClick={onCopySecretRecoveryPhrase} />
               </Tooltip>
             </FormLabel>
             <Textarea value={secretRecoveryPhrase} readOnly={true} />
-            <FormHelperText>The &quot;Secret Recovery Phrase&quot; is the &quot;Master Key&quot; that allows you to recover your accounts. You MUST keep it in a safe place as losing it will result in a loss of the funds.</FormHelperText>
+            <FormHelperText>{t('revealSecretRecoveryPhraseModal:secretRecoveryPhraseField.helper')}</FormHelperText>
           </FormControl>
         </ModalBody>
 
         <ModalFooter>
           <Button mr={3} onClick={onCloseClick}>
-            Close
+          {t('common:close')}
           </Button>
-          <Button isDisabled={isPasswordInvalid} isLoading={isLoading} colorScheme='blue' onClick={onRevealClick}>Reveal</Button>
+          <Button isDisabled={isPasswordInvalid} isLoading={isLoading} colorScheme='blue' onClick={onRevealClick}>{t('revealSecretRecoveryPhraseModal:modal.buttonLabel')}</Button>
         </ModalFooter>
       </ModalContent>
     </Modal>

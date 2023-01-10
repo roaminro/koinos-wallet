@@ -3,6 +3,7 @@ import { ChangeEvent, useEffect, useState } from 'react'
 import NiceModal, { useModal } from '@ebay/nice-modal-react'
 import { useWallets } from '../context/WalletsProvider'
 import { isAlphanumeric } from '../util/Utils'
+import useTranslation from 'next-translate/useTranslation'
 
 interface RenameAccountModalProps {
   walletId: string
@@ -10,6 +11,7 @@ interface RenameAccountModalProps {
 }
 
 export default NiceModal.create(({ walletId, accountId }: RenameAccountModalProps) => {
+  const { t } = useTranslation()
   const modal = useModal()
 
   const toast = useToast()
@@ -30,15 +32,15 @@ export default NiceModal.create(({ walletId, accountId }: RenameAccountModalProp
       modal.hide()
 
       toast({
-        title: 'Account successfully renamed',
-        description: 'The Account was successfully renamed!',
+        title: t('renameAccountModal:successToast.title'),
+        description: t('renameAccountModal:successToast.description'),
         status: 'success',
         isClosable: true,
       })
     } catch (error) {
       console.error(error)
       toast({
-        title: 'An error occured while renamimg the account',
+        title: t('renameAccountModal:errorToast.title'),
         description: String(error),
         status: 'error',
         isClosable: true,
@@ -61,12 +63,12 @@ export default NiceModal.create(({ walletId, accountId }: RenameAccountModalProp
     <Modal isOpen={modal.visible} onClose={modal.hide}>
       <ModalOverlay />
       <ModalContent>
-        <ModalHeader>Rename wallet</ModalHeader>
+        <ModalHeader>{t('renameAccountModal:modal.header')}</ModalHeader>
         <ModalCloseButton />
         <ModalBody>
 
           <FormControl isRequired isInvalid={isAccountNameInvalid}>
-            <FormLabel>New name</FormLabel>
+            <FormLabel>{t('renameAccountModal:accountNameField.label')}</FormLabel>
             <Input
               autoFocus={true}
               value={accountName}
@@ -77,18 +79,18 @@ export default NiceModal.create(({ walletId, accountId }: RenameAccountModalProp
                 }
               }}
             />
-            <FormHelperText>Enter the new name for the account.</FormHelperText>
+            <FormHelperText>{t('renameAccountModal:accountNameField.helper')}</FormHelperText>
             {
-              isAccountNameInvalid && <FormErrorMessage>The account name must be at least 1 character and can only composed of the following characters (_-[0-9][a-z][A-Z]).</FormErrorMessage>
+              isAccountNameInvalid && <FormErrorMessage>{t('renameAccountModal:accountNameField.error')}</FormErrorMessage>
             }
           </FormControl>
         </ModalBody>
 
         <ModalFooter>
           <Button mr={3} onClick={modal.hide}>
-            Close
+            {t('common:close')}
           </Button>
-          <Button isDisabled={isAccountNameInvalid} isLoading={isLoading} colorScheme='blue' onClick={onRenameClick}>Rename</Button>
+          <Button isDisabled={isAccountNameInvalid} isLoading={isLoading} colorScheme='blue' onClick={onRenameClick}>{t('renameAccountModal:modal.buttonLabel')}</Button>
         </ModalFooter>
       </ModalContent>
     </Modal>

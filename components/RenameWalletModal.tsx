@@ -3,12 +3,14 @@ import { ChangeEvent, useEffect, useState } from 'react'
 import NiceModal, { useModal } from '@ebay/nice-modal-react'
 import { useWallets } from '../context/WalletsProvider'
 import { isAlphanumeric } from '../util/Utils'
+import useTranslation from 'next-translate/useTranslation'
 
 interface RenameWalletModalProps {
   walletId: string
 }
 
 export default NiceModal.create(({ walletId }: RenameWalletModalProps) => {
+  const { t } = useTranslation()
   const modal = useModal()
 
   const toast = useToast()
@@ -29,15 +31,15 @@ export default NiceModal.create(({ walletId }: RenameWalletModalProps) => {
       modal.hide()
 
       toast({
-        title: 'Wallet successfully renamed',
-        description: 'The Wallet was successfully renamed!',
+        title: t('renameWalletModal:successToast.title'),
+        description: t('renameWalletModal:successToast.description'),
         status: 'success',
         isClosable: true,
       })
     } catch (error) {
       console.error(error)
       toast({
-        title: 'An error occured while renamimg the wallet',
+        title: t('renameWalletModal:errorToast.title'),
         description: String(error),
         status: 'error',
         isClosable: true,
@@ -60,12 +62,12 @@ export default NiceModal.create(({ walletId }: RenameWalletModalProps) => {
     <Modal isOpen={modal.visible} onClose={modal.hide}>
       <ModalOverlay />
       <ModalContent>
-        <ModalHeader>Rename wallet</ModalHeader>
+        <ModalHeader>{t('renameWalletModal:modal.header')}</ModalHeader>
         <ModalCloseButton />
         <ModalBody>
 
           <FormControl isRequired isInvalid={isWalletNameInvalid}>
-            <FormLabel>New name</FormLabel>
+            <FormLabel>{t('renameWalletModal:accountNameField.label')}</FormLabel>
             <Input
               autoFocus={true}
               value={walletName}
@@ -76,18 +78,18 @@ export default NiceModal.create(({ walletId }: RenameWalletModalProps) => {
                 }
               }}
             />
-            <FormHelperText>Enter the new name for the wallet.</FormHelperText>
+            <FormHelperText>{t('renameWalletModal:accountNameField.helper')}</FormHelperText>
             {
-              isWalletNameInvalid && <FormErrorMessage>The wallet name must be at least 1 character and can only composed of the following characters (_-[0-9][a-z][A-Z]).</FormErrorMessage>
+              isWalletNameInvalid && <FormErrorMessage>{t('renameWalletModal:accountNameField.error')}</FormErrorMessage>
             }
           </FormControl>
         </ModalBody>
 
         <ModalFooter>
           <Button mr={3} onClick={modal.hide}>
-            Close
+            {t('common:close')}
           </Button>
-          <Button isDisabled={isWalletNameInvalid} isLoading={isLoading} colorScheme='blue' onClick={onRenameClick}>Rename</Button>
+          <Button isDisabled={isWalletNameInvalid} isLoading={isLoading} colorScheme='blue' onClick={onRenameClick}>{t('renameWalletModal:modal.buttonLabel')}</Button>
         </ModalFooter>
       </ModalContent>
     </Modal>

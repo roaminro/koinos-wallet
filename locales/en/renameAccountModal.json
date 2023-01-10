@@ -1,0 +1,19 @@
+{
+  "rename": "Rename",
+  "successToast": {
+    "title": "Account successfully renamed",
+    "description": "The Account was successfully renamed!"
+  },
+  "errorToast": {
+    "title":"An error occured while renamimg the account"
+  },
+  "modal": {
+    "header": "Rename account",
+    "buttonLabel": "Rename"
+  },
+  "accountNameField": {
+    "label": "New name",
+    "helper": "Enter the new name for the account.",
+    "error": "The account name must be at least 1 character and can only composed of the following characters (_-[0-9][a-z][A-Z])."
+  }
+}

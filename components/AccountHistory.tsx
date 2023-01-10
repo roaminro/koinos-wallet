@@ -1,5 +1,6 @@
 import { Link, Stack, Skeleton, Card, CardBody, VStack, Text, Button, NumberDecrementStepper, NumberIncrementStepper, NumberInput, NumberInputField, NumberInputStepper, Tooltip } from '@chakra-ui/react'
 import { Serializer, utils } from 'koilib'
+import useTranslation from 'next-translate/useTranslation'
 import { useEffect, useRef, useState } from 'react'
 import { FiArrowLeft, FiArrowRight, FiCpu, FiDownload, FiExternalLink, FiPlus, FiSend, FiTrash2, FiUpload } from 'react-icons/fi'
 import { useNetworks } from '../context/NetworksProvider'
@@ -27,7 +28,7 @@ interface ParsedTransaction {
 }
 
 export function AccountHistory() {
-
+  const { t } = useTranslation()
   const { selectedAccount } = useWallets()
   const { selectedNetwork } = useNetworks()
   const { tokens } = useTokens()
@@ -68,9 +69,9 @@ export function AccountHistory() {
 
                     switch (methodName) {
                       case 'transfer': {
-                        let type = 'Received'
+                        let type = t('accountHistory:received')
                         if (selectedAccount?.account.public.address === args.from) {
-                          type = 'Sent'
+                          type = t('accountHistory:sent')
                         }
                         parsedTx.operations.push({
                           type,
@@ -82,7 +83,7 @@ export function AccountHistory() {
                         break
                       }
                       case 'burn': {
-                        let type = 'Burned'
+                        let type = t('accountHistory:burned')
                         parsedTx.operations.push({
                           type,
                           contractId: op.call_contract.contract_id!,
@@ -92,7 +93,7 @@ export function AccountHistory() {
                         break
                       }
                       case 'mint': {
-                        let type = 'Minted'
+                        let type = t('accountHistory:minted')
                         parsedTx.operations.push({
                           type,
                           contractId: op.call_contract.contract_id!,
@@ -104,13 +105,13 @@ export function AccountHistory() {
                     }
                   } else {
                     parsedTx.operations.push({
-                      type: 'Contract interaction',
+                      type: t('accountHistory:contractInteraction'),
                       contractId: op.call_contract.contract_id!
                     })
                   }
                 } else if (op.upload_contract) {
                   parsedTx.operations.push({
-                    type: 'Contract upload',
+                    type: t('accountHistory:contractUpload'),
                     contractId: op.upload_contract.contract_id!
                   })
                 }
@@ -126,7 +127,7 @@ export function AccountHistory() {
 
       parseTransactions()
     }
-  }, [isLoadingAccountHistory, selectedAccount?.account.public.address, transactions])
+  }, [isLoadingAccountHistory, selectedAccount?.account.public.address, t, transactions])
 
   const loadNext = () => {
     if (transactions?.length) {
@@ -164,10 +165,10 @@ export function AccountHistory() {
       <VStack>
         <Stack direction='row' spacing={4}>
           <Button size='xs' leftIcon={<FiArrowLeft />} isDisabled={isNextDisabled} onClick={loadNext}>
-            Next
+            {t('common:next')}
           </Button>
           <Tooltip
-            label="number of records per page"
+            label={t('accountHistory:numberRecordsPerPage')}
             placement="bottom"
             hasArrow
           >
@@ -188,11 +189,11 @@ export function AccountHistory() {
             </NumberInput>
           </Tooltip>
           <Button size='xs' rightIcon={<FiArrowRight />} isDisabled={isPreviousDisabled} onClick={loadPrevious}>
-            Previous
+            {t('common:previous')}
           </Button>
         </Stack>
         {
-          !parsedTransactions.length && <Text>No activity found</Text>
+          !parsedTransactions.length && <Text>{t('accountHistory:noActivityFound')}</Text>
         }
         {
           parsedTransactions?.map(parsedTx => {
@@ -204,7 +205,7 @@ export function AccountHistory() {
                   </Link>
                   {
                     parsedTx.manaUsed && <Text fontSize='xs'>
-                      Mana used: {utils.formatUnits(parsedTx.manaUsed, selectedNetwork?.tokenDecimals!)}
+                      {t('accountHistory:manaUsed')} {utils.formatUnits(parsedTx.manaUsed, selectedNetwork?.tokenDecimals!)}
                     </Text>
                   }
                   {
@@ -219,16 +220,16 @@ export function AccountHistory() {
                         amount = utils.formatUnits(op.amount!, tokens[op.contractId].decimals)
                       } else if (op.amount) {
                         symbol = op.contractId
-                        amount = `${op.amount} (unparsed amount) tokens with contract id`
+                        amount = `${op.amount} ${t('accountHistory:unparsedAMount')}`
                       }
 
                       switch (op.type) {
-                        case 'Sent': {
+                        case t('accountHistory:sent'): {
                           return (
                             <Card key={`${parsedTx.id}-${opIdx}`}>
                               <CardBody>
                                 <Text>
-                                  <FiSend style={{ display: 'inline-block' }} /> Sent {amount} {symbol} to
+                                  <FiSend style={{ display: 'inline-block' }} /> {t('accountHistory:sentMessage', { amount, symbol })}
                                   {' '}
                                   <Link href={`${selectedNetwork?.explorerUrl}/address/${op.to}`} isExternal>
                                     {truncateAccount(op.to!)} <FiExternalLink style={{ display: 'inline-block' }} />
@@ -239,12 +240,12 @@ export function AccountHistory() {
                           )
                         }
 
-                        case 'Received': {
+                        case t('accountHistory:received'): {
                           return (
                             <Card key={`${parsedTx.id}-${opIdx}`}>
                               <CardBody>
                                 <Text>
-                                  <FiDownload style={{ display: 'inline-block' }} /> Received {amount} {symbol} from
+                                  <FiDownload style={{ display: 'inline-block' }} /> {t('accountHistory:receivedMessage', { amount, symbol })}
                                   {' '}
                                   <Link href={`${selectedNetwork?.explorerUrl}/address/${op.from}`} isExternal>
                                     {truncateAccount(op.from!)} <FiExternalLink style={{ display: 'inline-block' }} />
@@ -255,32 +256,32 @@ export function AccountHistory() {
                           )
                         }
 
-                        case 'Minted': {
+                        case t('accountHistory:minted'): {
                           return (
                             <Card key={`${parsedTx.id}-${opIdx}`}>
                               <CardBody>
-                                <Text><FiPlus style={{ display: 'inline-block' }} />Minted {amount} {symbol} to your account</Text>
+                                <Text><FiPlus style={{ display: 'inline-block' }} />{t('accountHistory:mintedMessage', { amount, symbol })}</Text>
                               </CardBody>
                             </Card>
                           )
                         }
 
-                        case 'Burned': {
+                        case t('accountHistory:burned'): {
                           return (
                             <Card key={`${parsedTx.id}-${opIdx}`}>
                               <CardBody>
-                                <Text><FiTrash2 style={{ display: 'inline-block' }} />Burned {amount} {symbol} from your account</Text>
+                                <Text><FiTrash2 style={{ display: 'inline-block' }} />{t('accountHistory:burnedMessage', { amount, symbol })}</Text>
                               </CardBody>
                             </Card>
                           )
                         }
 
-                        case 'Contract interaction': {
+                        case t('accountHistory:contractInteraction'): {
                           return (
                             <Card key={`${parsedTx.id}-${opIdx}`}>
                               <CardBody>
                                 <Text>
-                                  <FiCpu style={{ display: 'inline-block' }} /> Interacted with contract
+                                  <FiCpu style={{ display: 'inline-block' }} />{t('accountHistory:interactedWithContractMessage')}
                                   {' '}
                                   <Link href={`${selectedNetwork?.explorerUrl}/contract/${op.contractId}`} isExternal>
                                     {truncateAccount(op.contractId!)} <FiExternalLink style={{ display: 'inline-block' }} />
@@ -291,12 +292,12 @@ export function AccountHistory() {
                           )
                         }
 
-                        case 'Contract upload': {
+                        case t('accountHistory:contractUpload'): {
                           return (
                             <Card key={`${parsedTx.id}-${opIdx}`}>
                               <CardBody>
                                 <Text>
-                                  <FiUpload style={{ display: 'inline-block' }} /> Uploaded contract
+                                  <FiUpload style={{ display: 'inline-block' }} />{t('accountHistory:uploadedContractMessage')}
                                   {' '}
                                   <Link href={`${selectedNetwork?.explorerUrl}/contract/${op.contractId}`} isExternal>
                                     {truncateAccount(op.contractId!)} <FiExternalLink style={{ display: 'inline-block' }} />
@@ -325,10 +326,10 @@ export function AccountHistory() {
         }
         <Stack direction='row' spacing={4}>
           <Button size='xs' leftIcon={<FiArrowLeft />} isDisabled={isNextDisabled} onClick={loadNext}>
-            Next
+            {t('common:next')}
           </Button>
           <Tooltip
-            label="number of records per page"
+            label={t('accountHistory:numberRecordsPerPage')}
             placement="bottom"
             hasArrow
           >
@@ -349,7 +350,7 @@ export function AccountHistory() {
             </NumberInput>
           </Tooltip>
           <Button size='xs' rightIcon={<FiArrowRight />} isDisabled={isPreviousDisabled} onClick={loadPrevious}>
-            Previous
+            {t('common:previous')}
           </Button>
         </Stack>
       </VStack>

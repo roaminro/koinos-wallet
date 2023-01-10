@@ -9,6 +9,7 @@ import {
   Button
 } from '@chakra-ui/react'
 import NiceModal, { useModal } from '@ebay/nice-modal-react'
+import useTranslation from 'next-translate/useTranslation'
 
 interface ConfirmationDialogProps {
   title?: string
@@ -32,17 +33,23 @@ const mapText = (text: string): JSX.Element[] => {
 }
 
 export default NiceModal.create(({
-  title = 'Are you sure?',
-  body = 'Are you sure you want to perform this action?',
-  declineText = 'No',
-  acceptText = 'Yes',
+  title,
+  body,
+  declineText,
+  acceptText,
   onDecline,
   onAccept
 }: ConfirmationDialogProps): JSX.Element => {
+  const { t } = useTranslation()
   const modal = useModal()
   const modalRef = useRef(null)
+  
+  const fTitle = title || t('confirmDialog:defaultTitle')
+  const fBody = body || t('confirmDialog:defaultBody')
+  const fDeclineText = declineText || t('common:no')
+  const fAcceptText = acceptText || t('common:yes')
 
-  const bodyTxt = mapText(body)
+  const bodyTxt = mapText(fBody!)
 
   return (
     <AlertDialog
@@ -53,7 +60,7 @@ export default NiceModal.create(({
       <AlertDialogOverlay>
         <AlertDialogContent>
           <AlertDialogHeader fontSize='lg' fontWeight='bold'>
-            {title}
+            {fTitle}
           </AlertDialogHeader>
 
           <AlertDialogBody>
@@ -70,10 +77,10 @@ export default NiceModal.create(({
                 modal.hide()
               }}
             >
-              {acceptText}
+              {fAcceptText}
             </Button>
             {
-              declineText && (
+              fDeclineText && (
                 <Button
                   ref={modalRef as React.LegacyRef<HTMLButtonElement> | undefined}
                   onClick={() => {
@@ -81,7 +88,7 @@ export default NiceModal.create(({
                     modal.hide()
                   }}
                 >
-                  {declineText}
+                  {fDeclineText}
                 </Button>
               )
             }
