@@ -184,7 +184,7 @@ const GetAccounts: NextPageWithLayout = () => {
             <CardBody>
               <ButtonGroup spacing='6' width='100%'>
                 <Button onClick={close} colorScheme='red'>{t('common:cancel')}</Button>
-                <Button width='100%' disabled={isLoading || !hasSelectedOneAccount} onClick={onClickConfirm} colorScheme='green'>{t('common:confirn')}</Button>
+                <Button width='100%' disabled={isLoading || !hasSelectedOneAccount} onClick={onClickConfirm} colorScheme='green'>{t('common:confirm')}</Button>
               </ButtonGroup>
             </CardBody>
           </Card>
