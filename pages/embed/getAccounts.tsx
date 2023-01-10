@@ -1,5 +1,6 @@
 import { useColorModeValue, Text, Box, Button, ButtonGroup, Card, CardBody, CardFooter, CardHeader, Checkbox, Divider, Heading, Input, Skeleton, Spinner, Stack, Center } from '@chakra-ui/react'
 import { ReactElement, useEffect, useState } from 'react'
+import useTranslation from 'next-translate/useTranslation'
 import { Messenger } from '../../util/Messenger'
 import { useWallets } from '../../context/WalletsProvider'
 import { debug, truncateAccount } from '../../util/Utils'
@@ -9,6 +10,8 @@ import { ACCOUNTS_CHILD_ID, ACCOUNTS_PARENT_ID } from '../../util/Constants'
 
 
 const GetAccounts: NextPageWithLayout = () => {
+  const { t } = useTranslation()
+
   const { wallets } = useWallets()
 
   const [requester, setRequester] = useState('')
@@ -115,13 +118,13 @@ const GetAccounts: NextPageWithLayout = () => {
       <Stack>
         <Card>
           <CardHeader>
-            <Heading size='md'>Accounts request</Heading>
+            <Heading size='md'>{t('getAccounts:accountsRequest')}</Heading>
           </CardHeader>
           <Divider />
           <CardBody>
             <Skeleton isLoaded={hasLoadedAccounts && !isLoading}>
               <Text>
-                Select the accounts you would like to share with the website &quot;{requester}&quot;:
+              {t('getAccounts:selectAccountsToShare')} &quot;{requester}&quot;:
               </Text>
               <Divider marginTop={4} marginBottom={4} />
               {
@@ -180,8 +183,8 @@ const GetAccounts: NextPageWithLayout = () => {
           <Card>
             <CardBody>
               <ButtonGroup spacing='6' width='100%'>
-                <Button onClick={close} colorScheme='red'>Cancel</Button>
-                <Button width='100%' disabled={isLoading || !hasSelectedOneAccount} onClick={onClickConfirm} colorScheme='green'>Confirm</Button>
+                <Button onClick={close} colorScheme='red'>{t('common:cancel')}</Button>
+                <Button width='100%' disabled={isLoading || !hasSelectedOneAccount} onClick={onClickConfirm} colorScheme='green'>{t('common:confirn')}</Button>
               </ButtonGroup>
             </CardBody>
           </Card>

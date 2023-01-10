@@ -1,3 +1,5 @@
+const nextTranslate = require('next-translate')
+
 const withPWA = require('next-pwa')({
   dest: 'public'
 })
@@ -14,4 +16,6 @@ const nextConfig = {
   },
 }
 
-module.exports = withPWA(nextConfig)
+const pwaConfig = withPWA(nextConfig)
+
+module.exports = nextTranslate(pwaConfig)

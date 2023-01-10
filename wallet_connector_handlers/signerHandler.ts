@@ -2,8 +2,8 @@ import { Provider, Signer } from 'koilib'
 import { SendTransactionOptions, TransactionJson, TransactionReceipt } from 'koilib/lib/interface'
 import { IncomingMessage, OutgoingMessage } from '../pages/embed/wallet-connector'
 import { SIGN_HASH_PARENT_ID, SIGN_MESSAGE_PARENT_ID, SIGN_SEND_TRANSACTION_PARENT_ID } from '../util/Constants'
-import { Messenger, SendDataFn, SendErrorFn } from '../util/Messenger'
-import { getErrorMessage } from '../util/Utils'
+import { SendDataFn, SendErrorFn } from '../util/Messenger'
+import { getErrorMessage, openPopup } from '../util/Utils'
 
 export interface SignSendTransactionArguments {
   requester: string
@@ -110,27 +110,23 @@ const signSendTransaction = (send: boolean, requester: string, data: IncomingMes
   }
 
   return new Promise<void>((resolve) => {
-    const params = 'popup=yes,scrollbars=no,resizable=yes,status=no,location=no,toolbar=no,menubar=no,width=450,height=550'
-    const newWindow = window.open('/embed/signSendTransaction', 'Transaction', params)!
-    const popupMsgr = new Messenger<SignSendTransactionResult, SignSendTransactionArguments>(newWindow, SIGN_SEND_TRANSACTION_PARENT_ID, true, window.location.origin)
-
-    newWindow.onload = () => {
-      newWindow.onunload = () => {
-        popupMsgr.removeListener()
+    const { popupWindow, popupMessenger } = openPopup<SignSendTransactionResult, SignSendTransactionArguments>({
+      url: '/embed/signSendTransaction',
+      messengerId: SIGN_SEND_TRANSACTION_PARENT_ID,
+      onClose: () => {
         sendError('request was cancelled')
         resolve()
-      }
-    }
+      },
+    })
 
     try {
-      popupMsgr.onMessage(({ data }) => {
+      popupMessenger.onMessage(({ data }) => {
         sendData({ result: data })
-        popupMsgr.removeListener()
-        newWindow.close()
+        popupWindow.close()
         resolve()
       })
 
-      popupMsgr.onRequest(({ sendData }) => {
+      popupMessenger.onRequest(({ sendData }) => {
         args.requester = requester
         args.send = send
         sendData(args)
@@ -139,10 +135,6 @@ const signSendTransaction = (send: boolean, requester: string, data: IncomingMes
       sendError(getErrorMessage(error))
       resolve()
     }
-
-    newWindow.resizeTo(450, 550)
-
-    newWindow.focus()
   })
 }
 
@@ -160,27 +152,23 @@ const signMessage = (requester: string, data: IncomingMessage, sendData: SendDat
   }
 
   return new Promise<void>((resolve) => {
-    const params = 'popup=yes,scrollbars=no,resizable=yes,status=no,location=no,toolbar=no,menubar=no,width=450,height=550'
-    const newWindow = window.open('/embed/signMessage', 'Message Signature', params)!
-    const popupMsgr = new Messenger<string, SignMessageArguments>(newWindow, SIGN_MESSAGE_PARENT_ID, true, window.location.origin)
-
-    newWindow.onload = () => {
-      newWindow.onunload = () => {
-        popupMsgr.removeListener()
+   const { popupWindow, popupMessenger } = openPopup<string, SignMessageArguments>({
+      url: '/embed/signMessage',
+      messengerId: SIGN_MESSAGE_PARENT_ID,
+      onClose: () => {
         sendError('request was cancelled')
         resolve()
-      }
-    }
+      },
+    })
 
     try {
-      popupMsgr.onMessage(({ data }) => {
+      popupMessenger.onMessage(({ data }) => {
         sendData({ result: data })
-        popupMsgr.removeListener()
-        newWindow.close()
+        popupWindow.close()
         resolve()
       })
 
-      popupMsgr.onRequest(({ sendData }) => {
+      popupMessenger.onRequest(({ sendData }) => {
         args.requester = requester
         sendData(args)
       })
@@ -188,10 +176,6 @@ const signMessage = (requester: string, data: IncomingMessage, sendData: SendDat
       sendError(getErrorMessage(error))
       resolve()
     }
-
-    newWindow.resizeTo(450, 550)
-
-    newWindow.focus()
   })
 }
 
@@ -209,27 +193,23 @@ const signHash = (requester: string, data: IncomingMessage, sendData: SendDataFn
   }
 
   return new Promise<void>((resolve) => {
-    const params = 'popup=yes,scrollbars=no,resizable=yes,status=no,location=no,toolbar=no,menubar=no,width=450,height=550'
-    const newWindow = window.open('/embed/signHash', 'Hash Signature', params)!
-    const popupMsgr = new Messenger<string, SignHashArguments>(newWindow, SIGN_HASH_PARENT_ID, true, window.location.origin)
-
-    newWindow.onload = () => {
-      newWindow.onunload = () => {
-        popupMsgr.removeListener()
+    const { popupWindow, popupMessenger } = openPopup<string, SignHashArguments>({
+      url: '/embed/signHash',
+      messengerId: SIGN_HASH_PARENT_ID,
+      onClose: () => {
         sendError('request was cancelled')
         resolve()
-      }
-    }
+      },
+    })
 
     try {
-      popupMsgr.onMessage(({ data }) => {
+      popupMessenger.onMessage(({ data }) => {
         sendData({ result: data })
-        popupMsgr.removeListener()
-        newWindow.close()
+        popupWindow.close()
         resolve()
       })
 
-      popupMsgr.onRequest(({ sendData }) => {
+      popupMessenger.onRequest(({ sendData }) => {
         args.requester = requester
         sendData(args)
       })
@@ -237,9 +217,5 @@ const signHash = (requester: string, data: IncomingMessage, sendData: SendDataFn
       sendError(getErrorMessage(error))
       resolve()
     }
-
-    newWindow.resizeTo(450, 550)
-
-    newWindow.focus()
   })
 }
