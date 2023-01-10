@@ -1,0 +1,13 @@
+{
+  "appName": "My Koinos Wallet",
+  "home": "Home",
+  "settings": "Settings",
+  "tokens": "Tokens",
+  "wallets": "Wallets",
+  "permissions": "Apps Permissions",
+  "networks": "Networks",
+  "backup": "Backup",
+  "language": "Language",
+  "confirm": "Confirm",
+  "cancel": "Cancel"
+}

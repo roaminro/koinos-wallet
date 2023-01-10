@@ -1,4 +1,9 @@
+import { resolve } from 'dns'
+import Cookies from 'js-cookie'
+import { sendError } from 'next/dist/server/api-utils'
 import { logLevel } from '../app.config'
+import { REQUEST_PERMISSIONS_PARENT_ID } from './Constants'
+import { Messenger, SendErrorFn } from './Messenger'
 
 const CHARS = '_-0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'
 export const isAlphanumeric = (str: string) => {
@@ -96,4 +101,38 @@ export const randomUUID = (): string => {
   }
 
   return crypto.randomUUID()
+}
+
+export const openPopup = <IncomingDataType, OutgoingDataType>(args: {
+  url: string,
+  messengerId: string,
+  isTargetWindow?: boolean,
+  targetOrigin?: string,
+  width?: number,
+  height?: number,
+  onClose: () => void,
+}) => {
+  const { url, messengerId, isTargetWindow, targetOrigin, width, height, onClose } = args
+  const fIsTargetWindow = isTargetWindow || true
+  const fTargetOrigin = targetOrigin || window.location.origin
+  const fWidth = width || 400
+  const fHeight = height || 500
+
+  const locale = Cookies.get('NEXT_LOCALE') || 'en'
+
+  const params = `popup=yes,scrollbars=no,resizable=yes,status=no,location=no,toolbar=no,menubar=no,width=${fWidth},height=${fHeight}`
+  const popupWindow = window.open(`/${locale}${url}`, 'mkw', params)!
+  popupWindow.resizeTo(fWidth, fHeight)
+  popupWindow.focus()
+
+  const popupMessenger = new Messenger<IncomingDataType, OutgoingDataType>(popupWindow, messengerId, fIsTargetWindow, fTargetOrigin)
+
+  popupWindow.onload = () => {
+    popupWindow.onunload = () => {
+      popupMessenger.removeListener()
+      onClose()
+    }
+  }
+
+  return { popupWindow, popupMessenger }
 }

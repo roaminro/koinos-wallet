@@ -1,7 +1,7 @@
 import { IncomingMessage, OutgoingMessage } from '../pages/embed/wallet-connector'
 import { ACCOUNTS_PARENT_ID } from '../util/Constants'
-import { Messenger, SendDataFn, SendErrorFn } from '../util/Messenger'
-import { getErrorMessage } from '../util/Utils'
+import { SendDataFn, SendErrorFn } from '../util/Messenger'
+import { getErrorMessage, openPopup } from '../util/Utils'
 
 export interface IAccount {
   address: string
@@ -30,36 +30,28 @@ export const handler = (sender: string, data: IncomingMessage, sendData: SendDat
 
 const getAccounts = (requester: string, _: IncomingMessage, sendData: SendDataFn<OutgoingMessage>, sendError: SendErrorFn) => {
   return new Promise<void>((resolve) => {
-    const params = 'popup=yes,scrollbars=no,resizable=yes,status=no,location=no,toolbar=no,menubar=no,width=400,height=500'
-    const newWindow = window.open('/embed/getAccounts', 'Accounts', params)!
-    const popupMsgr = new Messenger<GetAccountsResult, GetAccountsArguments>(newWindow, ACCOUNTS_PARENT_ID, true, window.location.origin)
-
-    newWindow.onload = () => {
-      newWindow.onunload = () => {
-        popupMsgr.removeListener()
+    const { popupWindow, popupMessenger } = openPopup<GetAccountsResult, GetAccountsArguments>({
+      url: '/embed/getAccounts',
+      messengerId: ACCOUNTS_PARENT_ID,
+      onClose: () => {
         sendError('request was cancelled')
         resolve()
-      }
-    }
+      },
+    })
 
     try {
-      popupMsgr.onMessage(({ data: accounts }) => {
+      popupMessenger.onMessage(({ data: accounts }) => {
         sendData({ result: accounts })
-        popupMsgr.removeListener()
-        newWindow.close()
+        popupWindow.close()
         resolve()
       })
 
-      popupMsgr.onRequest(({ sendData }) => {
+      popupMessenger.onRequest(({ sendData }) => {
         sendData({ requester })
       })
     } catch (error) {
       sendError(getErrorMessage(error))
       resolve()
     }
-
-    newWindow.resizeTo(400, 500)
-
-    newWindow.focus()
   })
 }

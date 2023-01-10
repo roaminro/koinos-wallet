@@ -40,9 +40,11 @@ import {
   FiDatabase,
   FiGithub,
   FiFileText,
-  FiSettings
+  FiSettings,
+  FiMap
 } from 'react-icons/fi'
 import { IconType } from 'react-icons'
+import useTranslation from 'next-translate/useTranslation'
 import { useWallets } from '../context/WalletsProvider'
 import { NetworkSelector } from './NetworkSelector'
 import Logo from './Logo'
@@ -55,19 +57,6 @@ interface LinkItemProps {
   hideWhenVaultNotSetup?: boolean
   children?: Array<LinkItemProps>
 }
-const LinkItems: Array<LinkItemProps> = [
-  { name: 'Home', icon: FiHome, href: '/home', hideWhenVaultNotSetup: true },
-  {
-    name: 'Settings', icon: FiSettings, showWhenLocked: true,
-    children: [
-      { name: 'Tokens', icon: FiDatabase, href: '/tokens', hideWhenVaultNotSetup: true },
-      { name: 'Wallets', icon: FiCreditCard, href: '/wallets', hideWhenVaultNotSetup: true },
-      { name: 'Apps Permissions', icon: FiFileText, href: '/permissions', hideWhenVaultNotSetup: true },
-      { name: 'Networks', icon: FiGlobe, href: '/networks', hideWhenVaultNotSetup: true },
-      { name: 'Backup', icon: FiHardDrive, href: '/backup', showWhenLocked: true },
-    ]
-  },
-]
 
 export default function SidebarWithHeader({
   children,
@@ -108,8 +97,24 @@ interface SidebarProps extends BoxProps {
 }
 
 const SidebarContent = ({ onClose, ...rest }: SidebarProps) => {
+  const { t } = useTranslation()
   const { isVaultSetup, isLocked } = useWallets()
   const { publicRuntimeConfig } = getConfig()
+
+  const LinkItems: Array<LinkItemProps> = [
+    { name: t('common:home'), icon: FiHome, href: '/home', hideWhenVaultNotSetup: true },
+    {
+      name: t('common:settings'), icon: FiSettings, showWhenLocked: true,
+      children: [
+        { name: t('common:tokens'), icon: FiDatabase, href: '/tokens', hideWhenVaultNotSetup: true },
+        { name: t('common:wallets'), icon: FiCreditCard, href: '/wallets', hideWhenVaultNotSetup: true },
+        { name: t('common:permissions'), icon: FiFileText, href: '/permissions', hideWhenVaultNotSetup: true },
+        { name: t('common:networks'), icon: FiGlobe, href: '/networks', hideWhenVaultNotSetup: true },
+        { name: t('common:backup'), icon: FiHardDrive, href: '/backup', showWhenLocked: true },
+        { name: t('common:language'), icon: FiMap, href: '/language' },
+      ]
+    },
+  ]
 
   return (
     <Box
@@ -128,7 +133,7 @@ const SidebarContent = ({ onClose, ...rest }: SidebarProps) => {
             <Logo display='flex' size='40px' />
             <Link href='/home'>
               <Text fontSize={['sm', 'md', 'md', 'md']} fontWeight="bold">
-                My Koinos Wallet
+                {t('common:appName')}
               </Text>
             </Link>
             <CloseButton display={{ base: 'flex', md: 'none' }} onClick={onClose} />
@@ -178,13 +183,13 @@ const SidebarContent = ({ onClose, ...rest }: SidebarProps) => {
           </Accordion>
           <Alert status='warning'>
             <AlertIcon />
-            My Koinos Wallet is still a work in progress and breaking changes may happen. Make sure to generate a backup everytime you add a new wallet.
+            {t('sidebar:warningMessage')}
           </Alert>
         </Box>
         <HStack
           // position='absolute' bottom='0px'
           justify='center' width='100%'>
-          <Text fontSize='xs'>Graphics by Karlos</Text>
+          <Text fontSize='xs'>{t('sidebar:graphicsBy')}</Text>
           <Link target='_blank' href='https://github.com/roaminro/my-koinos-wallet'>
             <FiGithub />
           </Link>
