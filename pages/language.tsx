@@ -1,7 +1,7 @@
 import { Stack, Card, CardHeader, Heading, Divider, CardBody, FormControl, FormLabel, Center } from '@chakra-ui/react'
 import useTranslation from 'next-translate/useTranslation'
 import { useEffect, useState } from 'react'
-import { locales } from '../i18n.js'
+import { locales, defaultLocale } from '../i18n.js'
 import { Select, SingleValue } from 'chakra-react-select'
 import setLang from 'next-translate/setLanguage'
 
@@ -15,10 +15,12 @@ export default function Language() {
   const handleLanguageChange = async (newVal: SingleValue<LocaleOption>) => {
     setLanguage(newVal)
     if (newVal) {
-      const date = new Date()
-      const expireMs = 100 * 24 * 60 * 60 * 1000 // 100 days
-      date.setTime(date.getTime() + expireMs)
-      document.cookie = `NEXT_LOCALE=${newVal.value};expires=${date.toUTCString()};path=/;SameSite=Strict;`
+      if (newVal.value != defaultLocale) {
+        const date = new Date()
+        const expireMs = 100 * 24 * 60 * 60 * 1000 // 100 days
+        date.setTime(date.getTime() + expireMs)
+        document.cookie = `NEXT_LOCALE=${newVal.value};expires=${date.toUTCString()};path=/;SameSite=Strict;`
+      }
       await setLang(newVal.value)
     }
   }
