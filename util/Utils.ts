@@ -1,9 +1,7 @@
-import { resolve } from 'dns'
 import Cookies from 'js-cookie'
-import { sendError } from 'next/dist/server/api-utils'
 import { logLevel } from '../app.config'
-import { REQUEST_PERMISSIONS_PARENT_ID } from './Constants'
-import { Messenger, SendErrorFn } from './Messenger'
+import { Messenger } from './Messenger'
+import { defaultLocale } from '../i18n.js'
 
 const CHARS = '_-0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'
 export const isAlphanumeric = (str: string) => {
@@ -118,7 +116,7 @@ export const openPopup = <IncomingDataType, OutgoingDataType>(args: {
   const fWidth = width || 400
   const fHeight = height || 500
 
-  const locale = Cookies.get('NEXT_LOCALE') || 'en'
+  const locale = Cookies.get('NEXT_LOCALE') || defaultLocale
 
   const params = `popup=yes,scrollbars=no,resizable=yes,status=no,location=no,toolbar=no,menubar=no,width=${fWidth},height=${fHeight}`
   const popupWindow = window.open(`/${locale}${url}`, 'mkw', params)!

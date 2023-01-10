@@ -1,4 +1,4 @@
-import { useColorModeValue, Text, Box, Button, ButtonGroup, Card, CardBody, CardFooter, CardHeader, Checkbox, Divider, Heading, Input, Skeleton, Spinner, Stack, Center } from '@chakra-ui/react'
+import { useColorModeValue, Text, Box, Button, ButtonGroup, Card, CardBody, CardHeader, Checkbox, Divider, Heading, Skeleton, Stack, Center } from '@chakra-ui/react'
 import { ReactElement, useEffect, useState } from 'react'
 import useTranslation from 'next-translate/useTranslation'
 import { Messenger } from '../../util/Messenger'
