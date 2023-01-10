@@ -12,7 +12,8 @@ module.exports = {
       'networkSelector',
       'renameAccountModal',
       'renameWalletModal',
-      'revealPrivateKeyModal'
+      'revealPrivateKeyModal',
+      'revealSecretRecoveryPhraseModal'
     ],
     '/home': ['accountHistory'],
     '/language': ['language'],
