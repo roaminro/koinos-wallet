@@ -18,7 +18,7 @@ export default function Language() {
       const date = new Date()
       const expireMs = 100 * 24 * 60 * 60 * 1000 // 100 days
       date.setTime(date.getTime() + expireMs)
-      document.cookie = `NEXT_LOCALE=${newVal.value};expires=${date.toUTCString()};path=/`
+      document.cookie = `NEXT_LOCALE=${newVal.value};expires=${date.toUTCString()};path=/;SameSite=Strict;`
       await setLang(newVal.value)
     }
   }
