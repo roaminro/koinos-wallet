@@ -17,6 +17,8 @@ module.exports = {
     ],
     '/home': ['accountHistory'],
     '/language': ['language'],
+    '/contacts': ['contacts'],
+    '/contacts/add': ['contacts'],
     '/embed/getAccounts': ['getAccounts']
   },
 }

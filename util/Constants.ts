@@ -23,6 +23,7 @@ export const SELECTED_NETWORK_KEY = 'SELECTED_NETWORK'
 export const SELECTED_ACCOUNT_KEY = 'SELECTED_ACCOUNT'
 export const TOKENS_KEY = 'TOKENS'
 export const PERMISSIONS_KEY = 'PERMISSIONS'
+export const CONTACTS_KEY = 'CONTACTS'
 
 /*-----------------STORAGE KEYS-------------------*/                
 
