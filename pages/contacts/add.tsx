@@ -1,8 +1,5 @@
-import {
-  FiRepeat,
-} from 'react-icons/fi'
-import { Stack, Card, CardHeader, Heading, Divider, CardBody, FormControl, FormLabel, Input, FormHelperText, FormErrorMessage, Button, useToast, IconButton, NumberDecrementStepper, NumberIncrementStepper, NumberInput, NumberInputField, NumberInputStepper, InputGroup, InputRightElement, Tooltip, Center, Textarea } from '@chakra-ui/react'
-import { Contract, Provider, utils } from 'koilib'
+import { Stack, Card, CardHeader, Heading, Divider, CardBody, FormControl, FormLabel, Input, FormHelperText, FormErrorMessage, Button, useToast, Center, Textarea } from '@chakra-ui/react'
+import { utils } from 'koilib'
 import { ChangeEvent, useState } from 'react'
 
 import { BackButton } from '../../components/BackButton'
@@ -21,7 +18,6 @@ export default function Add() {
   const [contactName, setContactName] = useState('')
   const [contactAddress, setContactAddress] = useState('')
   const [contactNotes, setContactNotes] = useState('')
-
 
   const handleContactNameChange = (e: ChangeEvent<HTMLInputElement>) => {
     setContactName(e.target.value)

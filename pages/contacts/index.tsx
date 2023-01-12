@@ -74,7 +74,7 @@ export default function Contacts() {
                             hasArrow
                           >
                             <IconButton
-                              aria-label={t('contacts:index.index.cardBody.editTooltip')}
+                              aria-label={t('contacts:index.cardBody.editTooltip')}
                               colorScheme='blue'
                               icon={<FiEdit />}
                               onClick={() => router.push({ pathname: '/contacts/[contactAddress]', query: { contactAddress } })}

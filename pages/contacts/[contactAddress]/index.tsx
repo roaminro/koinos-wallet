@@ -1,7 +1,7 @@
 import {
   FiRepeat,
 } from 'react-icons/fi'
-import { Text, Stack, Card, CardHeader, Heading, Divider, CardBody, FormControl, FormLabel, Input, FormHelperText, Button, useToast, IconButton, NumberDecrementStepper, NumberIncrementStepper, NumberInput, NumberInputField, NumberInputStepper, InputGroup, InputRightElement, Tooltip, Center } from '@chakra-ui/react'
+import { Text, Stack, Card, CardHeader, Heading, Divider, CardBody, FormControl, FormLabel, Input, FormHelperText, Button, useToast, IconButton, NumberDecrementStepper, NumberIncrementStepper, NumberInput, NumberInputField, NumberInputStepper, InputGroup, InputRightElement, Tooltip, Center, FormErrorMessage, Textarea } from '@chakra-ui/react'
 import { Contract, Provider, utils } from 'koilib'
 import { ChangeEvent, useEffect, useState } from 'react'
 import { useRouter } from 'next/router'
@@ -9,77 +9,32 @@ import { useRouter } from 'next/router'
 import { BackButton } from '../../../components/BackButton'
 import { Network, useNetworks } from '../../../context/NetworksProvider'
 import { useTokens } from '../../../context/TokensProvider'
+import useTranslation from 'next-translate/useTranslation'
+import { useContacts } from '../../../context/ContactsProvider'
+import { isAlphanumeric } from '../../../util/Utils'
+import networks from '../../networks'
+import tokens from '../../tokens'
 
 export default function Edit() {
+  const { t } = useTranslation()
   const toast = useToast()
   const router = useRouter()
-  const { networks } = useNetworks()
-  const { updateToken, tokens } = useTokens()
 
-  const { tokenAddress } = router.query
+  const { contacts, updateContact } = useContacts()
+
+
+  const { contactAddress } = router.query
 
   const [isLoading, setIsLoading] = useState(false)
-  const [tokenName, setTokenName] = useState('')
-  const [tokenSymbol, setTokenSymbol] = useState('')
-  const [network, setNetwork] = useState<Network>()
-  const [tokenDecimals, setTokenDecimals] = useState(0)
+  const [contactName, setContactName] = useState('')
+  const [contactNotes, setContactNotes] = useState('')
 
-
-  const handleTokenNameChange = (e: ChangeEvent<HTMLInputElement>) => {
-    setTokenName(e.target.value)
+  const handleContactNameChange = (e: ChangeEvent<HTMLInputElement>) => {
+    setContactName(e.target.value)
   }
 
-  const handleTokenSymbolChange = (e: ChangeEvent<HTMLInputElement>) => {
-    setTokenSymbol(e.target.value)
-  }
-
-  const handleTokenDecimalsChange = (_: string, valueAsNumber: number) => {
-    setTokenDecimals(valueAsNumber)
-  }
-
-  const fetchTokenInformation = async () => {
-    try {
-      const provider = new Provider(network?.rpcUrl!)
-
-      const tokenContract = new Contract({
-        id: tokenAddress as string,
-        abi: utils.tokenAbi,
-        provider
-      })
-
-      let result = await tokenContract.functions.name()
-
-      if (result.result) {
-        setTokenName(result.result.value as string)
-      }
-
-      result = await tokenContract.functions.symbol()
-
-      if (result.result) {
-        setTokenSymbol(result.result.value as string)
-      }
-
-      result = await tokenContract.functions.decimals()
-
-      if (result.result) {
-        setTokenDecimals(parseInt(result.result.value as string))
-      }
-
-      toast({
-        title: 'Token information successfully updated',
-        description: 'The token information were successfully updated!',
-        status: 'success',
-        isClosable: true,
-      })
-    } catch (error) {
-      console.error(error)
-      toast({
-        title: 'An error occured while fetching the token information',
-        description: String(error),
-        status: 'error',
-        isClosable: true,
-      })
-    }
+  const handleContactNotesChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
+    setContactNotes(e.target.value)
   }
 
   const handleBtnClick = async () => {
@@ -87,26 +42,24 @@ export default function Edit() {
 
     try {
 
-      updateToken({
-        chainId: network?.chainId!,
-        address: tokenAddress as string,
-        name: tokenName,
-        symbol: tokenSymbol,
-        decimals: tokenDecimals
+      updateContact({
+        address: contactAddress as string,
+        name: contactName,
+        notes: contactNotes
       })
 
-      router.push('/tokens')
+      router.push('/contacts')
 
       toast({
-        title: 'Token successfully saved',
-        description: 'The token was successfully saved!',
+        title: t('contacts:edit.successToast.title'),
+        description: t('contacts:edit.successToast.description'),
         status: 'success',
         isClosable: true,
       })
     } catch (error) {
       console.error(error)
       toast({
-        title: 'An error occured while editing the token',
+        title: t('contacts:edit.errorToast.title'),
         description: String(error),
         status: 'error',
         isClosable: true,
@@ -117,26 +70,21 @@ export default function Edit() {
   }
 
   useEffect(() => {
-    if (tokenAddress) {
-      const token = tokens[tokenAddress as string]
+    if (contactAddress) {
+      const contact = contacts[contactAddress as string]
 
-      if (token) {
-        setTokenName(token.name)
-        setTokenSymbol(token.symbol)
-        setTokenDecimals(token.decimals)
-
-        for (const networkId in networks) {
-          const network = networks[networkId]
-          if (network.chainId === token.chainId) {
-            setNetwork(network)
-            break
-          }
-        }
+      if (contact) {
+        setContactName(contact.name)
+        setContactNotes(contact.notes)
       }
     }
-  }, [tokenAddress, tokens, networks])
+  }, [contactAddress, contacts])
 
-  if (!tokenAddress) return <></>
+  if (!contactAddress) return <></>
+
+  const isContactNameInvalid = contactName.length < 1 || !isAlphanumeric(contactName)
+  const invalidContactAddress = !utils.isChecksumAddress(contactAddress as string)
+  const contactAlreadyExists = contacts[contactAddress as string] !== undefined
 
   return (
     <Center>
@@ -150,58 +98,32 @@ export default function Edit() {
         <Divider />
         <CardBody>
           <Stack mt='6' spacing='3'>
-            <FormControl isDisabled={true}>
-              <FormLabel>Network</FormLabel>
-              <Input value={network?.name} />
-              <FormHelperText>Name of the network.</FormHelperText>
-            </FormControl>
-
-            <FormControl isDisabled={true}>
-              <FormLabel>Token address</FormLabel>
-              <InputGroup>
-                <Input value={tokenAddress} />
-                <InputRightElement>
-                  <Tooltip label="Fetch token information" aria-label='Fetch token information from rpc'>
-                    <IconButton
-                      disabled={!tokenAddress}
-                      aria-label='Fetch token information from rpc'
-                      icon={<FiRepeat />}
-                      onClick={fetchTokenInformation} />
-                  </Tooltip>
-                </InputRightElement>
-              </InputGroup>
-              <FormHelperText>Address of the token.</FormHelperText>
-            </FormControl>
-
-            <FormControl isRequired>
-              <FormLabel>Name</FormLabel>
-              <Input value={tokenName} onChange={handleTokenNameChange} />
-              <FormHelperText>Name of the token.</FormHelperText>
-            </FormControl>
-
-            <FormControl isRequired>
-              <FormLabel>Symbol</FormLabel>
-              <Input value={tokenSymbol} onChange={handleTokenSymbolChange} />
-              <FormHelperText>Symbol of the token.</FormHelperText>
+          <FormControl isRequired isInvalid={isContactNameInvalid}>
+              <FormLabel>{t('contacts:add.contactNameField.label')}</FormLabel>
+              <Input value={contactName} onChange={handleContactNameChange} />
+              <FormHelperText>{t('contacts:add.contactNameField.helper')}</FormHelperText>
+              {
+                isContactNameInvalid && <FormErrorMessage>{t('contacts:add.contactNameField.contactNameInvalid')}</FormErrorMessage>
+              }
             </FormControl>
 
             <FormControl>
-              <FormLabel>Decimals</FormLabel>
-              <NumberInput step={1} min={0} value={tokenDecimals} onChange={handleTokenDecimalsChange}>
-                <NumberInputField />
-                <NumberInputStepper>
-                  <NumberIncrementStepper />
-                  <NumberDecrementStepper />
-                </NumberInputStepper>
-              </NumberInput>
-              <FormHelperText>Number of decimals for the token.</FormHelperText>
+              <FormLabel>{t('contacts:add.contactAddressField.label')}</FormLabel>
+              <Input isDisabled value={contactAddress} />
+              <FormHelperText>{t('contacts:add.contactAddressField.helper')}</FormHelperText>
+            </FormControl>
+
+            <FormControl>
+              <FormLabel>{t('contacts:add.contactNotesField.label')}</FormLabel>
+              <Textarea value={contactNotes} onChange={handleContactNotesChange} />
+              <FormHelperText>{t('contacts:add.contactNotesField.helper')}</FormHelperText>
             </FormControl>
             <Button
               isLoading={isLoading}
               variant='solid'
               colorScheme='green'
               onClick={handleBtnClick}>
-              Save changes
+              {t('contacts:edit.buttonLabel')}
             </Button>
           </Stack>
         </CardBody>

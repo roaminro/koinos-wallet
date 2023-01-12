@@ -19,6 +19,7 @@ module.exports = {
     '/language': ['language'],
     '/contacts': ['contacts'],
     '/contacts/add': ['contacts'],
+    '/contacts/[contactAddress]': ['contacts'],
     '/embed/getAccounts': ['getAccounts']
   },
 }

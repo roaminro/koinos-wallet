@@ -42,5 +42,15 @@
       "helper": "Notes for the contact."
     },
     "buttonLabel": "Add"
+  },
+  "edit": {
+    "successToast": {
+      "title": "Contact successfully saved",
+      "description": "The contact was successfully saved!"
+    },
+    "errorToast": {
+      "title": "An error occured while savinf the contact"
+    },
+    "buttonLabel": "Save changes"
   }
 }
