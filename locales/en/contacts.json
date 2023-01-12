@@ -11,6 +11,7 @@
       "button": "Add contact"
     },
     "cardBody": {
+      "sendTokensTooltip": "send tokens",
       "editTooltip": "edit contact",
       "deleteTooltip": "delete contact"
     }

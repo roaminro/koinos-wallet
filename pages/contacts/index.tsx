@@ -1,12 +1,13 @@
 import { Button, Card, CardBody, CardHeader, Center, Divider, Stack, useToast, IconButton, Tooltip, Heading, Text, HStack } from '@chakra-ui/react'
 import { useRouter } from 'next/router'
-import { FiEdit, FiTrash } from 'react-icons/fi'
+import { FiEdit, FiSend, FiTrash } from 'react-icons/fi'
 import { BackButton } from '../../components/BackButton'
 import { Contact, useContacts } from '../../context/ContactsProvider'
 import ConfirmationDialog from '../../components/ConfirmationDialog'
 import { MouseEvent } from 'react'
 import NiceModal from '@ebay/nice-modal-react'
 import useTranslation from 'next-translate/useTranslation'
+import SendTokensModal from '../../components/SendTokensModal'
 
 export default function Contacts() {
   const { t } = useTranslation()
@@ -14,6 +15,12 @@ export default function Contacts() {
   const router = useRouter()
 
   const { contacts, removeContact } = useContacts()
+
+  const openSendTokensModal = (e: MouseEvent, defaultRecipientAddress: string) => {
+    e.stopPropagation()
+
+    NiceModal.show(SendTokensModal, { defaultRecipientAddress })
+  }
 
   const handleDeleteClick = (e: MouseEvent, contact: Contact) => {
     e.stopPropagation()
@@ -68,6 +75,13 @@ export default function Contacts() {
                           </Text>
                         </Stack>
                         <Stack spacing={4} direction='row'>
+                          <Tooltip
+                            label={t('contacts:index.cardBody.sendTokensTooltip')}
+                            placement="bottom"
+                            hasArrow
+                          >
+                            <IconButton bg='brand.blue' aria-label={t('contacts:index.cardBody.sendTokensTooltip')} icon={<FiSend />} onClick={(e) => openSendTokensModal(e, contact.address)} />
+                          </Tooltip>
                           <Tooltip
                             label={t('contacts:index.cardBody.editTooltip')}
                             placement="top"
