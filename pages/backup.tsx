@@ -2,7 +2,7 @@ import { Stack, Card, CardHeader, Heading, Divider, CardBody, FormControl, FormL
 import { ChangeEvent, useState } from 'react'
 import NiceModal from '@ebay/nice-modal-react'
 import { useWallets } from '../context/WalletsProvider'
-import { NETWORKS_KEY, PERMISSIONS_KEY, SELECTED_ACCOUNT_KEY, SELECTED_NETWORK_KEY, SETTINGS_KEY, TOKENS_KEY, VAULT_KEY } from '../util/Constants'
+import { CONTACTS_KEY, NETWORKS_KEY, PERMISSIONS_KEY, SELECTED_ACCOUNT_KEY, SELECTED_NETWORK_KEY, SETTINGS_KEY, TOKENS_KEY, VAULT_KEY } from '../util/Constants'
 import { generateString, saveFile } from '../util/Utils'
 import ConfirmationDialog from '../components/ConfirmationDialog'
 import { BackButton } from '../components/BackButton'
@@ -39,13 +39,15 @@ export default function Vault() {
       backup[SELECTED_ACCOUNT_KEY] = localStorage.getItem(SELECTED_ACCOUNT_KEY)!
 
       backup[NETWORKS_KEY] = localStorage.getItem(NETWORKS_KEY)!
-
+      
       backup[SELECTED_NETWORK_KEY] = localStorage.getItem(SELECTED_NETWORK_KEY)!
-
+      
       backup[TOKENS_KEY] = localStorage.getItem(TOKENS_KEY)!
+      
+      backup[CONTACTS_KEY] = localStorage.getItem(CONTACTS_KEY)!
 
       backup[PERMISSIONS_KEY] = localStorage.getItem(PERMISSIONS_KEY)!
-
+      
       backup[SETTINGS_KEY] = localStorage.getItem(SETTINGS_KEY)!
 
       await saveFile(`${generateString(6)}.txt`, new Blob([JSON.stringify(backup)]))
@@ -92,6 +94,11 @@ export default function Vault() {
       const tokens = parsedBackup[TOKENS_KEY]
       if (tokens) {
         localStorage.setItem(TOKENS_KEY, tokens)
+      }
+
+      const contacts = parsedBackup[CONTACTS_KEY]
+      if (contacts) {
+        localStorage.setItem(CONTACTS_KEY, contacts)
       }
 
       const permissions = parsedBackup[PERMISSIONS_KEY]

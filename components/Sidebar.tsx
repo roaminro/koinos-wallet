@@ -41,7 +41,8 @@ import {
   FiGithub,
   FiFileText,
   FiSettings,
-  FiMap
+  FiMap,
+  FiBook
 } from 'react-icons/fi'
 import { IconType } from 'react-icons'
 import useTranslation from 'next-translate/useTranslation'
@@ -103,6 +104,7 @@ const SidebarContent = ({ onClose, ...rest }: SidebarProps) => {
 
   const LinkItems: Array<LinkItemProps> = [
     { name: t('common:home'), icon: FiHome, href: '/home', hideWhenVaultNotSetup: true },
+    { name: t('common:contacts'), icon: FiBook, href: '/contacts', hideWhenVaultNotSetup: true },
     {
       name: t('common:settings'), icon: FiSettings, showWhenLocked: true,
       children: [

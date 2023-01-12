@@ -1,4 +1,4 @@
-import { useColorModeValue, Text, Modal, ModalOverlay, ModalContent, ModalHeader, ModalCloseButton, ModalBody, ModalFooter, Button, FormControl, FormErrorMessage, FormHelperText, FormLabel, Input, NumberDecrementStepper, NumberIncrementStepper, NumberInput, NumberInputField, useToast, Tooltip, Stack, HStack, InputGroup, InputRightElement, IconButton } from '@chakra-ui/react'
+import { useColorModeValue, Text, Modal, ModalOverlay, ModalContent, ModalHeader, ModalCloseButton, ModalBody, ModalFooter, Button, FormControl, FormErrorMessage, FormHelperText, FormLabel, Input, NumberInput, NumberInputField, useToast, Tooltip, Stack, HStack, InputGroup, InputRightElement, IconButton } from '@chakra-ui/react'
 import { Contract, utils, Signer } from 'koilib'
 import { ChangeEvent, useEffect, useState } from 'react'
 import NiceModal, { useModal } from '@ebay/nice-modal-react'
@@ -12,13 +12,19 @@ import { useTokenBalance } from './BalanceUtils'
 import { FiX } from 'react-icons/fi'
 import { GroupBase, Select, SingleValue } from 'chakra-react-select'
 
-import { Account } from '../util/Vault'
+import { useContacts } from '../context/ContactsProvider'
 
 interface SendTokensModalProps {
-  defaultTokenAddress: string
+  defaultTokenAddress?: string
+  defaultRecipientAddress?: string
 }
 
-export default NiceModal.create(({ defaultTokenAddress }: SendTokensModalProps) => {
+interface AccountOption {
+  name: string
+  address: string
+}
+
+export default NiceModal.create(({ defaultTokenAddress, defaultRecipientAddress }: SendTokensModalProps) => {
   const modal = useModal()
 
   const toast = useToast()
@@ -27,14 +33,18 @@ export default NiceModal.create(({ defaultTokenAddress }: SendTokensModalProps) 
   const { wallets, selectedAccount, signTransaction } = useWallets()
   const { selectedNetwork, provider } = useNetworks()
   const { tokens } = useTokens()
+  const { contacts} = useContacts()
 
   const [amount, setAmount] = useState('')
   const [recipientAddress, setRecipientAddress] = useState('')
-  const [recipientAccount, setRecipientAccount] = useState<Account | null>()
+  const [recipientAccount, setRecipientAccount] = useState<AccountOption | null>()
 
   const [availableTokens, setAvailableTokens] = useState<Token[]>()
   const [selectedToken, setSelectedToken] = useState<Token | null>()
   const [isSending, setIsSending] = useState(false)
+
+  const [accountOptions, setAccountOptions] = useState<GroupBase<AccountOption>[]>([])
+
 
   const handleRecipientAddressChange = (e: ChangeEvent<HTMLInputElement>) => {
     setRecipientAddress(e.target.value)
@@ -48,10 +58,10 @@ export default NiceModal.create(({ defaultTokenAddress }: SendTokensModalProps) 
     setAmount('')
   }
 
-  const handleRecipientAccountChange = (newVal: SingleValue<Account>) => {
+  const handleRecipientAccountChange = (newVal: SingleValue<AccountOption>) => {
     setRecipientAccount(newVal)
     if (newVal) {
-      setRecipientAddress(newVal.public.address)
+      setRecipientAddress(newVal.address)
     }
   }
 
@@ -96,7 +106,60 @@ export default NiceModal.create(({ defaultTokenAddress }: SendTokensModalProps) 
 
       setAvailableTokens(tkns)
     }
-  }, [defaultTokenAddress, selectedNetwork, tokens])
+
+    const accOptions: GroupBase<AccountOption>[] = []
+
+    Object.entries(wallets).map(([_, wallet]) => {
+      const walletOption: { label: string, options: AccountOption[] } = {
+        label: wallet.name,
+        options: []
+      }
+  
+      Object.entries(wallet.accounts).map(([__, account]) => {
+        const { name, address } = account.public
+
+        walletOption.options.push({
+          name,
+          address,
+        })
+
+        if (account.public.address === defaultRecipientAddress) {
+          setRecipientAddress(defaultRecipientAddress)
+          setRecipientAccount({
+            name,
+            address
+          })
+        }
+      })
+  
+      accOptions.push(walletOption)
+    })
+  
+    const contactsOption: { label: string, options: AccountOption[] } = {
+      label:'Contacts',
+      options: []
+    }
+  
+    Object.entries(contacts).map(([_, contact]) => {
+      const { name, address } = contact
+      contactsOption.options.push({
+        name,
+        address,
+      })
+      
+      if (contact.address === defaultRecipientAddress) {
+        setRecipientAddress(defaultRecipientAddress)
+        setRecipientAccount({
+          name,
+          address,
+        })
+      }
+    })
+  
+    accOptions.push(contactsOption)
+    setAccountOptions(accOptions)
+    
+  }, [contacts, defaultRecipientAddress, defaultTokenAddress, selectedNetwork, tokens, wallets])
 
   const sendTokens = async () => {
     setIsSending(true)
@@ -183,23 +246,6 @@ export default NiceModal.create(({ defaultTokenAddress }: SendTokensModalProps) 
 
   const canSendTokens = !isRecipientAddressInvalid && !!selectedToken && parseFloat(amount) > 0
 
-  const accountOptions: GroupBase<Account>[] = []
-
-  Object.entries(wallets).map(([walletId, wallet]) => {
-    const walletOption: { label: string, options: Account[] } = {
-      label: wallet.name,
-      options: []
-    }
-
-    Object.entries(wallet.accounts).map(([accountId, account]) => {
-      walletOption.options.push(account)
-    })
-
-    accountOptions.push(walletOption)
-  })
-
-
-
   return (
     <Modal isOpen={modal.visible} onClose={modal.hide}>
       <ModalOverlay />
@@ -231,7 +277,7 @@ export default NiceModal.create(({ defaultTokenAddress }: SendTokensModalProps) 
 
             <FormControl isRequired isInvalid={isRecipientAddressInvalid}>
               <FormLabel>Recipient</FormLabel>
-              <Select<Account, false, GroupBase<Account>>
+              <Select<AccountOption, false, GroupBase<AccountOption>>
                 useBasicStyles
                 selectedOptionStyle="check"
                 isClearable
@@ -239,8 +285,8 @@ export default NiceModal.create(({ defaultTokenAddress }: SendTokensModalProps) 
                 placeholder="Select recipient from wallets accounts..."
                 backspaceRemovesValue={true}
                 closeMenuOnSelect={true}
-                getOptionLabel={(account: Account) => `${account.public.name} (${truncateAccount(account.public.address)})`}
-                getOptionValue={(account: Account) => account.public.address}
+                getOptionLabel={(accountOption: AccountOption) => `${accountOption.name} (${truncateAccount(accountOption.address)})`}
+                getOptionValue={(accountOption: AccountOption) => accountOption.address}
                 value={recipientAccount}
                 onChange={handleRecipientAccountChange}
               />
