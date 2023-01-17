@@ -61,13 +61,18 @@ export const info = (...args: any) => {
 }
 
 export const saveFile = async (fileName: string, blob: Blob) => {
+  const href = URL.createObjectURL(blob)
   const a = document.createElement('a')
-  a.href = URL.createObjectURL(blob)
+  a.href = href
   a.target = '_blank'
   a.download = fileName
   a.addEventListener('click', () => {
-    setTimeout(() => URL.revokeObjectURL(a.href), 30 * 1000)
+    setTimeout(() => {
+      URL.revokeObjectURL(href)
+      document.body.removeChild(a)
+    }, 30 * 1000)
   })
+  document.body.appendChild(a)
   a.click()
 }
 
