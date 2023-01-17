@@ -39,18 +39,18 @@ export default function Vault() {
       backup[SELECTED_ACCOUNT_KEY] = localStorage.getItem(SELECTED_ACCOUNT_KEY)!
 
       backup[NETWORKS_KEY] = localStorage.getItem(NETWORKS_KEY)!
-      
+
       backup[SELECTED_NETWORK_KEY] = localStorage.getItem(SELECTED_NETWORK_KEY)!
-      
+
       backup[TOKENS_KEY] = localStorage.getItem(TOKENS_KEY)!
-      
+
       backup[CONTACTS_KEY] = localStorage.getItem(CONTACTS_KEY)!
 
       backup[PERMISSIONS_KEY] = localStorage.getItem(PERMISSIONS_KEY)!
-      
+
       backup[SETTINGS_KEY] = localStorage.getItem(SETTINGS_KEY)!
 
-      await saveFile(`${generateString(6)}.txt`, new Blob([JSON.stringify(backup)]))
+      await saveFile(`${generateString(6)}.txt`, new Blob([JSON.stringify(backup)], { type: 'plain/text' }))
     } catch (error) {
       console.error(error)
       toast({
