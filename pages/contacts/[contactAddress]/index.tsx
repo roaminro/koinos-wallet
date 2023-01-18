@@ -83,8 +83,6 @@ export default function Edit() {
   if (!contactAddress) return <></>
 
   const isContactNameInvalid = contactName.length < 1 || !isAlphanumeric(contactName)
-  const invalidContactAddress = !utils.isChecksumAddress(contactAddress as string)
-  const contactAlreadyExists = contacts[contactAddress as string] !== undefined
 
   return (
     <Center>

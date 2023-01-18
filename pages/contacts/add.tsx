@@ -24,7 +24,7 @@ export default function Add() {
   }
 
   const handleContactAddressChange = (e: ChangeEvent<HTMLInputElement>) => {
-    setContactAddress(e.target.value)
+    setContactAddress(e.target.value.trim())
   }
 
   const handleContactNotesChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
@@ -64,7 +64,14 @@ export default function Add() {
   }
 
   const isContactNameInvalid = contactName.length < 1 || !isAlphanumeric(contactName)
-  const invalidContactAddress = !utils.isChecksumAddress(contactAddress)
+
+  let invalidContactAddress = false
+  try {
+    invalidContactAddress = !utils.isChecksumAddress(contactAddress)
+  } catch (error) {
+    invalidContactAddress = true
+  }
+
   const contactAlreadyExists = contacts[contactAddress] !== undefined
 
   return (

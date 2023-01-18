@@ -25,16 +25,21 @@ export default function Import() {
   }
 
   const handleAccountAddressChange = (e: ChangeEvent<HTMLInputElement>) => {
-    setAccountAddress(e.target.value)
+    setAccountAddress(e.target.value.trim())
   }
 
   const handleAccountPrivateKeyChange = (e: ChangeEvent<HTMLInputElement>) => {
-    setAccountPrivateKey(e.target.value)
+    const trimmedValue = e.target.value.trim()
+    setAccountPrivateKey(trimmedValue)
 
-    if (utils.isChecksumWif(e.target.value)) {
-      setAccountAddress(Signer.fromWif(e.target.value).getAddress())
-    } else {
-      setAccountAddress('')
+    try {
+      if (utils.isChecksumWif(trimmedValue)) {
+        setAccountAddress(Signer.fromWif(trimmedValue).getAddress())
+      } else {
+        setAccountAddress('')
+      }
+    } catch (error) {
+      console.error(error)
     }
   }
 

@@ -47,7 +47,7 @@ export default NiceModal.create(({ defaultTokenAddress, defaultRecipientAddress 
 
 
   const handleRecipientAddressChange = (e: ChangeEvent<HTMLInputElement>) => {
-    setRecipientAddress(e.target.value)
+    setRecipientAddress(e.target.value.trim())
   }
 
   const handleAmountChange = (amount: string, _: number) => {
