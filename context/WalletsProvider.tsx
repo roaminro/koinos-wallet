@@ -79,7 +79,6 @@ export const WalletsProvider = ({
   const [isLoading, setIsLoading] = useState(true)
   const [isVaultSetup, setIsVaultSetup] = useState(false)
   const [selectedAccount, setSelectedAccount] = useState<SelectedAccount>()
-  const vaultServiceWorker = useRef<ServiceWorkerRegistration>()
   const vaultMessenger = useRef<Messenger<OutgoingMessage, IncomingMessage>>()
 
   const saveVaultToLocalStorage = async () => {
@@ -251,16 +250,16 @@ export const WalletsProvider = ({
             })
           })
 
-          vaultServiceWorker.current = registration
-
-          msgr = new Messenger<OutgoingMessage, IncomingMessage>(registration.active!, VAULT_CONNECTOR_CHILD_ID, false)
-          vaultMessenger.current = msgr
+          if (registration.active) {
+            msgr = new Messenger<OutgoingMessage, IncomingMessage>(registration.active, VAULT_CONNECTOR_CHILD_ID, false)
+            vaultMessenger.current = msgr
+          }
 
           if (registration.installing) {
             debug('Vault worker installing')
-          } else if (registration.waiting) {
+          } else if (vaultMessenger.current && registration.waiting) {
             debug('Vault worker installed')
-            msgr.sendMessage(VAULT_CONNECTOR_PARENT_ID, {
+            vaultMessenger.current.sendMessage(VAULT_CONNECTOR_PARENT_ID, {
               command: 'skipWaiting'
             })
           } else if (registration.active) {
@@ -268,7 +267,7 @@ export const WalletsProvider = ({
           }
 
           // get accounts if already unlocked
-          if (!await isVaultLocked()) {
+          if (vaultMessenger.current && !await isVaultLocked()) {
             setWallets(await getVaultAccounts())
 
             setIsLocked(false)
