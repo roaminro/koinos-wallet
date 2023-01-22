@@ -41,7 +41,7 @@ export default function WalletCreator({ importingSecretRecoveryPhrase = false }:
   }
 
   const handleSecretRecoveryPhraseChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
-    setSecretRecoveryPhrase(e.target.value.trim())
+    setSecretRecoveryPhrase(e.target.value)
   }
 
   const handleWalletNameChange = (e: ChangeEvent<HTMLInputElement>) => {
