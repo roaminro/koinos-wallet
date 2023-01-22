@@ -6,7 +6,7 @@ import {
   FiMinus,
   FiClipboard,
 } from 'react-icons/fi'
-import { utils } from 'ethers'
+import { utils, wordlists } from 'ethers'
 import { HDKoinos } from '../util/HDKoinos'
 import { isAlphanumeric, equalArray } from '../util/Utils'
 import { useWallets } from '../context/WalletsProvider'
@@ -23,7 +23,7 @@ export default function WalletCreator({ importingSecretRecoveryPhrase = false }:
   const { addWallet } = useWallets()
 
   const [walletName, setWalletName] = useState('')
-  const [secretRecoveryPhrase, setSecretRecoveryPhrase] = useState<string>()
+  const [secretRecoveryPhrase, setSecretRecoveryPhrase] = useState<string>('')
   const [isSecretRecoveryPhraseSaved, setIsSecretRecoveryPhraseSaved] = useState(false)
   const [secretRecoveryPhraseConfirmation, setSecretRecoveryPhraseConfirmation] = useState<string[]>([])
   const [randomizedSecretRecoveryPhraseWords, setRandomizedSecretRecoveryPhraseWords] = useState<string[]>([])
@@ -50,7 +50,7 @@ export default function WalletCreator({ importingSecretRecoveryPhrase = false }:
 
   const handleSavedSecretRecoveryPhraseChange = (e: ChangeEvent<HTMLInputElement>) => {
     setIsSecretRecoveryPhraseSaved(e.target.checked)
-    setRandomizedSecretRecoveryPhraseWords(secretRecoveryPhrase!.split(' ').sort(() => Math.random() - 0.5))
+    setRandomizedSecretRecoveryPhraseWords(secretRecoveryPhrase.split(' ').sort(() => Math.random() - 0.5))
     setSecretRecoveryPhraseConfirmation([])
   }
 
@@ -79,7 +79,7 @@ export default function WalletCreator({ importingSecretRecoveryPhrase = false }:
     setIsCreatingWallet(true)
 
     try {
-      const newWallet = await addWallet(walletName, secretRecoveryPhrase)
+      const newWallet = await addWallet(walletName, secretRecoveryPhrase.trim())
 
       setSecretRecoveryPhrase('')
       setSecretRecoveryPhraseWords([])
@@ -118,7 +118,32 @@ export default function WalletCreator({ importingSecretRecoveryPhrase = false }:
 
   const isWalletNameInvalid = walletName.length < 1 || !isAlphanumeric(walletName)
   // if we are importing a secret recovery phrase, then just check the number of words entered
-  const isSecretRecoveryPhraseConfirmed = importingSecretRecoveryPhrase ? secretRecoveryPhrase?.split(' ').length === 12 && utils.isValidMnemonic(secretRecoveryPhrase) : equalArray(secretRecoveryPhraseWords, secretRecoveryPhraseConfirmation)
+  let isSecretRecoveryPhraseConfirmed: boolean
+  let isSecreRecoveryPhraseInvalid = false
+  let isNumberOfWordsInvalid = false
+  let invalidWordsList: string[] = []
+
+  if (importingSecretRecoveryPhrase) {
+    const trimmedSecretRecoveryPhrase = secretRecoveryPhrase.trim()
+    const words = trimmedSecretRecoveryPhrase.split(' ')
+    if (words.length !== 12) {
+      isNumberOfWordsInvalid = true
+    }
+
+    isSecreRecoveryPhraseInvalid = !utils.isValidMnemonic(trimmedSecretRecoveryPhrase)
+
+    if (isSecreRecoveryPhraseInvalid) {
+      for (const word of words) {
+        if (word.trim() && wordlists['en'].getWordIndex(word) === -1) {
+          invalidWordsList.push(word)
+        }
+      }
+    }
+
+    isSecretRecoveryPhraseConfirmed = trimmedSecretRecoveryPhrase.length > 0 && !isSecreRecoveryPhraseInvalid && !isNumberOfWordsInvalid && invalidWordsList.length === 0
+  } else {
+    isSecretRecoveryPhraseConfirmed = equalArray(secretRecoveryPhraseWords, secretRecoveryPhraseConfirmation)
+  }
 
   let isCreateImportButtonDisabled = true
 
@@ -235,7 +260,13 @@ export default function WalletCreator({ importingSecretRecoveryPhrase = false }:
                 <Textarea value={secretRecoveryPhrase} onChange={handleSecretRecoveryPhraseChange} />
                 <FormHelperText>Type the 12 words composing your &quot;Secret Phrase&quot;, separated by blank spaces.</FormHelperText>
                 {
-                  !isSecretRecoveryPhraseConfirmed && <FormErrorMessage>The &quot;Secret Phrase&quot; provided is either not 12 words long or is invalid.</FormErrorMessage>
+                  isSecreRecoveryPhraseInvalid && <FormErrorMessage>The &quot;Secret Phrase&quot; provided is invalid.</FormErrorMessage>
+                }
+                {
+                  isNumberOfWordsInvalid && <FormErrorMessage>The &quot;Secret Phrase&quot; must have 12 words.</FormErrorMessage>
+                }
+                {
+                  invalidWordsList.length > 0 && <FormErrorMessage>The &quot;Secret Phrase&quot; provided has invalid words: &quot;{invalidWordsList.join(', ')}&quot;.</FormErrorMessage>
                 }
               </FormControl>
             }
