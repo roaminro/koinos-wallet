@@ -69,7 +69,7 @@ export const saveFile = async (fileName: string, blob: Blob) => {
     a.href = reader.result!.toString()
     a.click()
   }
-  
+
   reader.readAsDataURL(blob)
 }
 
@@ -121,19 +121,24 @@ export const openPopup = <IncomingDataType, OutgoingDataType>(args: {
 
   const locale = Cookies.get('NEXT_LOCALE') || defaultLocale
 
-  const params = `popup=yes,scrollbars=no,resizable=yes,status=no,location=no,toolbar=no,menubar=no,width=${fWidth},height=${fHeight}`
-  const popupWindow = window.open(`/${locale}${url}`, 'mkw', params)!
-  popupWindow.resizeTo(fWidth, fHeight)
-  popupWindow.focus()
+  try {
+    const params = `popup=yes,scrollbars=no,resizable=yes,status=no,location=no,toolbar=no,menubar=no,width=${fWidth},height=${fHeight}`
+    const popupWindow = window.open(`/${locale}${url}`, 'mkw', params)!
+    popupWindow.resizeTo(fWidth, fHeight)
+    popupWindow.focus()
 
-  const popupMessenger = new Messenger<IncomingDataType, OutgoingDataType>(popupWindow, messengerId, fIsTargetWindow, fTargetOrigin)
+    const popupMessenger = new Messenger<IncomingDataType, OutgoingDataType>(popupWindow, messengerId, fIsTargetWindow, fTargetOrigin)
 
-  popupWindow.onload = () => {
-    popupWindow.onunload = () => {
-      popupMessenger.removeListener()
-      onClose()
+    popupWindow.onload = () => {
+      popupWindow.onunload = () => {
+        popupMessenger.removeListener()
+        onClose()
+      }
     }
-  }
 
-  return { popupWindow, popupMessenger }
+    return { popupWindow, popupMessenger }
+  } catch (error) {
+    debug(error)
+    throw new Error('could not open popup')
+  }
 }

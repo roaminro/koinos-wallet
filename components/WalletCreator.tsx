@@ -1,12 +1,12 @@
 import { useToast, Textarea, Button, Card, CardBody, Divider, Heading, Stack, FormControl, FormHelperText, FormLabel, Input, FormErrorMessage, Checkbox, Tag, TagLabel, TagLeftIcon, CardHeader, Center, IconButton, useClipboard, Tooltip } from '@chakra-ui/react'
 import { useRouter } from 'next/router'
-import { ChangeEvent, useEffect, useState } from 'react'
+import { ChangeEvent, useState } from 'react'
 import {
   FiPlus,
   FiMinus,
   FiClipboard,
 } from 'react-icons/fi'
-
+import { utils } from 'ethers'
 import { HDKoinos } from '../util/HDKoinos'
 import { isAlphanumeric, equalArray } from '../util/Utils'
 import { useWallets } from '../context/WalletsProvider'
@@ -41,7 +41,7 @@ export default function WalletCreator({ importingSecretRecoveryPhrase = false }:
   }
 
   const handleSecretRecoveryPhraseChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
-    setSecretRecoveryPhrase(e.target.value)
+    setSecretRecoveryPhrase(e.target.value.trim())
   }
 
   const handleWalletNameChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -118,7 +118,7 @@ export default function WalletCreator({ importingSecretRecoveryPhrase = false }:
 
   const isWalletNameInvalid = walletName.length < 1 || !isAlphanumeric(walletName)
   // if we are importing a secret recovery phrase, then just check the number of words entered
-  const isSecretRecoveryPhraseConfirmed = importingSecretRecoveryPhrase ? secretRecoveryPhrase?.split(' ').length === 12 : equalArray(secretRecoveryPhraseWords, secretRecoveryPhraseConfirmation)
+  const isSecretRecoveryPhraseConfirmed = importingSecretRecoveryPhrase ? secretRecoveryPhrase?.split(' ').length === 12 && utils.isValidMnemonic(secretRecoveryPhrase) : equalArray(secretRecoveryPhraseWords, secretRecoveryPhraseConfirmation)
 
   let isCreateImportButtonDisabled = true
 
@@ -235,7 +235,7 @@ export default function WalletCreator({ importingSecretRecoveryPhrase = false }:
                 <Textarea value={secretRecoveryPhrase} onChange={handleSecretRecoveryPhraseChange} />
                 <FormHelperText>Type the 12 words composing your &quot;Secret Phrase&quot;, separated by blank spaces.</FormHelperText>
                 {
-                  !isSecretRecoveryPhraseConfirmed && <FormErrorMessage>The &quot;Secret Phrase&quot; should be composed of 12 words.</FormErrorMessage>
+                  !isSecretRecoveryPhraseConfirmed && <FormErrorMessage>The &quot;Secret Phrase&quot; provided is either not 12 words long or is invalid.</FormErrorMessage>
                 }
               </FormControl>
             }

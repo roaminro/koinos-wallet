@@ -30,16 +30,16 @@ export const handler = (sender: string, data: IncomingMessage, sendData: SendDat
 
 const getAccounts = (requester: string, _: IncomingMessage, sendData: SendDataFn<OutgoingMessage>, sendError: SendErrorFn) => {
   return new Promise<void>((resolve) => {
-    const { popupWindow, popupMessenger } = openPopup<GetAccountsResult, GetAccountsArguments>({
-      url: '/embed/getAccounts',
-      messengerId: ACCOUNTS_PARENT_ID,
-      onClose: () => {
-        sendError('request was cancelled')
-        resolve()
-      },
-    })
-
     try {
+      const { popupWindow, popupMessenger } = openPopup<GetAccountsResult, GetAccountsArguments>({
+        url: '/embed/getAccounts',
+        messengerId: ACCOUNTS_PARENT_ID,
+        onClose: () => {
+          sendError('request was cancelled')
+          resolve()
+        },
+      })
+
       popupMessenger.onMessage(({ data: accounts }) => {
         sendData({ result: accounts })
         popupWindow.close()
