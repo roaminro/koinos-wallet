@@ -110,16 +110,16 @@ const signSendTransaction = (send: boolean, requester: string, data: IncomingMes
   }
 
   return new Promise<void>((resolve) => {
-    const { popupWindow, popupMessenger } = openPopup<SignSendTransactionResult, SignSendTransactionArguments>({
-      url: '/embed/signSendTransaction',
-      messengerId: SIGN_SEND_TRANSACTION_PARENT_ID,
-      onClose: () => {
-        sendError('request was cancelled')
-        resolve()
-      },
-    })
-
     try {
+      const { popupWindow, popupMessenger } = openPopup<SignSendTransactionResult, SignSendTransactionArguments>({
+        url: '/embed/signSendTransaction',
+        messengerId: SIGN_SEND_TRANSACTION_PARENT_ID,
+        onClose: () => {
+          sendError('request was cancelled')
+          resolve()
+        },
+      })
+
       popupMessenger.onMessage(({ data }) => {
         sendData({ result: data })
         popupWindow.close()
@@ -152,16 +152,16 @@ const signMessage = (requester: string, data: IncomingMessage, sendData: SendDat
   }
 
   return new Promise<void>((resolve) => {
-   const { popupWindow, popupMessenger } = openPopup<string, SignMessageArguments>({
-      url: '/embed/signMessage',
-      messengerId: SIGN_MESSAGE_PARENT_ID,
-      onClose: () => {
-        sendError('request was cancelled')
-        resolve()
-      },
-    })
-
     try {
+      const { popupWindow, popupMessenger } = openPopup<string, SignMessageArguments>({
+        url: '/embed/signMessage',
+        messengerId: SIGN_MESSAGE_PARENT_ID,
+        onClose: () => {
+          sendError('request was cancelled')
+          resolve()
+        },
+      })
+
       popupMessenger.onMessage(({ data }) => {
         sendData({ result: data })
         popupWindow.close()
@@ -193,16 +193,16 @@ const signHash = (requester: string, data: IncomingMessage, sendData: SendDataFn
   }
 
   return new Promise<void>((resolve) => {
-    const { popupWindow, popupMessenger } = openPopup<string, SignHashArguments>({
-      url: '/embed/signHash',
-      messengerId: SIGN_HASH_PARENT_ID,
-      onClose: () => {
-        sendError('request was cancelled')
-        resolve()
-      },
-    })
-
     try {
+      const { popupWindow, popupMessenger } = openPopup<string, SignHashArguments>({
+        url: '/embed/signHash',
+        messengerId: SIGN_HASH_PARENT_ID,
+        onClose: () => {
+          sendError('request was cancelled')
+          resolve()
+        },
+      })
+
       popupMessenger.onMessage(({ data }) => {
         sendData({ result: data })
         popupWindow.close()

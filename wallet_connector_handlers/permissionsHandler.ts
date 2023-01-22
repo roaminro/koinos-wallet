@@ -28,16 +28,16 @@ export const handler = (sender: string, data: IncomingMessage, sendData: SendDat
 
 const requestPermissions = (requester: string, data: IncomingMessage, sendData: SendDataFn<OutgoingMessage>, sendError: SendErrorFn, updateAppPermissions: (appPermissions: AppPermissions) => void) => {
   return new Promise<void>((resolve) => {
-    const { popupWindow, popupMessenger } = openPopup<RequestPermissionsResult, RequestPermissionsArguments>({
-      url: '/embed/requestPermissions',
-      messengerId: REQUEST_PERMISSIONS_PARENT_ID,
-      onClose: () => {
-        sendError('request was cancelled')
-        resolve()
-      },
-    })
-
     try {
+      const { popupWindow, popupMessenger } = openPopup<RequestPermissionsResult, RequestPermissionsArguments>({
+        url: '/embed/requestPermissions',
+        messengerId: REQUEST_PERMISSIONS_PARENT_ID,
+        onClose: () => {
+          sendError('request was cancelled')
+          resolve()
+        },
+      })
+
       popupMessenger.onMessage(({ data: permissionsResult }) => {
         const id = getUuidByString(requester)
         updateAppPermissions({
