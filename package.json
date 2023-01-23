@@ -1,7 +1,7 @@
 {
   "name": "my-koinos-wallet",
-  "version": "0.3.12",
-  "private": true,
+  "version": "0.3.13",
+  "private": false,
   "scripts": {
     "dev": "next dev",
     "build": "next build",

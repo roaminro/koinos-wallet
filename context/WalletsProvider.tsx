@@ -9,6 +9,9 @@ import { Messenger } from '../util/Messenger'
 import { AddAccountArguments, AddAccountResult, AddWalletArguments, AddWalletResult, GetAccountPrivateKeyArguments, GetAccountsResult, GetWalletSecretRecoveryPhraseArguments, ImportAccountArguments, ImportAccountResult, IncomingMessage, IsLockedResult, OutgoingMessage, RemoveAccountArguments, RemoveWalletArguments, SerializeResult, SignHashArguments, SignTransactionArguments, TryDecryptArguments, UnlockArguments, UnlockResult, UpdateAccountNameArguments, UpdateWalletNameArguments } from '../workers/Vault-Worker-Interfaces'
 import { TransactionJson } from 'koilib/lib/interface'
 import { base64DecodeURL, base64EncodeURL } from '../util/Base64'
+import HDKoinos from '../util/HDKoinos'
+import { useNetworks } from './NetworksProvider'
+import { HistoryTransaction } from '../components/AccountHistoryUtils'
 
 
 type WalletContextType = {
@@ -19,7 +22,7 @@ type WalletContextType = {
   selectedAccount?: SelectedAccount
   unlock: (password: string) => Promise<void>
   lock: () => Promise<void>
-  addWallet: (walletName: string, secretRecoveryPhrase?: string) => Promise<Wallet>
+  addWallet: (walletName: string, secretRecoveryPhrase?: string, addAccounts?: boolean) => Promise<Wallet>
   removeWallet: (walletId: string) => Promise<void>
   updateWalletName: (walletId: string, newWalletName: string) => Promise<void>
   tryDecrypt: (password: string, encryptedVault: string) => Promise<void>
@@ -48,7 +51,7 @@ export const WalletsContext = createContext<WalletContextType>({
   isVaultSetup: false,
   unlock: (password: string) => new Promise((resolve) => resolve()),
   lock: () => new Promise((resolve) => resolve()),
-  addWallet: (walletName: string, secretRecoveryPhrase?: string) => new Promise((resolve) => resolve({ id: '', name: '', accounts: {} })),
+  addWallet: (walletName: string, secretRecoveryPhrase?: string, addAccounts?: boolean) => new Promise((resolve) => resolve({ id: '', name: '', accounts: {} })),
   removeWallet: (walletId: string) => new Promise((resolve) => resolve()),
   updateWalletName: (walletId: string, newWalletName: string) => new Promise((resolve) => resolve()),
   tryDecrypt: (password: string, encryptedVault: string) => new Promise((resolve) => resolve()),
@@ -73,6 +76,8 @@ export const WalletsProvider = ({
 }): JSX.Element => {
 
   const router = useRouter()
+
+  const { provider } = useNetworks()
 
   const [wallets, setWallets] = useState<Record<string, Wallet>>({})
   const [isLocked, setIsLocked] = useState(true)
@@ -308,7 +313,7 @@ export const WalletsProvider = ({
     }
   }, [])
 
-  const addWallet = async (walletName: string, secretRecoveryPhrase?: string) => {
+  const addWallet = async (walletName: string, secretRecoveryPhrase?: string, addAccounts: boolean = false) => {
     // add wallet to vault
     const { result: addWalletResult } = await vaultMessenger.current!.sendRequest(VAULT_CONNECTOR_PARENT_ID, {
       command: 'addWallet',
@@ -319,6 +324,47 @@ export const WalletsProvider = ({
     })
 
     const newWallet = addWalletResult as AddWalletResult
+
+    if (addAccounts && secretRecoveryPhrase) {
+      const hdKoinos = new HDKoinos(secretRecoveryPhrase)
+
+      try {
+        for (let accountKeyIndex = 0; accountKeyIndex < 100; accountKeyIndex++) {
+          const account = hdKoinos.deriveKeyAccount(accountKeyIndex, '')
+          // check the account history
+          const { values } = await provider!.call<{
+            values?: HistoryTransaction[]
+          }>('account_history.get_account_history', {
+            address: account.public.address,
+            limit: 1,
+            ascending: false,
+            irreversible: false
+          })
+
+          if (!values || values.length === 0) {
+            break
+          }
+
+          // add account to wallet
+          const { result: addAccountResult } = await vaultMessenger.current!.sendRequest(VAULT_CONNECTOR_PARENT_ID, {
+            command: 'addAccount',
+            arguments: {
+              walletId: newWallet.id,
+              accountName: `account-${accountKeyIndex}`
+            } as AddAccountArguments
+          })
+
+          const newAccount = addAccountResult as AddAccountResult
+
+          newWallet.accounts[newAccount.public.id] = newAccount
+        }
+      } catch (error) {
+        // if an error occur during this import process
+        // abort the accounts import
+        console.error(error)
+      }
+    }
+
     const newWallets = { ...wallets, [newWallet.id]: newWallet }
 
     // update state
@@ -336,10 +382,10 @@ export const WalletsProvider = ({
           walletId
         } as RemoveWalletArguments
       })
-  
+
       const newWallets = { ...wallets }
-       delete newWallets[walletId]
-  
+      delete newWallets[walletId]
+
       // update state
       setWallets(newWallets)
       saveVaultToLocalStorage()
@@ -355,10 +401,10 @@ export const WalletsProvider = ({
           newWalletName
         } as UpdateWalletNameArguments
       })
-  
+
       const newWallets = { ...wallets }
       newWallets[walletId].name = newWalletName
-  
+
       // update state
       setWallets(newWallets)
       saveVaultToLocalStorage()
@@ -400,17 +446,17 @@ export const WalletsProvider = ({
           accountId
         } as RemoveAccountArguments
       })
-  
+
       const newWallets = { ...wallets }
-       delete newWallets[walletId].accounts[accountId]
-  
+      delete newWallets[walletId].accounts[accountId]
+
       // update state
       setWallets(newWallets)
       saveVaultToLocalStorage()
     }
   }
 
-  const updateAccountName = async (walletId: string, accountId:string, newAccountName: string) => {
+  const updateAccountName = async (walletId: string, accountId: string, newAccountName: string) => {
     if (wallets[walletId] && wallets[walletId].accounts[accountId]) {
       await vaultMessenger.current!.sendRequest(VAULT_CONNECTOR_PARENT_ID, {
         command: 'updateAccountName',
@@ -420,10 +466,10 @@ export const WalletsProvider = ({
           newAccountName
         } as UpdateAccountNameArguments
       })
-  
+
       const newWallets = { ...wallets }
       wallets[walletId].accounts[accountId].public.name = newAccountName
-  
+
       // update state
       setWallets(newWallets)
       saveVaultToLocalStorage()
