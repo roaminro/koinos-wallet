@@ -79,17 +79,25 @@ export default function WalletCreator({ importingSecretRecoveryPhrase = false }:
     setIsCreatingWallet(true)
 
     try {
-      const newWallet = await addWallet(walletName, secretRecoveryPhrase.trim())
+      const newWallet = await addWallet(walletName, secretRecoveryPhrase.trim(), importingSecretRecoveryPhrase)
 
       setSecretRecoveryPhrase('')
       setSecretRecoveryPhraseWords([])
       setRandomizedSecretRecoveryPhraseWords([])
 
       if (importingSecretRecoveryPhrase) {
-        router.push({
-          pathname: '/wallets/[walletId]/accounts',
-          query: { walletId: newWallet.id },
-        })
+        // if accounts were added automatically, redirect to list of accounts
+        if (Object.keys(newWallet.accounts).length > 0) {
+          router.push({
+            pathname: '/wallets/[walletId]/accounts',
+            query: { walletId: newWallet.id },
+          })
+        } else {
+          router.push({
+            pathname: '/wallets/[walletId]/accounts/add/',
+            query: { walletId: newWallet.id },
+          })
+        }
       } else {
         router.push({
           pathname: '/wallets/[walletId]/accounts/add/',
