@@ -183,9 +183,11 @@ const SidebarContent = ({ onClose, ...rest }: SidebarProps) => {
               </AccordionItem>
             ))}
           </Accordion>
-          <Alert status='warning'>
+          <Alert status='info'>
             <AlertIcon />
-            {t('sidebar:warningMessage')}
+            <Link style={{ overflow: 'auto' }} target='_blank' href='https://github.com/roaminro/roaminro'>
+              {t('sidebar:message')} https://github.com/roaminro
+            </Link>
           </Alert>
         </Box>
         <HStack

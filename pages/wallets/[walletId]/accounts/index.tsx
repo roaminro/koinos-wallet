@@ -18,7 +18,7 @@ export default function Wallets() {
 
   const handleDeleteClick = (accountId: string) => {
     NiceModal.show(ConfirmationDialog, {
-      body: 'Are you sure you want to delete this account? Make sure you have a copy of the Private Key before confirming.',
+      body: 'Are you sure you want to delete this account (address)? Make sure you have a copy of the Private Key before confirming.',
       onAccept: async () => {
         await removeAccount(walletId as string, accountId)
         toast({

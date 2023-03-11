@@ -1,7 +1,8 @@
 {
   "name": "my-koinos-wallet",
-  "version": "0.3.13",
+  "version": "0.3.14",
   "private": false,
+  "license": "MIT",
   "scripts": {
     "dev": "next dev",
     "build": "next build",

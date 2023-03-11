@@ -70,7 +70,7 @@ export default function Add() {
             <FormControl isRequired isInvalid={isAccountNameInvalid}>
               <FormLabel>Account Name</FormLabel>
               <Input value={accountName} onChange={handleAccountNameChange} />
-              <FormHelperText>The account name is an easy way for you to identify an account.</FormHelperText>
+              <FormHelperText>The account name is an easy way for you to identify an address.</FormHelperText>
               {
                 isAccountNameInvalid && <FormErrorMessage>The account name must be at least 1 character and can only composed of the following characters (_-[0-9][a-z][A-Z]).</FormErrorMessage>
               }
