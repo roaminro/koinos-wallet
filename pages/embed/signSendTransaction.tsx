@@ -50,7 +50,7 @@ const SignSendTransaction: NextPageWithLayout = () => {
       const { operations } = transaction
 
       if (operations) {
-        if (!options.abis) {
+        if (!options || !options.abis) {
           setHasDecodingError(true)
           setTransactionData(JSON.stringify(operations, null, 2))
         } else {
