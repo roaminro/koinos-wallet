@@ -238,7 +238,7 @@ const SignSendTransaction: NextPageWithLayout = () => {
 
       const tmpAbis = abis
 
-      for (let index = 0; index < receipt.events.length; index++) {
+      for (let index = 0; index < receipt.events?.length; index++) {
         const event = receipt.events[index]
         const contractId = event.source
 
