@@ -51,7 +51,7 @@ const SignSendTransaction: NextPageWithLayout = () => {
       const { operations } = transaction
 
       if (operations) {
-        let tmpAbis: Record<string, Abi> = { }
+        let tmpAbis: Record<string, Abi> = {}
 
         if (options && options.abis) {
           tmpAbis = {
@@ -81,14 +81,18 @@ const SignSendTransaction: NextPageWithLayout = () => {
                 id: contractId,
                 provider
               })
+              let tmpAbi: Abi | undefined = undefined
+              try {
+                tmpAbi = await contract.fetchAbi()
+              } catch (error) {
+                console.error(error)
+                throw new Error('the abi is invalid')
+              }
 
-              const tmpAbi = await contract.fetchAbi()
-              console.log('fetch abi', tmpAbi)
-              console.log('fetch abi', contract.abi)
               if (tmpAbi) {
                 Object.keys(tmpAbi.methods).forEach((name) => {
-                  tmpAbi.methods[name] = {
-                    ...tmpAbi.methods[name]
+                  tmpAbi!.methods[name] = {
+                    ...tmpAbi!.methods[name]
                   }
 
                   //@ts-ignore this is needed to be compatible with "old" abis
@@ -100,7 +104,7 @@ const SignSendTransaction: NextPageWithLayout = () => {
 
                 tmpAbis[contractId] = tmpAbi
               } else {
-                throw new Error(`missing abi or koilib_types for contract ${contractId}`)
+                throw new Error(`no abi available for contract ${contractId}`)
               }
             } else {
               contract = new Contract({
@@ -252,12 +256,17 @@ const SignSendTransaction: NextPageWithLayout = () => {
             provider
           })
 
-          const tmpAbi = await contract.fetchAbi()
+          let tmpAbi: Abi | undefined = undefined
+          try {
+            tmpAbi = await contract.fetchAbi()
+          } catch (error) {
+            console.error(error)
+          }
 
           if (tmpAbi) {
             Object.keys(tmpAbi.methods).forEach((name) => {
-              tmpAbi.methods[name] = {
-                ...tmpAbi.methods[name]
+              tmpAbi!.methods[name] = {
+                ...tmpAbi!.methods[name]
               }
 
               //@ts-ignore this is needed to be compatible with "old" abis
@@ -277,7 +286,7 @@ const SignSendTransaction: NextPageWithLayout = () => {
             abi,
           })
         }
-        
+
         if (contract && contract.serializer) {
           try {
             const eventData = await contract.serializer.deserialize(event.data, event.name)
