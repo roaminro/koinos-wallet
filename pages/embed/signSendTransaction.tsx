@@ -3,7 +3,7 @@ import { ReactElement, useEffect, useState } from 'react'
 import { Messenger } from '../../util/Messenger'
 import { useWallets } from '../../context/WalletsProvider'
 import { Contract, Serializer, Signer, utils } from 'koilib'
-import { OperationJson, SendTransactionOptions, TransactionJson, TransactionReceipt } from 'koilib/lib/interface'
+import { Abi, OperationJson, SendTransactionOptions, TransactionJson, TransactionReceipt } from 'koilib/lib/interface'
 import { useNetworks } from '../../context/NetworksProvider'
 import { SignSendTransactionArguments, SignSendTransactionResult } from '../../wallet_connector_handlers/signerHandler'
 import { debug, getErrorMessage } from '../../util/Utils'
@@ -25,6 +25,7 @@ const SignSendTransaction: NextPageWithLayout = () => {
   const [transaction, setTransaction] = useState<TransactionJson>()
   const [transactionData, setTransactionData] = useState('')
   const [options, setOptions] = useState<SendTransactionOptions>()
+  const [abis, setAbis] = useState<Record<string, Abi>>({})
   const [transactionReceipt, setTransactionReceipt] = useState<TransactionReceipt>()
 
   const [messenger, setMessenger] = useState<Messenger<SignSendTransactionArguments, SignSendTransactionResult | null>>()
@@ -39,7 +40,7 @@ const SignSendTransaction: NextPageWithLayout = () => {
     const setupMessenger = async () => {
       await msgr.ping(SIGN_SEND_TRANSACTION_PARENT_ID)
       debug('connected to parent iframe')
-      
+
       const { requester, send, signerAddress, transaction, options } = await msgr.sendRequest(SIGN_SEND_TRANSACTION_PARENT_ID, null)
 
       setRequester(requester)
@@ -50,50 +51,81 @@ const SignSendTransaction: NextPageWithLayout = () => {
       const { operations } = transaction
 
       if (operations) {
-        if (!options || !options.abis) {
-          setHasDecodingError(true)
-          setTransactionData(JSON.stringify(operations, null, 2))
-        } else {
-          const decOperations: OperationJson[] = []
+        let tmpAbis: Record<string, Abi> = { }
 
-          for (let index = 0; index < operations.length; index++) {
-            const operation = operations[index]
+        if (options && options.abis) {
+          tmpAbis = {
+            ...options.abis
+          }
+        }
 
-            if (!operation.call_contract || !operation.call_contract.contract_id) {
-              decOperations.push(operation)
-              continue
-            }
+        const decOperations: OperationJson[] = []
 
-            try {
-              const contractId = operation.call_contract.contract_id
-              const abi = options.abis[contractId]
+        for (let index = 0; index < operations.length; index++) {
+          const operation = operations[index]
 
-              if (!abi || !abi.koilib_types) {
-                throw new Error(`missing abi or koilib_types for contract ${contractId}`)
-              }
-
-              const contract = new Contract({
-                id: contractId,
-                abi,
-                serializer: new Serializer(abi.koilib_types),
-              })
-              const { name, args } = await contract.decodeOperation(operation)
-
-              if (!args) {
-                throw new Error(`could not decode operation for contract ${contractId}`)
-              }
-
-              decOperations.push({
-                //@ts-ignore we change the args in-place here
-                call_contract: { contractId, name, args },
-              })
-            } catch (error) {
-              console.error(error)
-              decOperations.push(operation)
-              setHasDecodingError(true)
-            }
+          // if not a contract call operation
+          if (!operation.call_contract || !operation.call_contract.contract_id) {
+            decOperations.push(operation)
+            continue
           }
 
+          try {
+            const contractId = operation.call_contract.contract_id
+            const abi = tmpAbis[contractId]
+            let contract: Contract | undefined = undefined
+
+            // if abi not provided or not pulled yet
+            if (!abi || !abi.koilib_types) {
+              contract = new Contract({
+                id: contractId,
+                provider
+              })
+
+              const tmpAbi = await contract.fetchAbi()
+              console.log('fetch abi', tmpAbi)
+              console.log('fetch abi', contract.abi)
+              if (tmpAbi) {
+                Object.keys(tmpAbi.methods).forEach((name) => {
+                  tmpAbi.methods[name] = {
+                    ...tmpAbi.methods[name]
+                  }
+
+                  //@ts-ignore this is needed to be compatible with "old" abis
+                  if (tmpAbi.methods[name]['entry-point']) {
+                    //@ts-ignore this is needed to be compatible with "old" abis
+                    tmpAbi.methods[name].entry_point = parseInt(tmpAbi.methods[name]['entry-point'])
+                  }
+                })
+
+                tmpAbis[contractId] = tmpAbi
+              } else {
+                throw new Error(`missing abi or koilib_types for contract ${contractId}`)
+              }
+            } else {
+              contract = new Contract({
+                id: contractId,
+                abi
+              })
+            }
+
+            const { name, args } = await contract.decodeOperation(operation)
+
+            if (!args) {
+              throw new Error(`could not decode operation for contract ${contractId}`)
+            }
+
+            decOperations.push({
+              //@ts-ignore we change the args in-place here
+              call_contract: { contractId, name, args },
+            })
+          } catch (error) {
+            console.error(error)
+            decOperations.push(operation)
+            setHasDecodingError(true)
+          }
+
+          setAbis(tmpAbis)
           setTransactionData(JSON.stringify(decOperations, null, 2))
         }
       }
@@ -204,20 +236,56 @@ const SignSendTransaction: NextPageWithLayout = () => {
 
       const { receipt } = await provider!.sendTransaction(signedTransaction, false)
 
-      if (options?.abis) {
-        for (let index = 0; index < receipt.events.length; index++) {
-          const event = receipt.events[index]
-          const abi = options.abis[event.source]
-          if (abi) {
-            try {
-              const serializer = new Serializer(abi.koilib_types)
-              const eventData = await serializer.deserialize(event.data, event.name)
-              //@ts-ignore we change the data in-place here
-              receipt.events[index].data = eventData
-            } catch (error) {
-              // ignore deserialization errors
-              console.error(error)
-            }
+      const tmpAbis = abis
+
+      for (let index = 0; index < receipt.events.length; index++) {
+        const event = receipt.events[index]
+        const contractId = event.source
+
+        const abi = tmpAbis[contractId]
+
+        let contract: Contract | undefined = undefined
+        // if abi not provided or not pulled yet
+        if (!abi || !abi.koilib_types) {
+          contract = new Contract({
+            id: contractId,
+            provider
+          })
+
+          const tmpAbi = await contract.fetchAbi()
+
+          if (tmpAbi) {
+            Object.keys(tmpAbi.methods).forEach((name) => {
+              tmpAbi.methods[name] = {
+                ...tmpAbi.methods[name]
+              }
+
+              //@ts-ignore this is needed to be compatible with "old" abis
+              if (tmpAbi.methods[name]['entry-point']) {
+                //@ts-ignore this is needed to be compatible with "old" abis
+                tmpAbi.methods[name].entry_point = parseInt(tmpAbi.methods[name]['entry-point'])
+              }
+            })
+
+            tmpAbis[contractId] = tmpAbi
+          } else {
+            contract = undefined
+          }
+        } else {
+          contract = new Contract({
+            id: contractId,
+            abi,
+          })
+        }
+        
+        if (contract && contract.serializer) {
+          try {
+            const eventData = await contract.serializer.deserialize(event.data, event.name)
+            //@ts-ignore we change the data in-place here
+            receipt.events[index].data = eventData
+          } catch (error) {
+            // ignore deserialization errors
+            console.error(error)
           }
         }
       }

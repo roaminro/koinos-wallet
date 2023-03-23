@@ -39,7 +39,7 @@ export function AccountHistory() {
 
   const { transactions, isLoading: isLoadingAccountHistory } = useAccountHistory(selectedAccount?.account?.public.address, limit, seqNum)
 
-  const serializer = useRef(new Serializer(utils.tokenAbi.koilib_types))
+  const serializer = useRef(new Serializer(utils.tokenAbi.koilib_types!))
 
   useEffect(() => {
     if (!isLoadingAccountHistory && transactions) {
