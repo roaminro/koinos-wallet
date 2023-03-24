@@ -4,12 +4,15 @@ import { useNetworks } from '../context/NetworksProvider'
 
 export const useTokenBalance = (accountAddress?: string, tokenAddress?: string) => {
   const { provider } = useNetworks()
+  let contract: Contract | undefined = undefined
 
-  const contract = new Contract({
-    id: tokenAddress,
-    abi: utils.tokenAbi,
-    provider
-  })
+  if (tokenAddress) {
+    contract = new Contract({
+      id: tokenAddress,
+      abi: utils.tokenAbi,
+      provider
+    })
+  }
 
   //@ts-ignore provider and accountAddress and tokenAddress are not undefined when swr calls the fetcher
   const { data, error } = useSWR(() => provider && accountAddress && tokenAddress ? `${accountAddress}_${tokenAddress}_balance` : null, getTokenBalanceFetcher(accountAddress, contract))
