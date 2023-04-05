@@ -20,6 +20,7 @@ module.exports = {
     '/contacts': ['contacts'],
     '/contacts/add': ['contacts'],
     '/contacts/[contactAddress]': ['contacts'],
-    '/embed/getAccounts': ['getAccounts']
+    '/embed/getAccounts': ['getAccounts'],
+    '/advanced/transaction-signature': ['transaction-signature']
   },
 }

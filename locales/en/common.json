@@ -17,5 +17,7 @@
   "no": "no",
   "yes": "yes",
   "close": "Close",
-  "password": "Password"
+  "password": "Password",
+  "advanced": "Advanced",
+  "transaction_signature": "Transaction signature"
 }

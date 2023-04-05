@@ -1,0 +1,24 @@
+{
+  "transaction_signature": "Transaction signature",
+  "sign": "Sign transaction",
+  "send": "Send transaction",
+  "alert": "Always double check transactions before signing them and only sign transactions from people you trust.",
+  "signSuccessToast": {
+    "title": "Transaction successfully signed",
+    "description": "The transaction was successfully signed!"
+  },
+  "signErrorToast": {
+    "title":"An error occured while signing the transaction"
+  },
+  "sendSuccessToast": {
+    "title": "Transaction successfully sent",
+    "description": "The transaction was successfully sent!"
+  },
+  "sendErrorToast": {
+    "title":"An error occured while sending the transaction"
+  },
+  "transactionField": {
+    "label": "Transaction to sign",
+    "helper": "JSON string format. (Only the field \"id\" is used to sign the transaction)"
+ }
+}

@@ -42,7 +42,9 @@ import {
   FiFileText,
   FiSettings,
   FiMap,
-  FiBook
+  FiBook,
+  FiMoreHorizontal,
+  FiEdit2
 } from 'react-icons/fi'
 import { IconType } from 'react-icons'
 import useTranslation from 'next-translate/useTranslation'
@@ -105,6 +107,12 @@ const SidebarContent = ({ onClose, ...rest }: SidebarProps) => {
   const LinkItems: Array<LinkItemProps> = [
     { name: t('common:home'), icon: FiHome, href: '/home', hideWhenVaultNotSetup: true },
     { name: t('common:contacts'), icon: FiBook, href: '/contacts', hideWhenVaultNotSetup: true },
+    {
+      name: t('common:advanced'), icon: FiMoreHorizontal, hideWhenVaultNotSetup: true,
+      children: [
+        { name: t('common:transaction_signature'), icon: FiEdit2, href: '/advanced/transaction-signature' },
+      ]
+    },
     {
       name: t('common:settings'), icon: FiSettings, showWhenLocked: true,
       children: [
