@@ -43,7 +43,7 @@ export function AccountHistory() {
   // @ts-ignore adding optional "memo" field to transfer_arguments
   utils.tokenAbi.koilib_types!.nested.koinos.nested.contracts.nested.token.nested.transfer_arguments.fields.memo = {
     'type': 'string',
-      'id': 4
+      'id': 100
   }
 
   const serializer = useRef(new Serializer(utils.tokenAbi.koilib_types!))
