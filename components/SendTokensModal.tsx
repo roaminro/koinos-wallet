@@ -24,6 +24,12 @@ interface AccountOption {
   address: string
 }
 
+// @ts-ignore adding optional "memo" field to transfer_arguments
+utils.tokenAbi.koilib_types!.nested.koinos.nested.contracts.nested.token.nested.transfer_arguments.fields.memo = {
+  'type': 'string',
+  'id': 4
+}
+
 export default NiceModal.create(({ defaultTokenAddress, defaultRecipientAddress }: SendTokensModalProps) => {
   const modal = useModal()
 
@@ -33,9 +39,10 @@ export default NiceModal.create(({ defaultTokenAddress, defaultRecipientAddress 
   const { wallets, selectedAccount, signTransaction } = useWallets()
   const { selectedNetwork, provider } = useNetworks()
   const { tokens } = useTokens()
-  const { contacts} = useContacts()
+  const { contacts } = useContacts()
 
   const [amount, setAmount] = useState('')
+  const [memo, setMemo] = useState('')
   const [recipientAddress, setRecipientAddress] = useState('')
   const [recipientAccount, setRecipientAccount] = useState<AccountOption | null>()
 
@@ -48,6 +55,10 @@ export default NiceModal.create(({ defaultTokenAddress, defaultRecipientAddress 
 
   const handleRecipientAddressChange = (e: ChangeEvent<HTMLInputElement>) => {
     setRecipientAddress(e.target.value.trim())
+  }
+
+  const handleMemoChange = (e: ChangeEvent<HTMLInputElement>) => {
+    setMemo(e.target.value)
   }
 
   const handleAmountChange = (amount: string, _: number) => {
@@ -114,7 +125,7 @@ export default NiceModal.create(({ defaultTokenAddress, defaultRecipientAddress 
         label: wallet.name,
         options: []
       }
-  
+
       Object.entries(wallet.accounts).map(([__, account]) => {
         const { name, address } = account.public
 
@@ -131,22 +142,22 @@ export default NiceModal.create(({ defaultTokenAddress, defaultRecipientAddress 
           })
         }
       })
-  
+
       accOptions.push(walletOption)
     })
-  
+
     const contactsOption: { label: string, options: AccountOption[] } = {
-      label:'Contacts',
+      label: 'Contacts',
       options: []
     }
-  
+
     Object.entries(contacts).map(([_, contact]) => {
       const { name, address } = contact
       contactsOption.options.push({
         name,
         address,
       })
-      
+
       if (contact.address === defaultRecipientAddress) {
         setRecipientAddress(defaultRecipientAddress)
         setRecipientAccount({
@@ -155,10 +166,10 @@ export default NiceModal.create(({ defaultTokenAddress, defaultRecipientAddress 
         })
       }
     })
-  
+
     accOptions.push(contactsOption)
     setAccountOptions(accOptions)
-    
+
   }, [contacts, defaultRecipientAddress, defaultTokenAddress, selectedNetwork, tokens, wallets])
 
   const sendTokens = async () => {
@@ -182,6 +193,7 @@ export default NiceModal.create(({ defaultTokenAddress, defaultRecipientAddress 
           from: selectedAccount.account.public.address,
           to: recipientAddress,
           value: formattedAmount,
+          memo
         }, {
           payer: selectedAccount.account.public.address,
           chainId: selectedNetwork.chainId,
@@ -193,10 +205,10 @@ export default NiceModal.create(({ defaultTokenAddress, defaultRecipientAddress 
 
         // sign transaction
         let signedTx = await signTransaction(selectedAccount.account.public.address!, transaction as TransactionJson)
-        
+
         // submit transaction without broadcasting to estimate mana used
         const { receipt } = await provider!.sendTransaction(signedTx, false)
-        
+
         // add 10% to estimated mana used
         signedTx.header!.rc_limit = (BigInt(receipt.rc_used) * BigInt(110) / BigInt(100)).toString()
         signedTx.signatures = []
@@ -212,6 +224,8 @@ export default NiceModal.create(({ defaultTokenAddress, defaultRecipientAddress 
 
         const cacheKey = `${selectedNetwork.chainId}_${selectedAccount?.account.public.address!}_history_undefined_10`
         mutate(cacheKey)
+
+        clearAmount()
 
         toast({
           title: 'Tokens successfully sent',
@@ -314,7 +328,7 @@ export default NiceModal.create(({ defaultTokenAddress, defaultRecipientAddress 
                 <NumberInput width='100%' min={0} precision={selectedToken?.decimals} value={amount} onChange={handleAmountChange}>
                   <NumberInputField />
                 </NumberInput>
-                <InputRightElement  zIndex='0'>
+                <InputRightElement zIndex='0'>
                   <Tooltip
                     label='clear amount'
                     placement="bottom"
@@ -349,6 +363,11 @@ export default NiceModal.create(({ defaultTokenAddress, defaultRecipientAddress 
                   </Tooltip>
                 </HStack>
               </FormHelperText>
+            </FormControl>
+            <FormControl>
+              <FormLabel>Memo (optional)</FormLabel>
+              <Input value={memo} onChange={handleMemoChange}/>
+              <FormHelperText>Add a memo for the recipient.</FormHelperText>
             </FormControl>
           </Stack>
         </ModalBody>

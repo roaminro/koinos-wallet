@@ -24,6 +24,7 @@ interface ParsedTransaction {
     from?: string
     to?: string
     amount?: string
+    memo?: string
   }[]
 }
 
@@ -38,6 +39,12 @@ export function AccountHistory() {
   const [limit, setLimit] = useState(10)
 
   const { transactions, isLoading: isLoadingAccountHistory } = useAccountHistory(selectedAccount?.account?.public.address, limit, seqNum)
+
+  // @ts-ignore adding optional "memo" field to transfer_arguments
+  utils.tokenAbi.koilib_types!.nested.koinos.nested.contracts.nested.token.nested.transfer_arguments.fields.memo = {
+    'type': 'string',
+      'id': 4
+  }
 
   const serializer = useRef(new Serializer(utils.tokenAbi.koilib_types!))
 
@@ -78,7 +85,8 @@ export function AccountHistory() {
                           contractId: op.call_contract.contract_id!,
                           from: args.from as string,
                           to: args.to as string,
-                          amount: args.value as string || '0'
+                          amount: args.value as string || '0',
+                          memo: args.memo as string | undefined
                         })
                         break
                       }
@@ -235,6 +243,9 @@ export function AccountHistory() {
                                     {truncateAccount(op.to!)} <FiExternalLink style={{ display: 'inline-block' }} />
                                   </Link>
                                 </Text>
+                                {
+                                  op.memo ? <Text>Memo: {op.memo}</Text> : null
+                                }
                               </CardBody>
                             </Card>
                           )
@@ -251,6 +262,9 @@ export function AccountHistory() {
                                     {truncateAccount(op.from!)} <FiExternalLink style={{ display: 'inline-block' }} />
                                   </Link>
                                 </Text>
+                                {
+                                  op.memo ? <Text>Memo: {op.memo}</Text> : null
+                                }
                               </CardBody>
                             </Card>
                           )
