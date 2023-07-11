@@ -30,7 +30,7 @@ const appConfig = {
   defaultTokens: {
     '1AdzuXSpC6K9qtXdCBgD5NUpDNwHjMgrc9': {
       chainId: 'EiBZK_GGVP0H_fXVAM3j6EAuz3-B-l3ejxRSewi7qIBfSA==',
-      address: '1AdzuXSpC6K9qtXdCBgD5NUpDNwHjMgrc9',
+      address: '18tWNU7E4yuQzz7hMVpceb9ixmaWLVyQsr',
       name: 'Virtual Hash Power',
       symbol: 'VHP',
       decimals: 8,
